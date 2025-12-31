@@ -2,19 +2,18 @@ from flask import Flask, request, send_file, render_template, abort
 import os, uuid, zipfile
 
 from PyPDF2 import PdfMerger, PdfReader, PdfWriter
-from pdf2docx import Converter
 from docx import Document
 from PIL import Image
-import pandas as pd
-import pdfplumber
 from reportlab.pdfgen import canvas
 
 # ---------------- APP SETUP ----------------
 
 app = Flask(__name__)
 
-UPLOAD = "uploads"
-OUTPUT = "outputs"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD = os.path.join(BASE_DIR, "uploads")
+OUTPUT = os.path.join(BASE_DIR, "outputs")
+
 os.makedirs(UPLOAD, exist_ok=True)
 os.makedirs(OUTPUT, exist_ok=True)
 
@@ -29,7 +28,7 @@ def require_file(key="file"):
 
 @app.route("/")
 def home():
-    return render_template("indeyxx.html")
+    return render_templates("indeyxx.html")
 
 # ---------------- PDF TOOLS ----------------
 
@@ -40,6 +39,7 @@ def merge_pdf():
         abort(400, "No files selected")
 
     merger = PdfMerger()
+
     for f in files:
         if f.filename:
             path = os.path.join(UPLOAD, uid("pdf"))
@@ -49,6 +49,7 @@ def merge_pdf():
     out = os.path.join(OUTPUT, uid("pdf"))
     merger.write(out)
     merger.close()
+
     return send_file(out, as_attachment=True)
 
 @app.route("/split-pdf", methods=["POST"])
@@ -79,7 +80,7 @@ def rotate_pdf():
     writer = PdfWriter()
 
     for p in reader.pages:
-        p.rotate_clockwise(angle)
+        p.rotate(angle)
         writer.add_page(p)
 
     out = os.path.join(OUTPUT, uid("pdf"))
@@ -95,65 +96,18 @@ def delete_pages():
     if not pages:
         abort(400, "No pages specified")
 
-    remove = [int(x) for x in pages.split(",") if x.isdigit()]
+    remove = {int(x) for x in pages.split(",") if x.isdigit()}
+
     reader = PdfReader(request.files["file"])
     writer = PdfWriter()
 
-    for i, p in enumerate(reader.pages):
+    for i, page in enumerate(reader.pages):
         if (i + 1) not in remove:
-            writer.add_page(p)
+            writer.add_page(page)
 
     out = os.path.join(OUTPUT, uid("pdf"))
     with open(out, "wb") as o:
         writer.write(o)
-
-    return send_file(out, as_attachment=True)
-
-@app.route("/pdf-to-word", methods=["POST"])
-def pdf_to_word():
-    require_file()
-    in_path = os.path.join(UPLOAD, uid("pdf"))
-    out = os.path.join(OUTPUT, uid("docx"))
-
-    request.files["file"].save(in_path)
-    cv = Converter(in_path)
-    cv.convert(out)
-    cv.close()
-
-    return send_file(out, as_attachment=True)
-
-@app.route("/pdf-to-images", methods=["POST"])
-def pdf_to_images():
-    require_file()
-    zip_path = os.path.join(OUTPUT, uid("zip"))
-
-    with zipfile.ZipFile(zip_path, "w") as z:
-        with pdfplumber.open(request.files["file"]) as pdf:
-            for i, page in enumerate(pdf.pages):
-                img = page.to_image(resolution=150).original
-                img_path = os.path.join(OUTPUT, f"page_{i+1}.png")
-                img.save(img_path)
-                z.write(img_path, os.path.basename(img_path))
-
-    return send_file(zip_path, as_attachment=True)
-
-@app.route("/pdf-to-excel", methods=["POST"])
-def pdf_to_excel():
-    require_file()
-    rows = []
-
-    with pdfplumber.open(request.files["file"]) as pdf:
-        for p in pdf.pages:
-            table = p.extract_table()
-            if table:
-                rows.extend(table)
-
-    if not rows:
-        abort(400, "No tables found in PDF")
-
-    df = pd.DataFrame(rows)
-    out = os.path.join(OUTPUT, uid("xlsx"))
-    df.to_excel(out, index=False)
 
     return send_file(out, as_attachment=True)
 
@@ -166,6 +120,9 @@ def image_to_pdf():
         abort(400, "No images uploaded")
 
     imgs = [Image.open(i).convert("RGB") for i in images if i.filename]
+    if not imgs:
+        abort(400, "Invalid images")
+
     out = os.path.join(OUTPUT, uid("pdf"))
     imgs[0].save(out, save_all=True, append_images=imgs[1:])
 
@@ -192,6 +149,7 @@ def merge_word():
         abort(400, "No Word files uploaded")
 
     final = Document()
+
     for d in files:
         doc = Document(d)
         for p in doc.paragraphs:
@@ -217,6 +175,9 @@ def text_to_pdf():
     for line in text.split("\n"):
         c.drawString(40, y, line)
         y -= 15
+        if y < 40:
+            c.showPage()
+            y = 800
 
     c.save()
     return send_file(out, as_attachment=True)
