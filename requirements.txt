@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 flask
 gunicorn
 PyPDF2
@@ -9,3 +10,15 @@ pandas
 pdfplumber
 reportlab
 
+=======
+flask
+PyPDF2
+pdf2docx
+python-docx
+docx2pdf
+pandas
+openpyxl
+pillow
+reportlab
+pdfplumber
+>>>>>>> 00799e05e3e02922ce1f2a9b1dd634d6a050d2bc
