@@ -1,9 +1,7 @@
-flask
+Flask
 gunicorn
 PyPDF2
-pdf2docx
 python-docx
-docx2pdf
 Pillow
 pandas
 pdfplumber
