@@ -28,7 +28,8 @@ def require_file(key="file"):
 
 @app.route("/")
 def home():
-    return render_templates("indeyxx.html")
+    return render_template("indeyxx.html")
+
 
 # ---------------- PDF TOOLS ----------------
 
