@@ -1,0 +1,10 @@
+flask
+PyPDF2
+pdf2docx
+python-docx
+docx2pdf
+pandas
+openpyxl
+pillow
+reportlab
+pdfplumber
