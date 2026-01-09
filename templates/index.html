@@ -2,162 +2,55 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>iMasterPDF – Free Online PDF & Document Tools</title>
+<title>iMasterPDF – Free Online PDF Tools</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- SEO -->
-<meta name="description" content="iMasterPDF offers free online tools to merge, split, rotate, and convert PDFs, images, Word files, and text securely.">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
 <style>
-*{box-sizing:border-box}
-body{
-    margin:0;
-    font-family:Inter, sans-serif;
-    background:#f5f7fb;
-    line-height:1.6;
-}
-nav{
-    background:#fff;
-    padding:15px 40px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    box-shadow:0 2px 10px rgba(0,0,0,.06);
-    position:sticky;
-    top:0;
-    z-index:100;
-}
-nav a{
-    margin-left:15px;
-    text-decoration:none;
-    color:#2563eb;
-    font-weight:600;
-}
-.container{max-width:1100px;margin:auto;padding:40px 20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:25px}
-.card{
-    background:#fff;
-    padding:25px;
-    border-radius:14px;
-    box-shadow:0 15px 40px rgba(0,0,0,.08);
-}
-.drop{
-    border:2px dashed #c7d2fe;
-    padding:20px;
-    border-radius:10px;
-    cursor:pointer;
-    text-align:center;
-}
-input[type=file]{display:none}
-input, select, textarea{
-    width:100%;
-    padding:10px;
-    margin-top:10px;
-}
-.file-info{
-    margin-top:10px;
-    font-size:14px;
-    color:#2563eb;
-    display:none;
-}
-button{
-    width:100%;
-    margin-top:15px;
-    padding:12px;
-    background:#2563eb;
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-}
-section{margin-top:80px}
-footer{
-    background:#0f172a;
-    color:#fff;
-    padding:30px;
-    text-align:center;
-    margin-top:80px;
-}
-footer a{
-    color:#93c5fd;
-    margin:0 8px;
-    text-decoration:none;
-}
+body{margin:0;font-family:Arial;background:#f5f7fb}
+nav{background:#fff;padding:15px 30px;display:flex;justify-content:space-between}
+nav a{margin-left:15px;text-decoration:none;color:#2563eb;font-weight:600}
+.container{max-width:1100px;margin:auto;padding:40px}
+section{margin-top:60px}
+.card{background:#fff;padding:25px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+form{margin-bottom:20px}
+input,textarea,select,button{width:100%;padding:10px;margin-top:8px}
+button{background:#2563eb;color:#fff;border:none;border-radius:6px}
+footer{background:#0f172a;color:#fff;text-align:center;padding:20px;margin-top:60px}
 </style>
-
-<script>
-function showFile(input, infoId){
-    const info = document.getElementById(infoId);
-    if(input.files.length > 0){
-        const f = input.files[0];
-        const size = (f.size / 1024 / 1024).toFixed(2);
-        info.innerHTML = `📄 ${f.name} (${size} MB)<br>✅ File loaded`;
-        info.style.display = "block";
-    }
-}
-</script>
 </head>
 
 <body>
 
 <nav>
-  <b>iMasterPDF</b>
-  <div>
-    <a href="#tools">Tools</a>
-    <a href="#about">About</a>
-    <a href="#privacy">Privacy</a>
-    <a href="#terms">Terms</a>
-    <a href="#contact">Contact</a>
-  </div>
+<b>iMasterPDF</b>
+<div>
+<a href="#pdf">PDF</a>
+<a href="#word">Word</a>
+<a href="#text">Text</a>
+<a href="#image">Image</a>
+<a href="#about">About</a>
+</div>
 </nav>
 
 <div class="container">
 
-<!-- TOOLS -->
-<section id="tools">
-<h2>📄 PDF & Document Tools</h2>
-
-<div class="grid">
-
-<!-- MERGE PDF -->
+<section id="pdf">
+<h2>📄 PDF Tools</h2>
 <div class="card">
-<h3>Merge PDF</h3>
 <form action="/merge-pdf" method="post" enctype="multipart/form-data">
-<label class="drop">
-Drop PDFs
-<input type="file" name="files" multiple onchange="showFile(this,'m1')">
-</label>
-<div class="file-info" id="m1"></div>
+<input type="file" name="files" multiple required>
 <button>Merge PDF</button>
 </form>
-</div>
 
-<!-- SPLIT PDF -->
-<div class="card">
-<h3>Split PDF</h3>
 <form action="/split-pdf" method="post" enctype="multipart/form-data">
-<label class="drop">
-Drop PDF
-<input type="file" name="file" onchange="showFile(this,'s1')">
-</label>
-<div class="file-info" id="s1"></div>
+<input type="file" name="file" required>
 <input name="start" placeholder="Start page">
 <input name="end" placeholder="End page">
 <button>Split PDF</button>
 </form>
-</div>
 
-<!-- ROTATE PDF -->
-<div class="card">
-<h3>Rotate PDF</h3>
 <form action="/rotate-pdf" method="post" enctype="multipart/form-data">
-<label class="drop">
-Drop PDF
-<input type="file" name="file" onchange="showFile(this,'r1')">
-</label>
-<div class="file-info" id="r1"></div>
+<input type="file" name="file" required>
 <select name="angle">
 <option value="90">90°</option>
 <option value="180">180°</option>
@@ -166,122 +59,62 @@ Drop PDF
 <button>Rotate PDF</button>
 </form>
 </div>
+</section>
 
-<!-- DELETE PAGES -->
+<section id="word">
+<h2>📝 Word Tools</h2>
 <div class="card">
-<h3>Delete Pages</h3>
-<form action="/delete-pages" method="post" enctype="multipart/form-data">
-<label class="drop">
-Drop PDF
-<input type="file" name="file" onchange="showFile(this,'d1')">
-</label>
-<div class="file-info" id="d1"></div>
-<input name="pages" placeholder="e.g. 2,4">
-<button>Delete Pages</button>
-</form>
-</div>
-
-<!-- IMAGE TO PDF -->
-<div class="card">
-<h3>Image → PDF</h3>
-<form action="/image-to-pdf" method="post" enctype="multipart/form-data">
-<label class="drop">
-Drop Images
-<input type="file" name="images" multiple onchange="showFile(this,'i1')">
-</label>
-<div class="file-info" id="i1"></div>
-<button>Convert</button>
-</form>
-</div>
-
-<!-- TEXT TO PDF -->
-<div class="card">
-<h3>Text → PDF</h3>
-<form action="/text-to-pdf" method="post">
-<textarea name="text" rows="5" placeholder="Enter text"></textarea>
-<button>Create PDF</button>
-</form>
-</div>
-
-<!-- TEXT TO WORD -->
-<div class="card">
-<h3>Text → Word</h3>
-<form action="/text-to-word" method="post">
-<textarea name="text" rows="5" placeholder="Enter text"></textarea>
-<button>Create Word</button>
-</form>
-</div>
-
-<!-- MERGE WORD -->
-<div class="card">
-<h3>Merge Word</h3>
 <form action="/merge-word" method="post" enctype="multipart/form-data">
-<label class="drop">
-Drop DOCX Files
-<input type="file" name="files" multiple onchange="showFile(this,'w1')">
-</label>
-<div class="file-info" id="w1"></div>
+<input type="file" name="files" multiple required>
 <button>Merge Word</button>
 </form>
-</div>
 
+<form action="/word-to-text" method="post" enctype="multipart/form-data">
+<input type="file" name="file" required>
+<button>Word → Text</button>
+</form>
 </div>
 </section>
 
-<!-- ABOUT -->
+<section id="text">
+<h2>🧾 Text Tools</h2>
+<div class="card">
+<form action="/text-to-pdf" method="post">
+<textarea name="text" rows="5" placeholder="Enter text" required></textarea>
+<button>Text → PDF</button>
+</form>
+
+<form action="/text-to-word" method="post">
+<textarea name="text" rows="5" placeholder="Enter text" required></textarea>
+<button>Text → Word</button>
+</form>
+</div>
+</section>
+
+<section id="image">
+<h2>🖼 Image Tools</h2>
+<div class="card">
+<form action="/image-to-pdf" method="post" enctype="multipart/form-data">
+<input type="file" name="images" multiple required>
+<button>Image → PDF</button>
+</form>
+</div>
+</section>
+
 <section id="about">
-<h2>📌 About Us</h2>
+<h2>📌 About • Privacy • Terms • Contact</h2>
 <div class="card">
-<p>
-iMasterPDF is a free online document tool that helps users manage PDF and Word files easily.
-Our goal is to provide fast, secure, and simple document solutions without installing software.
-</p>
-</div>
-</section>
-
-<!-- PRIVACY -->
-<section id="privacy">
-<h2>🔐 Privacy Policy</h2>
-<div class="card">
-<ul>
-<li>Uploaded files are processed temporarily</li>
-<li>No personal data is sold or shared</li>
-<li>Cookies may be used for analytics and ads</li>
-<li>Google AdSense may use cookies</li>
-</ul>
-</div>
-</section>
-
-<!-- TERMS -->
-<section id="terms">
-<h2>⚖ Terms & Disclaimer</h2>
-<div class="card">
-<p>
-This service is provided “as is”. We are not responsible for data loss or misuse.
-Users must ensure legal rights to upload documents.
-</p>
-</div>
-</section>
-
-<!-- CONTACT -->
-<section id="contact">
-<h2>📬 Contact Us</h2>
-<div class="card">
-<p>
-📧 Email: <b>contact@imasterpdf.com</b><br>
-🌐 Website: imasterpdf.com
-</p>
+<p><b>About:</b> iMasterPDF provides free online PDF tools.</p>
+<p><b>Privacy:</b> Files are processed temporarily and never stored.</p>
+<p><b>Terms:</b> Use at your own responsibility.</p>
+<p><b>Contact:</b> contact@imasterpdf.com</p>
 </div>
 </section>
 
 </div>
 
 <footer>
-© 2026 iMasterPDF.com |
-<a href="#about">About</a> |
-<a href="#privacy">Privacy</a> |
-<a href="#terms">Terms</a> |
-<a href="#contact">Contact</a>
+© 2026 iMasterPDF
 </footer>
 
 </body>
