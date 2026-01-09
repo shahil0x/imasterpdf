@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- SEO -->
-<meta name="description" content="iMasterPDF offers free online tools to merge, split, rotate, and convert PDFs, Word files, images, and text securely.">
+<meta name="description" content="iMasterPDF offers free online tools to merge, split, rotate, and convert PDFs, images, and text securely.">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -16,6 +16,7 @@ body{
     margin:0;
     font-family:Inter, sans-serif;
     background:#f5f7fb;
+    line-height:1.6;
 }
 nav{
     background:#fff;
@@ -24,6 +25,9 @@ nav{
     justify-content:space-between;
     align-items:center;
     box-shadow:0 2px 10px rgba(0,0,0,.06);
+    position:sticky;
+    top:0;
+    z-index:100;
 }
 nav a{
     margin-left:15px;
@@ -31,7 +35,7 @@ nav a{
     color:#2563eb;
     font-weight:600;
 }
-.container{max-width:1100px;margin:auto;padding:50px 20px}
+.container{max-width:1100px;margin:auto;padding:40px 20px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:25px}
 .card{
     background:#fff;
@@ -68,17 +72,17 @@ button{
     border-radius:8px;
     cursor:pointer;
 }
+section{margin-top:80px}
 footer{
-    background:#fff;
-    margin-top:60px;
+    background:#0f172a;
+    color:#fff;
     padding:30px;
     text-align:center;
-    font-size:14px;
-    box-shadow:0 -2px 10px rgba(0,0,0,.05);
+    margin-top:80px;
 }
 footer a{
-    margin:0 10px;
-    color:#2563eb;
+    color:#93c5fd;
+    margin:0 8px;
     text-decoration:none;
 }
 </style>
@@ -101,15 +105,18 @@ function showFile(input, infoId){
 <nav>
   <b>iMasterPDF</b>
   <div>
-    <a href="/about">About</a>
-    <a href="/contact">Contact</a>
-    <a href="/privacy-policy">Privacy</a>
-    <a href="/terms">Terms</a>
+    <a href="#tools">Tools</a>
+    <a href="#about">About</a>
+    <a href="#privacy">Privacy</a>
+    <a href="#terms">Terms</a>
+    <a href="#contact">Contact</a>
   </div>
 </nav>
 
 <div class="container">
 
+<!-- TOOLS -->
+<section id="tools">
 <h2>📄 PDF Tools</h2>
 
 <div class="grid">
@@ -171,71 +178,67 @@ Drop PDF
 </div>
 
 </div>
+</section>
 
-<h2 style="margin-top:60px">🖼 Image Tools</h2>
-
-<div class="grid">
+<!-- ABOUT -->
+<section id="about">
+<h2>📌 About Us</h2>
 <div class="card">
-<h3>Image → PDF</h3>
-<form action="/image-to-pdf" method="post" enctype="multipart/form-data">
-<label class="drop">
-Drop Images
-<input type="file" name="images" multiple onchange="showFile(this,'i1')">
-</label>
-<div class="file-info" id="i1"></div>
-<button>Convert</button>
-</form>
+<p>
+iMasterPDF is a free online document tool designed to help users work with PDF files easily.
+Our mission is to provide fast, simple, and secure document solutions without installing software.
+</p>
+<p>
+All files are processed automatically and deleted after use to protect user privacy.
+</p>
 </div>
-</div>
+</section>
 
-<h2 style="margin-top:60px">📝 Word Tools</h2>
-
-<div class="grid">
+<!-- PRIVACY -->
+<section id="privacy">
+<h2>🔐 Privacy Policy</h2>
 <div class="card">
-<h3>Word → Text</h3>
-<form action="/word-to-text" method="post" enctype="multipart/form-data">
-<label class="drop">
-Drop DOCX
-<input type="file" name="file" onchange="showFile(this,'w1')">
-</label>
-<div class="file-info" id="w1"></div>
-<button>Extract Text</button>
-</form>
+<ul>
+<li>We do not permanently store uploaded files</li>
+<li>No personal data is sold or shared</li>
+<li>Cookies may be used for analytics and ads</li>
+<li>Google AdSense may use cookies to display ads</li>
+</ul>
 </div>
+</section>
 
+<!-- TERMS -->
+<section id="terms">
+<h2>⚖ Terms & Disclaimer</h2>
 <div class="card">
-<h3>Merge Word</h3>
-<form action="/merge-word" method="post" enctype="multipart/form-data">
-<label class="drop">
-Drop DOCX Files
-<input type="file" name="files" multiple onchange="showFile(this,'w2')">
-</label>
-<div class="file-info" id="w2"></div>
-<button>Merge Word</button>
-</form>
+<p>
+iMasterPDF is provided “as is”. We are not responsible for file loss or misuse.
+</p>
+<p>
+Users must ensure they have the right to upload and process documents.
+</p>
 </div>
-</div>
+</section>
 
-<h2 style="margin-top:60px">🧾 Text Tools</h2>
-
-<div class="grid">
+<!-- CONTACT -->
+<section id="contact">
+<h2>📬 Contact Us</h2>
 <div class="card">
-<h3>Text → PDF</h3>
-<form action="/text-to-pdf" method="post">
-<textarea name="text" rows="5" placeholder="Enter text"></textarea>
-<button>Create PDF</button>
-</form>
+<p>
+📧 Email: <b>contact@imasterpdf.com</b><br>
+🌐 Website: imasterpdf.com
+</p>
 </div>
-</div>
+</section>
 
 </div>
 
 <footer>
-<p>© 2026 iMasterPDF.com — Free Online Document Tools</p>
-<a href="/about">About</a> |
-<a href="/contact">Contact</a> |
-<a href="/privacy-policy">Privacy Policy</a> |
-<a href="/terms">Terms</a>
+© 2026 iMasterPDF.com |
+<a href="#about">About</a> |
+<a href="#privacy">Privacy</a> |
+<a href="#terms">Terms</a> |
+<a href="#contact">Contact</a>
 </footer>
 
 </body>
