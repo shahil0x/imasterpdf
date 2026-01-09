@@ -1,6 +1,9 @@
-from flask import Flask, request, send_file, render_template, abort
-import os, uuid, zipfile
+from flask import (
+    Flask, request, send_file, render_template,
+    abort, redirect, url_for, flash
+)
 
+import os, uuid
 from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 from docx import Document
 from PIL import Image
@@ -9,6 +12,7 @@ from reportlab.pdfgen import canvas
 # ---------------- APP SETUP ----------------
 
 app = Flask(__name__)
+app.secret_key = "imasterpdf_secret_key"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD = os.path.join(BASE_DIR, "uploads")
@@ -24,12 +28,30 @@ def require_file(key="file"):
     if key not in request.files or request.files[key].filename == "":
         abort(400, "No file uploaded")
 
-# ---------------- HOME ----------------
+# ---------------- PAGES (ADSENSE REQUIRED) ----------------
 
 @app.route("/")
-def home():
-    return render_template("indeyxx.html")
+def index():
+    return render_template("index.html")
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/privacy-policy")
+def privacy():
+    return render_template("privacy.html")
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "POST":
+        flash("Thank you! We will contact you soon.", "success")
+        return redirect(url_for("contact"))
+    return render_template("contact.html")
 
 # ---------------- PDF TOOLS ----------------
 
@@ -112,7 +134,7 @@ def delete_pages():
 
     return send_file(out, as_attachment=True)
 
-# ---------------- IMAGE ----------------
+# ---------------- IMAGE TO PDF ----------------
 
 @app.route("/image-to-pdf", methods=["POST"])
 def image_to_pdf():
@@ -129,7 +151,7 @@ def image_to_pdf():
 
     return send_file(out, as_attachment=True)
 
-# ---------------- WORD ----------------
+# ---------------- WORD TOOLS ----------------
 
 @app.route("/word-to-text", methods=["POST"])
 def word_to_text():
@@ -161,7 +183,7 @@ def merge_word():
 
     return send_file(out, as_attachment=True)
 
-# ---------------- TEXT ----------------
+# ---------------- TEXT TO PDF ----------------
 
 @app.route("/text-to-pdf", methods=["POST"])
 def text_to_pdf():

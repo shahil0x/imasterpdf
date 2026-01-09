@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>iMasterPDF – Online Document Tools</title>
+<title>iMasterPDF – Free Online PDF & Document Tools</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- SEO -->
+<meta name="description" content="iMasterPDF offers free online tools to merge, split, rotate, and convert PDFs, Word files, images, and text securely.">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -19,7 +22,14 @@ nav{
     padding:15px 40px;
     display:flex;
     justify-content:space-between;
+    align-items:center;
     box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+nav a{
+    margin-left:15px;
+    text-decoration:none;
+    color:#2563eb;
+    font-weight:600;
 }
 .container{max-width:1100px;margin:auto;padding:50px 20px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:25px}
@@ -37,6 +47,11 @@ nav{
     text-align:center;
 }
 input[type=file]{display:none}
+input, select, textarea{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+}
 .file-info{
     margin-top:10px;
     font-size:14px;
@@ -52,6 +67,19 @@ button{
     border:none;
     border-radius:8px;
     cursor:pointer;
+}
+footer{
+    background:#fff;
+    margin-top:60px;
+    padding:30px;
+    text-align:center;
+    font-size:14px;
+    box-shadow:0 -2px 10px rgba(0,0,0,.05);
+}
+footer a{
+    margin:0 10px;
+    color:#2563eb;
+    text-decoration:none;
 }
 </style>
 
@@ -72,14 +100,20 @@ function showFile(input, infoId){
 
 <nav>
   <b>iMasterPDF</b>
+  <div>
+    <a href="/about">About</a>
+    <a href="/contact">Contact</a>
+    <a href="/privacy-policy">Privacy</a>
+    <a href="/terms">Terms</a>
+  </div>
 </nav>
 
 <div class="container">
+
 <h2>📄 PDF Tools</h2>
 
 <div class="grid">
 
-<!-- MERGE PDF -->
 <div class="card">
 <h3>Merge PDF</h3>
 <form action="/merge-pdf" method="post" enctype="multipart/form-data">
@@ -92,7 +126,6 @@ Drop PDFs
 </form>
 </div>
 
-<!-- SPLIT PDF -->
 <div class="card">
 <h3>Split PDF</h3>
 <form action="/split-pdf" method="post" enctype="multipart/form-data">
@@ -107,7 +140,6 @@ Drop PDF
 </form>
 </div>
 
-<!-- ROTATE PDF -->
 <div class="card">
 <h3>Rotate PDF</h3>
 <form action="/rotate-pdf" method="post" enctype="multipart/form-data">
@@ -125,7 +157,6 @@ Drop PDF
 </form>
 </div>
 
-<!-- DELETE PAGES -->
 <div class="card">
 <h3>Delete Pages</h3>
 <form action="/delete-pages" method="post" enctype="multipart/form-data">
@@ -198,6 +229,14 @@ Drop DOCX Files
 </div>
 
 </div>
+
+<footer>
+<p>© 2026 iMasterPDF.com — Free Online Document Tools</p>
+<a href="/about">About</a> |
+<a href="/contact">Contact</a> |
+<a href="/privacy-policy">Privacy Policy</a> |
+<a href="/terms">Terms</a>
+</footer>
 
 </body>
 </html>
