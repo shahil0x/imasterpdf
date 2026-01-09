@@ -4,18 +4,20 @@
 <meta charset="UTF-8">
 <title>iMasterPDF – Free Online PDF Tools</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="iMasterPDF offers free online PDF, Word, Image and Text tools to merge, split, convert and manage documents easily.">
 
 <style>
-body{margin:0;font-family:Arial;background:#f5f7fb}
-nav{background:#fff;padding:15px 30px;display:flex;justify-content:space-between}
+body{margin:0;font-family:Arial;background:#f5f7fb;line-height:1.6}
+nav{background:#fff;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.06)}
 nav a{margin-left:15px;text-decoration:none;color:#2563eb;font-weight:600}
 .container{max-width:1100px;margin:auto;padding:40px}
-section{margin-top:60px}
+section{margin-top:70px}
 .card{background:#fff;padding:25px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
-form{margin-bottom:20px}
+form{margin-bottom:25px}
 input,textarea,select,button{width:100%;padding:10px;margin-top:8px}
-button{background:#2563eb;color:#fff;border:none;border-radius:6px}
+button{background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer}
 footer{background:#0f172a;color:#fff;text-align:center;padding:20px;margin-top:60px}
+h1,h2,h3{color:#1e293b}
 </style>
 </head>
 
@@ -34,14 +36,39 @@ footer{background:#0f172a;color:#fff;text-align:center;padding:20px;margin-top:6
 
 <div class="container">
 
+<!-- INTRO -->
+<section>
+<h1>Free Online PDF Tools – iMasterPDF</h1>
+<p>
+iMasterPDF is a free online document processing platform that helps users manage PDF,
+Word, image, and text files easily. All tools work directly in your browser without
+software installation or registration.
+</p>
+<p>
+Our goal is to provide fast, secure, and easy-to-use document tools for students,
+professionals, and businesses worldwide.
+</p>
+</section>
+
+<!-- PDF TOOLS -->
 <section id="pdf">
 <h2>📄 PDF Tools</h2>
 <div class="card">
+
+<h3>Merge PDF</h3>
+<p>
+Combine multiple PDF files into a single document. Upload PDFs, click merge, and download
+the final file instantly.
+</p>
 <form action="/merge-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="files" multiple required>
 <button>Merge PDF</button>
 </form>
 
+<h3>Split PDF</h3>
+<p>
+Extract specific pages from a PDF by choosing start and end page numbers.
+</p>
 <form action="/split-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
 <input name="start" placeholder="Start page">
@@ -49,6 +76,10 @@ footer{background:#0f172a;color:#fff;text-align:center;padding:20px;margin-top:6
 <button>Split PDF</button>
 </form>
 
+<h3>Rotate PDF</h3>
+<p>
+Rotate PDF pages to correct orientation quickly and download the updated file.
+</p>
 <form action="/rotate-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
 <select name="angle">
@@ -58,63 +89,125 @@ footer{background:#0f172a;color:#fff;text-align:center;padding:20px;margin-top:6
 </select>
 <button>Rotate PDF</button>
 </form>
+
 </div>
 </section>
 
+<!-- WORD TOOLS -->
 <section id="word">
 <h2>📝 Word Tools</h2>
 <div class="card">
+
+<h3>Merge Word Files</h3>
+<p>
+Combine multiple Word documents into one DOCX file while keeping text content intact.
+</p>
 <form action="/merge-word" method="post" enctype="multipart/form-data">
 <input type="file" name="files" multiple required>
 <button>Merge Word</button>
 </form>
 
+<h3>Word to Text</h3>
+<p>
+Extract plain text content from Word documents easily for reuse or editing.
+</p>
 <form action="/word-to-text" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
 <button>Word → Text</button>
 </form>
+
 </div>
 </section>
 
+<!-- TEXT TOOLS -->
 <section id="text">
 <h2>🧾 Text Tools</h2>
 <div class="card">
+
+<h3>Text to PDF</h3>
+<p>
+Convert your written text into a clean and readable PDF document instantly.
+</p>
 <form action="/text-to-pdf" method="post">
 <textarea name="text" rows="5" placeholder="Enter text" required></textarea>
 <button>Text → PDF</button>
 </form>
 
+<h3>Text to Word</h3>
+<p>
+Create a Word document from plain text content for editing and sharing.
+</p>
 <form action="/text-to-word" method="post">
 <textarea name="text" rows="5" placeholder="Enter text" required></textarea>
 <button>Text → Word</button>
 </form>
+
 </div>
 </section>
 
+<!-- IMAGE TOOLS -->
 <section id="image">
 <h2>🖼 Image Tools</h2>
 <div class="card">
+
+<h3>Image to PDF</h3>
+<p>
+Convert multiple images into a single PDF document while preserving image quality.
+</p>
 <form action="/image-to-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="images" multiple required>
 <button>Image → PDF</button>
 </form>
+
 </div>
 </section>
 
+<!-- ABOUT / PRIVACY / TERMS -->
 <section id="about">
 <h2>📌 About • Privacy • Terms • Contact</h2>
 <div class="card">
-<p><b>About:</b> iMasterPDF provides free online PDF tools.</p>
-<p><b>Privacy:</b> Files are processed temporarily and never stored.</p>
-<p><b>Terms:</b> Use at your own responsibility.</p>
-<p><b>Contact:</b> contact@imasterpdf.com</p>
+
+<h3>About Us</h3>
+<p>
+iMasterPDF was created to simplify document management. We provide free online tools
+that help users work efficiently with files without installing software.
+</p>
+
+<h3>Privacy Policy</h3>
+<p>
+User privacy is important to us. Uploaded files are processed temporarily and deleted
+automatically. We do not sell or share user data. Google AdSense may use cookies to
+display relevant ads.
+</p>
+
+<h3>Terms & Disclaimer</h3>
+<p>
+All tools are provided "as is". Users are responsible for files they upload.
+We are not liable for data loss.
+</p>
+
+<h3>Contact</h3>
+<p>
+Email: <b>contact@imasterpdf.com</b>
+</p>
+
+</div>
+</section>
+
+<!-- FAQ -->
+<section>
+<h2>❓ Frequently Asked Questions</h2>
+<div class="card">
+<p><b>Is iMasterPDF free?</b><br>Yes, all tools are completely free.</p>
+<p><b>Are my files safe?</b><br>Yes, files are processed automatically and not stored.</p>
+<p><b>Do I need to sign up?</b><br>No registration is required.</p>
 </div>
 </section>
 
 </div>
 
 <footer>
-© 2026 iMasterPDF
+© 2026 iMasterPDF. All rights reserved.
 </footer>
 
 </body>
