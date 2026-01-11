@@ -29,12 +29,12 @@ p{line-height:1.6;color:#444;font-size:15px}
 
 .upload-area{background:#fff;padding:24px;border-radius:12px;max-width:800px;margin:auto;box-shadow:0 4px 12px rgba(0,0,0,.08)}
 .upload-box{border:3px dashed #ddd;border-radius:10px;padding:30px;text-align:center}
-.download-area{display:none;margin-top:20px;text-align:center}
-.download-btn{padding:12px 26px;background:#10b981;color:#fff;border-radius:6px;font-weight:bold;text-decoration:none}
-.back-btn{display:inline-block;margin-top:12px;padding:8px 16px;background:#6b7280;color:#fff;border-radius:6px;text-decoration:none}
+.upload-box input{margin-top:10px}
+.download-btn{margin-top:16px;padding:12px 26px;background:#10b981;color:#fff;border-radius:6px;font-weight:bold;border:none;cursor:pointer}
+.back-btn{display:inline-block;margin-top:12px;padding:8px 16px;background:#6b7280;color:#fff;border-radius:6px;text-decoration:none;cursor:pointer}
 
 footer{position:fixed;bottom:0;width:100%;background:#fff;border-top:1px solid #ddd;text-align:center;padding:10px;font-size:13px}
-footer a{margin:0 6px;color:#555;text-decoration:none}
+footer a{margin:0 6px;color:#555;text-decoration:none;cursor:pointer}
 footer a:hover{text-decoration:underline}
 </style>
 </head>
@@ -45,26 +45,20 @@ footer a:hover{text-decoration:underline}
 
 <main id="main">
 
-<!-- HOME PAGE -->
+<!-- HOME -->
 <div class="page">
 <div class="container">
 
 <h1>Free Online PDF, Word & Image Tools</h1>
 
 <p>
-iMasterPDF is a free online document processing platform designed to help users
-manage PDF, Word, Text, and Image files quickly and securely.
+iMasterPDF is a free online document processing platform that helps users convert,
+merge, split, rotate, lock, and unlock files securely without registration.
 </p>
 
 <p>
-Our tools allow you to convert PDF files to Word, merge multiple documents,
-split pages, rotate files, and apply password protection — all directly in your browser.
-No installation or registration is required.
-</p>
-
-<p>
-Files uploaded to iMasterPDF are processed temporarily and are automatically deleted
-after processing to ensure user privacy and data security.
+All uploaded files are processed temporarily and deleted automatically to protect
+your privacy and data security.
 </p>
 
 <ins class="adsbygoogle" style="display:block;margin:12px 0"
@@ -75,15 +69,15 @@ data-ad-format="auto"></ins>
 <h2>Available Tools</h2>
 
 <div class="tools-grid">
-<div class="card"><h3>PDF to Word</h3><p>Convert PDF files into fully editable Word documents.</p><a onclick="openTool('PDF to Word')">Use Tool</a></div>
-<div class="card"><h3>Merge PDF</h3><p>Combine multiple PDF files into a single document.</p><a onclick="openTool('Merge PDF')">Use Tool</a></div>
-<div class="card"><h3>Split PDF</h3><p>Split large PDF files into smaller sections.</p><a onclick="openTool('Split PDF')">Use Tool</a></div>
-<div class="card"><h3>Rotate PDF</h3><p>Rotate PDF pages to the correct orientation.</p><a onclick="openTool('Rotate PDF')">Use Tool</a></div>
-<div class="card"><h3>Lock PDF</h3><p>Add password protection to secure PDF files.</p><a onclick="openTool('Lock PDF')">Use Tool</a></div>
-<div class="card"><h3>Unlock PDF</h3><p>Remove password protection from PDFs.</p><a onclick="openTool('Unlock PDF')">Use Tool</a></div>
-<div class="card"><h3>Word to PDF</h3><p>Convert Word documents into PDF format.</p><a onclick="openTool('Word to PDF')">Use Tool</a></div>
-<div class="card"><h3>Text to PDF</h3><p>Create PDF files from plain text content.</p><a onclick="openTool('Text to PDF')">Use Tool</a></div>
-<div class="card"><h3>Image to PDF</h3><p>Convert image files into high-quality PDFs.</p><a onclick="openTool('Image to PDF')">Use Tool</a></div>
+<div class="card"><h3>PDF to Word</h3><p>Convert PDF to editable Word.</p><a onclick="openTool('PDF to Word')">Use Tool</a></div>
+<div class="card"><h3>Merge PDF</h3><p>Combine multiple PDF files.</p><a onclick="openTool('Merge PDF')">Use Tool</a></div>
+<div class="card"><h3>Split PDF</h3><p>Split PDF into pages.</p><a onclick="openTool('Split PDF')">Use Tool</a></div>
+<div class="card"><h3>Rotate PDF</h3><p>Rotate PDF pages.</p><a onclick="openTool('Rotate PDF')">Use Tool</a></div>
+<div class="card"><h3>Lock PDF</h3><p>Password protect PDFs.</p><a onclick="openTool('Lock PDF')">Use Tool</a></div>
+<div class="card"><h3>Unlock PDF</h3><p>Remove PDF password.</p><a onclick="openTool('Unlock PDF')">Use Tool</a></div>
+<div class="card"><h3>Word to PDF</h3><p>Convert DOCX to PDF.</p><a onclick="openTool('Word to PDF')">Use Tool</a></div>
+<div class="card"><h3>Text to PDF</h3><p>Create PDF from text.</p><a onclick="openTool('Text to PDF')">Use Tool</a></div>
+<div class="card"><h3>Image to PDF</h3><p>Convert images to PDF.</p><a onclick="openTool('Image to PDF')">Use Tool</a></div>
 </div>
 
 </div>
@@ -96,24 +90,24 @@ data-ad-format="auto"></ins>
 <h1 id="toolTitle"></h1>
 <p id="toolDesc"></p>
 
-<p>
-This tool allows you to securely upload your file and process it instantly.
-All processing happens automatically, and your file will be available for download
-once completed.
-</p>
+<form action="/process" method="post" enctype="multipart/form-data" class="upload-area">
 
-<div class="upload-area">
+<input type="hidden" name="tool" id="toolInput">
+
 <div class="upload-box">
 <h3>Select your file</h3>
-<input type="file" id="fileInput">
+<input type="file" name="file" required>
 </div>
 
-<div class="download-area" id="downloadArea">
-<p>Your file has been processed successfully and is ready to download.</p>
-<a class="download-btn" href="#" download>Download File</a><br>
+<button class="download-btn" type="submit">
+Convert & Download
+</button>
+
+<div>
 <a class="back-btn" onclick="goHome()">← Back to Tools</a>
 </div>
-</div>
+
+</form>
 
 </div>
 </div>
@@ -121,22 +115,19 @@ once completed.
 <!-- PRIVACY -->
 <div class="page"><div class="container">
 <h1>Privacy Policy</h1>
-<p>iMasterPDF uses cookies and Google AdSense services. Google may use cookies to personalize ads.</p>
-<p>Uploaded files are processed temporarily and deleted automatically. We do not store or share user data.</p>
-<p>By using this website, you consent to our privacy practices.</p>
+<p>Google AdSense may use cookies to personalize ads.</p>
+<p>Uploaded files are deleted automatically after processing.</p>
 </div></div>
 
 <!-- TERMS -->
 <div class="page"><div class="container">
 <h1>Terms & Conditions</h1>
-<p>iMasterPDF tools are provided “as-is”. Users must use the website legally and responsibly.</p>
-<p>We are not responsible for data loss or misuse of files.</p>
+<p>Tools are provided as-is. Users must use the service legally.</p>
 </div></div>
 
 <!-- CONTACT -->
 <div class="page"><div class="container">
 <h1>Contact Us</h1>
-<p>For support or questions, contact us via email.</p>
 <p>Email: support@imasterpdf.com</p>
 </div></div>
 
@@ -151,23 +142,17 @@ once completed.
 
 <script>
 function openTool(name){
-document.getElementById("toolTitle").innerText=name;
-document.getElementById("toolDesc").innerText=
-"This tool helps you process your file quickly and securely.";
-document.getElementById("downloadArea").style.display="none";
-document.getElementById("fileInput").value="";
+document.getElementById("toolTitle").innerText = name;
+document.getElementById("toolDesc").innerText =
+"Upload your file and click convert to download.";
+document.getElementById("toolInput").value = name;
 goPage(2);
 }
 
-document.getElementById("fileInput").addEventListener("change",function(){
-if(this.files.length>0){
-document.getElementById("downloadArea").style.display="block";
-}
-});
-
 function goHome(){goPage(1)}
 function goPage(n){
-document.getElementById("main").style.transform="translateX(-"+((n-1)*100)+"%)";
+document.getElementById("main").style.transform =
+"translateX(-"+((n-1)*100)+"%)";
 }
 </script>
 
