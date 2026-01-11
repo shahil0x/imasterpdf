@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>iMasterPDF – Free Online PDF, Word & Image Tools</title>
+<title>iMasterPDF – Free Online PDF & Word Tools</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="iMasterPDF offers free online PDF, Word, Text and Image tools. Convert, merge, split, rotate, lock and unlock documents securely without registration.">
+<meta name="description" content="Free online PDF and Word tools. Convert, merge, split, lock, unlock, and extract text securely without registration.">
 
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX"
@@ -23,19 +23,21 @@ p{line-height:1.6;color:#444;font-size:15px}
 
 .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
 .card{background:#fff;padding:18px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.08);text-align:center}
-.card p{font-size:14px}
 .card a{display:inline-block;margin-top:10px;padding:8px 16px;background:#ef4444;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;cursor:pointer}
-.card a:hover{background:#dc2626}
 
 .upload-area{background:#fff;padding:24px;border-radius:12px;max-width:800px;margin:auto;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.upload-box{border:3px dashed #ddd;border-radius:10px;padding:30px;text-align:center}
+.upload-box{border:3px dashed #ddd;border-radius:10px;padding:24px;text-align:center}
 .upload-box input{margin-top:10px}
+.password-box{margin-top:14px;display:none}
+.password-box input{padding:10px;width:100%;max-width:320px}
+
 .download-btn{margin-top:16px;padding:12px 26px;background:#10b981;color:#fff;border-radius:6px;font-weight:bold;border:none;cursor:pointer}
-.back-btn{display:inline-block;margin-top:12px;padding:8px 16px;background:#6b7280;color:#fff;border-radius:6px;text-decoration:none;cursor:pointer}
+.back-btn{display:inline-block;margin-top:12px;padding:8px 16px;background:#6b7280;color:#fff;border-radius:6px;text-decoration:none}
+
+.note{font-size:13px;color:#666;margin-top:10px}
 
 footer{position:fixed;bottom:0;width:100%;background:#fff;border-top:1px solid #ddd;text-align:center;padding:10px;font-size:13px}
-footer a{margin:0 6px;color:#555;text-decoration:none;cursor:pointer}
-footer a:hover{text-decoration:underline}
+footer a{margin:0 6px;color:#555;cursor:pointer}
 </style>
 </head>
 
@@ -49,17 +51,8 @@ footer a:hover{text-decoration:underline}
 <div class="page">
 <div class="container">
 
-<h1>Free Online PDF, Word & Image Tools</h1>
-
-<p>
-iMasterPDF is a free online document processing platform that helps users convert,
-merge, split, rotate, lock, and unlock files securely without registration.
-</p>
-
-<p>
-All uploaded files are processed temporarily and deleted automatically to protect
-your privacy and data security.
-</p>
+<h1>Free Online PDF & Word Tools</h1>
+<p>Convert, merge, split, lock, unlock and extract files securely. No signup required.</p>
 
 <ins class="adsbygoogle" style="display:block;margin:12px 0"
 data-ad-client="ca-pub-XXXXXXXX"
@@ -69,15 +62,19 @@ data-ad-format="auto"></ins>
 <h2>Available Tools</h2>
 
 <div class="tools-grid">
-<div class="card"><h3>PDF to Word</h3><p>Convert PDF to editable Word.</p><a onclick="openTool('PDF to Word')">Use Tool</a></div>
-<div class="card"><h3>Merge PDF</h3><p>Combine multiple PDF files.</p><a onclick="openTool('Merge PDF')">Use Tool</a></div>
-<div class="card"><h3>Split PDF</h3><p>Split PDF into pages.</p><a onclick="openTool('Split PDF')">Use Tool</a></div>
-<div class="card"><h3>Rotate PDF</h3><p>Rotate PDF pages.</p><a onclick="openTool('Rotate PDF')">Use Tool</a></div>
-<div class="card"><h3>Lock PDF</h3><p>Password protect PDFs.</p><a onclick="openTool('Lock PDF')">Use Tool</a></div>
-<div class="card"><h3>Unlock PDF</h3><p>Remove PDF password.</p><a onclick="openTool('Unlock PDF')">Use Tool</a></div>
-<div class="card"><h3>Word to PDF</h3><p>Convert DOCX to PDF.</p><a onclick="openTool('Word to PDF')">Use Tool</a></div>
-<div class="card"><h3>Text to PDF</h3><p>Create PDF from text.</p><a onclick="openTool('Text to PDF')">Use Tool</a></div>
-<div class="card"><h3>Image to PDF</h3><p>Convert images to PDF.</p><a onclick="openTool('Image to PDF')">Use Tool</a></div>
+<div class="card"><h3>PDF to Word</h3><a onclick="openTool('PDF to Word')">Use Tool</a></div>
+<div class="card"><h3>Merge PDF</h3><a onclick="openTool('Merge PDF')">Use Tool</a></div>
+<div class="card"><h3>Split PDF</h3><a onclick="openTool('Split PDF')">Use Tool</a></div>
+<div class="card"><h3>Rotate PDF</h3><a onclick="openTool('Rotate PDF')">Use Tool</a></div>
+<div class="card"><h3>Lock PDF</h3><a onclick="openTool('Lock PDF')">Use Tool</a></div>
+<div class="card"><h3>Unlock PDF</h3><a onclick="openTool('Unlock PDF')">Use Tool</a></div>
+
+<div class="card"><h3>Word to PDF</h3><a onclick="openTool('Word to PDF')">Use Tool</a></div>
+<div class="card"><h3>Merge Word</h3><a onclick="openTool('Merge Word')">Use Tool</a></div>
+<div class="card"><h3>Word to Text</h3><a onclick="openTool('Word to Text')">Use Tool</a></div>
+
+<div class="card"><h3>Text to PDF</h3><a onclick="openTool('Text to PDF')">Use Tool</a></div>
+<div class="card"><h3>Image to PDF</h3><a onclick="openTool('Image to PDF')">Use Tool</a></div>
 </div>
 
 </div>
@@ -95,17 +92,18 @@ data-ad-format="auto"></ins>
 <input type="hidden" name="tool" id="toolInput">
 
 <div class="upload-box">
-<h3>Select your file</h3>
-<input type="file" name="file" required>
+<h3>Select File(s)</h3>
+<input type="file" name="file" id="fileInput" required>
+<p class="note">Max file size: 50 MB</p>
 </div>
 
-<button class="download-btn" type="submit">
-Convert & Download
-</button>
-
-<div>
-<a class="back-btn" onclick="goHome()">← Back to Tools</a>
+<div class="password-box" id="passwordBox">
+<input type="password" name="password" placeholder="Enter PDF password" required>
 </div>
+
+<button class="download-btn" type="submit">Convert & Download</button>
+
+<a class="back-btn" onclick="goHome()">← Back</a>
 
 </form>
 
@@ -115,19 +113,18 @@ Convert & Download
 <!-- PRIVACY -->
 <div class="page"><div class="container">
 <h1>Privacy Policy</h1>
-<p>Google AdSense may use cookies to personalize ads.</p>
-<p>Uploaded files are deleted automatically after processing.</p>
+<p>Files are processed temporarily and deleted automatically.</p>
 </div></div>
 
 <!-- TERMS -->
 <div class="page"><div class="container">
 <h1>Terms & Conditions</h1>
-<p>Tools are provided as-is. Users must use the service legally.</p>
+<p>Tools are provided as-is. Use responsibly.</p>
 </div></div>
 
 <!-- CONTACT -->
 <div class="page"><div class="container">
-<h1>Contact Us</h1>
+<h1>Contact</h1>
 <p>Email: support@imasterpdf.com</p>
 </div></div>
 
@@ -144,8 +141,24 @@ Convert & Download
 function openTool(name){
 document.getElementById("toolTitle").innerText = name;
 document.getElementById("toolDesc").innerText =
-"Upload your file and click convert to download.";
+"Upload your file(s) and click convert to download.";
+
 document.getElementById("toolInput").value = name;
+
+const fileInput = document.getElementById("fileInput");
+const passwordBox = document.getElementById("passwordBox");
+
+fileInput.multiple = false;
+passwordBox.style.display = "none";
+
+if(name.includes("Merge")){
+fileInput.multiple = true;
+}
+
+if(name === "Lock PDF" || name === "Unlock PDF"){
+passwordBox.style.display = "block";
+}
+
 goPage(2);
 }
 
