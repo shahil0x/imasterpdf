@@ -6,25 +6,54 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Free online PDF, Word, Text and Image tools. Convert, merge, split, rotate, lock and unlock files easily.">
 
+<!-- GOOGLE ADSENSE -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+crossorigin="anonymous"></script>
+
 <style>
-body{font-family:Arial;margin:0;background:#f5f7fb}
-nav{background:#fff;padding:15px;box-shadow:0 2px 10px rgba(0,0,0,.08);position:sticky;top:0}
-nav a{margin-right:15px;text-decoration:none;color:#2563eb;font-weight:600}
-.container{max-width:1100px;margin:auto;padding:30px}
-h1,h2{color:#1e293b}
-.card{background:#fff;padding:20px;margin-bottom:25px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
-input,textarea,select,button{width:100%;padding:10px;margin-top:8px}
-button{background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer}
-button:hover{background:#1d4ed8}
-.ads{background:#e5e7eb;padding:15px;text-align:center;margin:30px 0;border-radius:8px}
-footer{text-align:center;margin:40px 0;color:#475569;font-size:14px}
-section{margin-top:60px}
+body{margin:0;font-family:Inter,Arial;background:#f8fafc;color:#0f172a}
+header{background:#fff;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:10}
+nav{max-width:1200px;margin:auto;padding:15px;display:flex;justify-content:space-between}
+nav b{font-size:22px}
+nav a{text-decoration:none;margin-left:15px;color:#2563eb;font-weight:600}
+
+.hero{text-align:center;padding:60px 20px}
+.hero h1{font-size:34px}
+.hero p{color:#475569}
+
+.container{max-width:1200px;margin:auto;padding:20px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+
+.card{background:#fff;padding:25px;border-radius:12px;
+box-shadow:0 10px 25px rgba(0,0,0,.07);text-align:center}
+
+.card h3{margin:10px 0}
+.card p{font-size:14px;color:#64748b}
+.card input,.card select,.card textarea,.card button{
+width:100%;padding:10px;margin-top:8px}
+
+button{
+background:#ef4444;color:#fff;border:none;
+border-radius:6px;font-weight:600;cursor:pointer}
+
+button:hover{background:#dc2626}
+
+.ads{max-width:900px;margin:40px auto;text-align:center}
+
+footer{margin-top:60px;background:#fff;border-top:1px solid #e5e7eb}
+footer div{max-width:1200px;margin:auto;padding:25px;text-align:center}
+footer a{margin:0 10px;color:#2563eb;text-decoration:none}
+footer p{color:#64748b;font-size:14px}
+
+section{display:none}
+section.active{display:block}
 </style>
 
 <script>
 function show(id){
-  document.querySelectorAll("section").forEach(s=>s.style.display="none");
-  document.getElementById(id).style.display="block";
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
   window.scrollTo(0,0);
 }
 </script>
@@ -32,175 +61,197 @@ function show(id){
 
 <body>
 
+<header>
 <nav>
+<b>iMasterPDF</b>
+<div>
 <a href="#" onclick="show('home')">Home</a>
 <a href="#" onclick="show('tools')">Tools</a>
 <a href="#" onclick="show('privacy')">Privacy</a>
 <a href="#" onclick="show('terms')">Terms</a>
 <a href="#" onclick="show('contact')">Contact</a>
+</div>
 </nav>
-
-<div class="container">
+</header>
 
 <!-- HOME -->
-<section id="home">
-<h1>iMasterPDF – Free Online Document Tools</h1>
-<p>
-iMasterPDF provides free and easy-to-use tools for managing PDF, Word, Text, and Image files.
-No registration required. Files are processed securely and temporarily.
-</p>
+<section id="home" class="active">
+<div class="hero">
+<h1>Every tool you need to work with documents</h1>
+<p>PDF, Word, Text & Image tools — fast, free and secure</p>
+</div>
 
-<div class="ads">Advertisement (Google AdSense)</div>
+<div class="ads">
+<ins class="adsbygoogle" style="display:block"
+data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+data-ad-slot="1234567890"
+data-ad-format="auto"></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+</div>
 
+<div class="container">
 <h2>Why iMasterPDF?</h2>
 <ul>
-<li>✔ Free PDF and Word tools</li>
+<li>✔ Free online tools</li>
 <li>✔ Secure file processing</li>
-<li>✔ Simple and fast conversions</li>
+<li>✔ No registration required</li>
 <li>✔ Works on all devices</li>
 </ul>
-
 <button onclick="show('tools')">Start Using Tools</button>
+</div>
 </section>
 
 <!-- TOOLS -->
-<section id="tools" style="display:none">
+<section id="tools">
+<div class="container">
 
 <h2>📄 PDF Tools</h2>
+<div class="grid">
 
 <div class="card">
+<h3>PDF to Word</h3>
 <form action="/pdf-to-word" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
-<button>PDF → Word</button>
+<button>Convert</button>
 </form>
 </div>
 
 <div class="card">
+<h3>Merge PDF</h3>
 <form action="/merge-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="files" multiple required>
-<button>Merge PDF</button>
+<button>Merge</button>
 </form>
 </div>
 
 <div class="card">
+<h3>Split PDF</h3>
 <form action="/split-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
 <input name="start" placeholder="Start page">
 <input name="end" placeholder="End page">
-<button>Split PDF</button>
+<button>Split</button>
 </form>
 </div>
 
 <div class="card">
+<h3>Rotate PDF</h3>
 <form action="/rotate-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
 <select name="angle">
-<option value="90">Rotate 90°</option>
-<option value="180">Rotate 180°</option>
-<option value="270">Rotate 270°</option>
+<option value="90">90°</option>
+<option value="180">180°</option>
+<option value="270">270°</option>
 </select>
-<button>Rotate PDF</button>
+<button>Rotate</button>
 </form>
 </div>
 
 <div class="card">
+<h3>Lock PDF</h3>
 <form action="/lock-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
-<input name="password" placeholder="Set password" required>
-<button>Lock PDF</button>
+<input name="password" placeholder="Password" required>
+<button>Lock</button>
 </form>
 </div>
 
 <div class="card">
+<h3>Unlock PDF</h3>
 <form action="/unlock-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
-<input name="password" placeholder="PDF password" required>
-<button>Unlock PDF</button>
+<input name="password" placeholder="Password" required>
+<button>Unlock</button>
 </form>
 </div>
 
-<h2>📝 Word Tools</h2>
+</div>
+
+<h2 style="margin-top:40px">📝 Word, Text & Image Tools</h2>
+<div class="grid">
 
 <div class="card">
+<h3>Word to PDF</h3>
 <form action="/word-to-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
-<button>Word → PDF</button>
+<button>Convert</button>
 </form>
 </div>
 
 <div class="card">
+<h3>Merge Word</h3>
 <form action="/merge-word" method="post" enctype="multipart/form-data">
 <input type="file" name="files" multiple required>
-<button>Merge Word</button>
+<button>Merge</button>
 </form>
 </div>
 
 <div class="card">
+<h3>Word to Text</h3>
 <form action="/word-to-text" method="post" enctype="multipart/form-data">
 <input type="file" name="file" required>
-<button>Word → Text</button>
+<button>Convert</button>
 </form>
 </div>
 
-<h2>🧾 Text Tools</h2>
-
 <div class="card">
+<h3>Text to PDF</h3>
 <form action="/text-to-pdf" method="post">
-<textarea name="text" rows="4" placeholder="Enter text" required></textarea>
-<button>Text → PDF</button>
+<textarea name="text" rows="3" required></textarea>
+<button>Convert</button>
 </form>
 </div>
 
 <div class="card">
+<h3>Text to Word</h3>
 <form action="/text-to-word" method="post">
-<textarea name="text" rows="4" placeholder="Enter text" required></textarea>
-<button>Text → Word</button>
+<textarea name="text" rows="3" required></textarea>
+<button>Convert</button>
 </form>
 </div>
 
-<h2>🖼 Image Tools</h2>
-
 <div class="card">
+<h3>Image to PDF</h3>
 <form action="/image-to-pdf" method="post" enctype="multipart/form-data">
 <input type="file" name="images" multiple required>
-<button>Image → PDF</button>
+<button>Convert</button>
 </form>
 </div>
 
+</div>
+</div>
 </section>
 
 <!-- PRIVACY -->
-<section id="privacy" style="display:none">
+<section id="privacy">
+<div class="container">
 <h2>Privacy Policy</h2>
-<p>
-Your privacy is important to us. Uploaded files are processed temporarily and deleted automatically.
-We do not store or share files.
-</p>
-<p>
-Google AdSense and other third-party services may use cookies to show relevant ads.
-</p>
+<p>Files are processed temporarily and deleted automatically. We do not store or share your files.</p>
+<p>Google AdSense may use cookies to display relevant ads.</p>
+</div>
 </section>
 
 <!-- TERMS -->
-<section id="terms" style="display:none">
+<section id="terms">
+<div class="container">
 <h2>Terms & Conditions</h2>
-<p>
-iMasterPDF tools are provided “as is”. Users are responsible for the files they upload.
-We are not liable for data loss or damages.
-</p>
+<p>All tools are provided "as is". Users are responsible for uploaded files.</p>
+</div>
 </section>
 
 <!-- CONTACT -->
-<section id="contact" style="display:none">
-<h2>Contact Us</h2>
+<section id="contact">
+<div class="container">
+<h2>Contact</h2>
 <p>Email: <strong>contact@imasterpdf.com</strong></p>
-<p>For support or questions, contact us anytime.</p>
+</div>
 </section>
 
 <footer>
-© 2026 iMasterPDF • Secure Online Document Tools
+<div>
+<p>© 2026 iMasterPDF – Free Online Document Tools</p>
+</div>
 </footer>
 
-</div>
 </body>
 </html>
