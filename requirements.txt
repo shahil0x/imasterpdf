@@ -3,6 +3,5 @@ gunicorn
 PyPDF2
 python-docx
 Pillow
-pandas
-pdfplumber
 reportlab
+pdf2docx==0.5.6
