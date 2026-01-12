@@ -1,212 +1,697 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Meta & SEO -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iMasterPDF – Free Online PDF & Document Tools</title>
+  <meta name="description" content="iMasterPDF offers free online PDF and document tools: convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly." />
+  <meta name="keywords" content="PDF tools, Word to PDF, PDF to Word, Merge PDF, Rotate PDF, Lock PDF, Unlock PDF, Text to PDF, Image to PDF" />
+  <meta name="author" content="iMasterPDF" />
 
-<title>iMasterPDF – Free Online PDF Tools</title>
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
 
-<meta name="description" content="iMasterPDF provides free online tools to merge, split, lock, unlock PDFs and convert Word or Images to PDF.">
-<meta name="keywords" content="PDF tools, merge PDF, split PDF, lock PDF, unlock PDF, word to pdf">
-<meta name="author" content="iMasterPDF">
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-<!-- Google AdSense (activate after approval) -->
-<script async
-src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX"
-crossorigin="anonymous"></script>
+  <!-- Google AdSense (placeholder publisher ID) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
 
-<style>
-html {
-    scroll-behavior: smooth;
-}
+  <!-- Styles -->
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-600: #1d4ed8;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --shadow: 0 8px 24px rgba(0,0,0,0.08);
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
 
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
-    margin: 0;
-    padding: 0;
-}
+    /* Navbar */
+    .navbar {
+      position: sticky; top: 0; z-index: 1000;
+      background: rgba(255,255,255,0.9); backdrop-filter: saturate(180%) blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 18px; }
+    .brand .logo {
+      width: 36px; height: 36px; border-radius: 10px; background: #e0edff; color: var(--primary);
+      display: grid; place-items: center; font-size: 18px;
+    }
+    .tagline { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .nav-links { display: flex; gap: 18px; }
+    .nav-links a { padding: 8px 12px; border-radius: 10px; color: var(--text); font-weight: 500; }
+    .nav-links a.active, .nav-links a:hover { background: #f3f4f6; }
 
-header {
-    background: #ffffff;
-    padding: 15px 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
+    /* Hero */
+    .hero { text-align: center; padding: 40px 16px 24px; }
+    .hero h1 { font-size: 32px; margin: 0 0 8px; }
+    .hero p { color: var(--muted); margin: 0; }
 
-header h1 {
-    color: #2563eb;
-    margin: 0;
-}
+    /* Grid */
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 24px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 
-nav a {
-    margin-left: 20px;
-    text-decoration: none;
-    color: #2563eb;
-    font-weight: bold;
-}
+    /* Cards */
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 18px; display: flex; gap: 14px; align-items: flex-start;
+      transition: transform .15s ease, box-shadow .15s ease;
+      cursor: pointer;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
+    .card .icon {
+      width: 44px; height: 44px; border-radius: 12px; background: #eef2ff; color: var(--primary);
+      display: grid; place-items: center; font-size: 20px; flex-shrink: 0;
+    }
+    .card h3 { margin: 0; font-size: 16px; }
+    .card p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
 
-section {
-    padding: 30px 25px;
-}
+    /* Section headers */
+    .section-title { margin-top: 28px; margin-bottom: 10px; font-size: 18px; font-weight: 700; }
 
-h2 {
-    margin: 30px 0 15px;
-    color: #333;
-}
+    /* Tool page */
+    .tool-wrap { max-width: 820px; margin: 0 auto; }
+    .tool-header {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 18px; margin-top: 24px;
+    }
+    .tool-header h2 { margin: 0 0 6px; font-size: 22px; }
+    .tool-header p { margin: 0; color: var(--muted); }
 
-.tools {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
-}
+    .upload-area {
+      margin-top: 16px; border: 2px dashed #cbd5e1; border-radius: var(--radius);
+      padding: 24px; text-align: center; background: #f8fafc;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .upload-area.dragover { border-color: var(--primary); background: #eef2ff; }
+    .upload-area .hint { color: var(--muted); font-size: 13px; margin-top: 8px; }
 
-.card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
+    .controls { display: grid; gap: 12px; margin-top: 16px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
 
-.card h3 {
-    margin-bottom: 12px;
-}
+    .input, select, textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px;
+      background: #fff;
+    }
+    textarea { min-height: 120px; }
 
-input, textarea, select {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px;
+      border: 1px solid transparent; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer;
+      transition: background .15s ease, transform .15s ease;
+    }
+    .btn:hover { background: var(--primary-600); transform: translateY(-1px); }
+    .btn.secondary { background: #f3f4f6; color: var(--text); border-color: var(--border); }
+    .btn.secondary:hover { background: #e5e7eb; }
 
-textarea {
-    height: 80px;
-}
+    .progress {
+      margin-top: 12px; height: 8px; background: #e5e7eb; border-radius: 999px; overflow: hidden;
+    }
+    .progress > div { height: 100%; width: 0%; background: var(--primary); transition: width .2s ease; }
 
-button {
-    width: 100%;
-    padding: 10px;
-    background: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-}
+    .msg { margin-top: 10px; font-size: 13px; }
+    .msg.error { color: #b91c1c; }
+    .msg.success { color: #065f46; }
 
-button:hover {
-    background: #1e4fd6;
-}
+    /* Info pages */
+    .info {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 18px; margin-top: 24px;
+    }
+    .info h2 { margin: 0 0 8px; font-size: 22px; }
+    .info p, .info li { color: var(--muted); }
 
-.content-box {
-    background: #fff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    margin-bottom: 30px;
-}
+    /* Footer */
+    footer {
+      margin-top: 40px; border-top: 1px solid var(--border); background: #fafafa;
+    }
+    .footer-inner { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 18px; padding: 18px 24px; }
+    @media (max-width: 800px) { .footer-inner { grid-template-columns: 1fr; } }
+    .footer-inner h4 { margin: 0 0 8px; font-size: 14px; }
+    .footer-inner a { color: var(--muted); font-size: 13px; }
+    .copyright { text-align: center; color: var(--muted); font-size: 12px; padding: 12px 0 18px; }
 
-footer {
-    text-align: center;
-    padding: 20px;
-    color: #555;
-    background: #fff;
-}
-</style>
+    /* Ad placement (non-intrusive) */
+    .ad-slot {
+      margin: 18px auto; max-width: 728px; min-height: 90px; display: grid; place-items: center;
+      border: 1px dashed #e5e7eb; border-radius: 12px; color: var(--muted); font-size: 12px;
+    }
+  </style>
 </head>
-
 <body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner container">
+      <div class="brand">
+        <div class="logo"><i class="fa-solid fa-file-pdf"></i></div>
+        <div>
+          iMasterPDF
+          <div class="tagline">Free Online PDF & Document Tools</div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="/" data-link>Home</a>
+        <a href="/" data-link>Tools</a>
+        <a href="/about" data-link>About</a>
+        <a href="/privacy" data-link>Privacy Policy</a>
+        <a href="/terms" data-link>Terms</a>
+      </div>
+    </div>
+  </nav>
 
-<header>
-    <h1>iMasterPDF</h1>
-    <nav>
-        <a href="#tools">Tools</a>
-        <a href="#about">About</a>
-        <a href="#privacy">Privacy</a>
-        <a href="#terms">Terms</a>
-    </nav>
-</header>
+  <!-- Hero -->
+  <section class="hero container" id="hero">
+    <h1>iMasterPDF – Free Online Document Tools</h1>
+    <p>Convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly.</p>
+  </section>
 
-<!-- ================= TOOLS SECTION ================= -->
-<section id="tools">
-<h2>📄 PDF Tools</h2>
+  <!-- Ad (non-intrusive, below hero) -->
+  <div class="ad-slot container">
+    <!-- Example AdSense slot placeholder -->
+    <span>Ad space (728×90) — Google AdSense</span>
+  </div>
 
-<div class="tools">
-    <div class="card"><h3>Merge PDF</h3><input type="file" multiple><button>Merge PDF</button></div>
-    <div class="card"><h3>Split PDF</h3><input type="file"><input type="number" placeholder="Start Page"><input type="number" placeholder="End Page"><button>Split PDF</button></div>
-    <div class="card"><h3>Rotate PDF</h3><input type="file"><select><option>90°</option><option>180°</option><option>270°</option></select><button>Rotate PDF</button></div>
-    <div class="card"><h3>Delete Pages</h3><input type="file"><input type="text" placeholder="e.g. 2,4,6"><button>Delete Pages</button></div>
-    <div class="card"><h3>🔒 Lock PDF</h3><input type="file"><input type="password" maxlength="4" placeholder="4-digit PIN"><button>Lock PDF</button></div>
-    <div class="card"><h3>🔓 Unlock PDF</h3><input type="file"><input type="password" placeholder="Password"><button>Unlock PDF</button></div>
-</div>
+  <!-- Home / Tools Grid -->
+  <section class="container" id="home">
+    <div class="section-title">PDF Tools</div>
+    <div class="grid">
+      <div class="card" data-tool="pdf_to_word">
+        <div class="icon"><i class="fa-solid fa-file-word"></i></div>
+        <div>
+          <h3>PDF to Word</h3>
+          <p>Convert PDF into editable DOCX.</p>
+        </div>
+      </div>
+      <div class="card" data-tool="merge_pdf">
+        <div class="icon"><i class="fa-solid fa-layer-group"></i></div>
+        <div>
+          <h3>Merge PDF</h3>
+          <p>Combine multiple PDFs into one.</p>
+        </div>
+      </div>
+      <div class="card" data-tool="rotate_pdf">
+        <div class="icon"><i class="fa-solid fa-rotate-right"></i></div>
+        <div>
+          <h3>Rotate PDF</h3>
+          <p>Rotate pages by 90°, 180°, or 270°.</p>
+        </div>
+      </div>
+      <div class="card" data-tool="delete_pages_pdf">
+        <div class="icon"><i class="fa-solid fa-scissors"></i></div>
+        <div>
+          <h3>Delete Pages in PDF</h3>
+          <p>Remove selected pages from a PDF.</p>
+        </div>
+      </div>
+      <div class="card" data-tool="lock_pdf">
+        <div class="icon"><i class="fa-solid fa-lock"></i></div>
+        <div>
+          <h3>Lock PDF (PIN)</h3>
+          <p>Protect PDF with a 4-digit PIN.</p>
+        </div>
+      </div>
+      <div class="card" data-tool="unlock_pdf">
+        <div class="icon"><i class="fa-solid fa-lock-open"></i></div>
+        <div>
+          <h3>Unlock PDF</h3>
+          <p>Remove password protection.</p>
+        </div>
+      </div>
+    </div>
 
-<h2>🖼️ Image Tools</h2>
-<div class="tools">
-    <div class="card"><h3>Image → PDF</h3><input type="file" multiple><button>Convert to PDF</button></div>
-</div>
+    <div class="section-title">Word Tools</div>
+    <div class="grid">
+      <div class="card" data-tool="word_to_pdf">
+        <div class="icon"><i class="fa-solid fa-file-pdf"></i></div>
+        <div>
+          <h3>Word to PDF</h3>
+          <p>Convert DOCX/DOC to PDF.</p>
+        </div>
+      </div>
+      <div class="card" data-tool="merge_word">
+        <div class="icon"><i class="fa-solid fa-object-group"></i></div>
+        <div>
+          <h3>Merge Word</h3>
+          <p>Combine multiple Word documents.</p>
+        </div>
+      </div>
+      <div class="card" data-tool="word_to_text">
+        <div class="icon"><i class="fa-solid fa-file-lines"></i></div>
+        <div>
+          <h3>Word to Text</h3>
+          <p>Extract text from Word files.</p>
+        </div>
+      </div>
+    </div>
 
-<h2>📝 Word Tools</h2>
-<div class="tools">
-    <div class="card"><h3>Word → Text</h3><input type="file"><button>Extract Text</button></div>
-    <div class="card"><h3>Word → PDF</h3><input type="file"><button>Convert to PDF</button></div>
-</div>
+    <div class="section-title">Text Tools</div>
+    <div class="grid">
+      <div class="card" data-tool="text_to_pdf">
+        <div class="icon"><i class="fa-solid fa-file-pdf"></i></div>
+        <div>
+          <h3>Text to PDF</h3>
+          <p>Convert plain text to PDF.</p>
+        </div>
+      </div>
+      <div class="card" data-tool="text_to_word">
+        <div class="icon"><i class="fa-solid fa-file-word"></i></div>
+        <div>
+          <h3>Text to Word</h3>
+          <p>Create a Word document from text.</p>
+        </div>
+      </div>
+    </div>
 
-<h2>✏️ Text Tools</h2>
-<div class="tools">
-    <div class="card"><h3>Text → PDF</h3><textarea placeholder="Enter text..."></textarea><button>Create PDF</button></div>
-</div>
-</section>
+    <div class="section-title">Image Tools</div>
+    <div class="grid">
+      <div class="card" data-tool="images_to_pdf">
+        <div class="icon"><i class="fa-solid fa-image"></i></div>
+        <div>
+          <h3>Images to PDF</h3>
+          <p>Convert JPG, PNG, WEBP, BMP, TIFF to PDF.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- ================= CONTENT SECTION ================= -->
-<section id="about">
-<div class="content-box">
-<h2>About iMasterPDF</h2>
-<p>
-iMasterPDF is a free online platform designed to help users manage PDF documents easily.
-Our tools allow users to merge, split, rotate, lock, unlock PDFs and convert Word or Image files to PDF.
-</p>
-</div>
-</section>
+  <!-- Tool Action Page -->
+  <section class="container tool-wrap" id="tool" style="display:none;">
+    <div class="tool-header">
+      <h2 id="tool-title">Tool</h2>
+      <p id="tool-desc">Description</p>
+    </div>
 
-<section id="privacy">
-<div class="content-box">
-<h2>Privacy Policy</h2>
-<p>
-We respect your privacy. Uploaded files are processed automatically and deleted shortly after conversion.
-We do not store, share, or analyze user documents.
-</p>
-</div>
-</section>
+    <div class="upload-area" id="upload-area">
+      <input type="file" id="file-input" multiple style="display:none;" />
+      <button class="btn" id="browse-btn"><i class="fa-solid fa-upload"></i> Browse files</button>
+      <div class="hint">Drag & drop files here or click “Browse files”. Min 1 KB, Max 50 MB per file.</div>
+      <div id="selected-files" class="hint" style="margin-top:8px;"></div>
+    </div>
 
-<section id="terms">
-<div class="content-box">
-<h2>Terms of Service</h2>
-<p>
-By using iMasterPDF, you agree that all services are provided "as is".
-We are not responsible for any data loss. Users are advised to keep backup copies of their files.
-</p>
+    <div class="controls" id="tool-controls">
+      <!-- Dynamic controls injected here -->
+    </div>
 
-<h3>Google AdSense Requirements Covered</h3>
-<ul>
-<li>Clear website name and purpose</li>
-<li>Useful content beyond tools</li>
-<li>Privacy Policy</li>
-<li>Terms of Service</li>
-<li>Clean navigation structure</li>
-<li>No misleading or fake content</li>
-</ul>
-</div>
-</section>
+    <div class="row">
+      <button class="btn" id="convert-btn"><i class="fa-solid fa-wand-magic-sparkles"></i> Convert</button>
+      <button class="btn secondary" id="reset-btn"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+    </div>
 
-<footer>
-© 2026 iMasterPDF – Free Online PDF Tools
-</footer>
+    <div class="progress" id="progress" style="display:none;">
+      <div id="progress-bar"></div>
+    </div>
 
+    <div class="msg" id="message"></div>
+
+    <!-- Ad (non-intrusive, below tool controls) -->
+    <div class="ad-slot">
+      <span>Ad space (728×90) — Google AdSense</span>
+    </div>
+  </section>
+
+  <!-- Info Pages -->
+  <section class="container info" id="about" style="display:none;">
+    <h2>About iMasterPDF</h2>
+    <p>iMasterPDF provides free, fast, and secure online tools to manage your documents. Our mission is to make everyday document tasks effortless—convert, merge, rotate, lock, unlock, and more—without installing software.</p>
+    <p>We prioritize privacy and performance. Files are processed automatically and deleted after conversion. No human reviews your documents, and we do not share data with third parties.</p>
+    <p>Contact us: <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+  </section>
+
+  <section class="container info" id="privacy" style="display:none;">
+    <h2>Privacy Policy</h2>
+    <p><strong>File Handling:</strong> Uploaded files are processed automatically and deleted after conversion. Temporary files are cleaned regularly. No human access to documents.</p>
+    <p><strong>Data Sharing:</strong> We do not sell, share, or disclose your files or personal data to third parties.</p>
+    <p><strong>Cookies & Analytics:</strong> We may use basic analytics and cookies to improve performance and usability. Ads are placed non-intrusively.</p>
+    <p><strong>Security:</strong> We use secure server-side handling and limit file sizes to ensure reliability.</p>
+    <p>For questions, contact: <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+  </section>
+
+  <section class="container info" id="terms" style="display:none;">
+    <h2>Terms of Service</h2>
+    <ul>
+      <li><strong>Use of Service:</strong> You agree to use iMasterPDF for lawful purposes only.</li>
+      <li><strong>Availability:</strong> We strive for high uptime but do not guarantee uninterrupted service.</li>
+      <li><strong>Liability:</strong> iMasterPDF is provided “as is” without warranties. We are not liable for data loss or damages.</li>
+      <li><strong>Content:</strong> You retain ownership of your files. We process them automatically and delete them after conversion.</li>
+      <li><strong>Changes:</strong> Terms may be updated periodically. Continued use indicates acceptance.</li>
+    </ul>
+    <p>Contact: <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner container">
+      <div>
+        <h4>iMasterPDF</h4>
+        <p class="tagline">Free Online PDF & Document Tools</p>
+        <p class="tagline">Fast, secure, and mobile-friendly.</p>
+      </div>
+      <div>
+        <h4>Links</h4>
+        <p><a href="/" data-link>Home</a></p>
+        <p><a href="/" data-link>Tools</a></p>
+        <p><a href="/about" data-link>About</a></p>
+        <p><a href="/privacy" data-link>Privacy Policy</a></p>
+        <p><a href="/terms" data-link>Terms</a></p>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <p><a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+      </div>
+    </div>
+    <div class="copyright">© <span id="year"></span> iMasterPDF. All rights reserved.</div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // SPA-like navigation for a single index.html
+    const routes = {
+      '/': () => showSection('home'),
+      '/about': () => showSection('about'),
+      '/privacy': () => showSection('privacy'),
+      '/terms': () => showSection('terms'),
+      '/tool': () => showSection('tool'),
+    };
+
+    const toolMap = {
+      pdf_to_word: { title: 'PDF to Word', desc: 'Convert PDF into editable DOCX.', endpoint: '/api/pdf-to-word', multiple: false },
+      merge_pdf: { title: 'Merge PDF', desc: 'Combine multiple PDFs into one.', endpoint: '/api/merge-pdf', multiple: true },
+      rotate_pdf: { title: 'Rotate PDF', desc: 'Rotate pages by 90°, 180°, or 270°.', endpoint: '/api/rotate-pdf', multiple: false },
+      delete_pages_pdf: { title: 'Delete Pages in PDF', desc: 'Remove selected pages from a PDF.', endpoint: '/api/delete-pages-pdf', multiple: false },
+      lock_pdf: { title: 'Lock PDF (PIN)', desc: 'Protect PDF with a 4-digit PIN.', endpoint: '/api/lock-pdf', multiple: false },
+      unlock_pdf: { title: 'Unlock PDF', desc: 'Remove password protection.', endpoint: '/api/unlock-pdf', multiple: false },
+      word_to_pdf: { title: 'Word to PDF', desc: 'Convert DOCX/DOC to PDF.', endpoint: '/api/word-to-pdf', multiple: false },
+      merge_word: { title: 'Merge Word', desc: 'Combine multiple Word documents.', endpoint: '/api/merge-word', multiple: true },
+      word_to_text: { title: 'Word to Text', desc: 'Extract text from Word files.', endpoint: '/api/word-to-text', multiple: false },
+      text_to_pdf: { title: 'Text to PDF', desc: 'Convert plain text to PDF.', endpoint: '/api/text-to-pdf', multiple: false },
+      text_to_word: { title: 'Text to Word', desc: 'Create a Word document from text.', endpoint: '/api/text-to-word', multiple: false },
+      images_to_pdf: { title: 'Images to PDF', desc: 'Convert JPG, PNG, WEBP, BMP, TIFF to PDF.', endpoint: '/api/images-to-pdf', multiple: true },
+    };
+
+    const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+    const MIN_SIZE = 1 * 1024; // 1 KB
+
+    const hero = document.getElementById('hero');
+    const home = document.getElementById('home');
+    const toolSection = document.getElementById('tool');
+    const about = document.getElementById('about');
+    const privacy = document.getElementById('privacy');
+    const terms = document.getElementById('terms');
+    const navLinks = document.querySelectorAll('.nav-links a[data-link]');
+    const yearEl = document.getElementById('year');
+    yearEl.textContent = new Date().getFullYear();
+
+    function showSection(id) {
+      // Hide all
+      [hero, home, toolSection, about, privacy, terms].forEach(el => el.style.display = 'none');
+      // Show selected
+      if (id === 'home') { hero.style.display = 'block'; home.style.display = 'block'; }
+      else if (id === 'tool') { toolSection.style.display = 'block'; }
+      else if (id === 'about') { about.style.display = 'block'; }
+      else if (id === 'privacy') { privacy.style.display = 'block'; }
+      else if (id === 'terms') { terms.style.display = 'block'; }
+      // Active link
+      navLinks.forEach(a => {
+        const path = new URL(a.href, location.origin).pathname;
+        a.classList.toggle('active', (id === 'home' && path === '/') || path === `/${id}`);
+      });
+    }
+
+    // Client-side router
+    function navigate(path) {
+      history.pushState({}, '', path);
+      (routes[path] || routes['/'])();
+    }
+    window.addEventListener('popstate', () => {
+      const path = location.pathname;
+      (routes[path] || routes['/'])();
+    });
+    navLinks.forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigate(new URL(a.href, location.origin).pathname);
+      });
+    });
+
+    // Tool cards → navigate to tool page with query ?tool=...
+    document.querySelectorAll('.card[data-tool]').forEach(card => {
+      card.addEventListener('click', () => {
+        const toolKey = card.getAttribute('data-tool');
+        const url = `/tool?tool=${encodeURIComponent(toolKey)}`;
+        navigate(url);
+        initTool(toolKey);
+      });
+    });
+
+    // Initialize tool page
+    const toolTitle = document.getElementById('tool-title');
+    const toolDesc = document.getElementById('tool-desc');
+    const fileInput = document.getElementById('file-input');
+    const browseBtn = document.getElementById('browse-btn');
+    const uploadArea = document.getElementById('upload-area');
+    const selectedFilesEl = document.getElementById('selected-files');
+    const controls = document.getElementById('tool-controls');
+    const convertBtn = document.getElementById('convert-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const progress = document.getElementById('progress');
+    const progressBar = document.getElementById('progress-bar');
+    const message = document.getElementById('message');
+
+    let currentTool = null;
+
+    function initTool(toolKey) {
+      const tool = toolMap[toolKey];
+      if (!tool) { navigate('/'); return; }
+      currentTool = toolKey;
+      showSection('tool');
+      toolTitle.textContent = tool.title;
+      toolDesc.textContent = tool.desc;
+      fileInput.value = '';
+      fileInput.multiple = !!tool.multiple;
+      selectedFilesEl.textContent = '';
+      message.textContent = '';
+      progress.style.display = 'none';
+      progressBar.style.width = '0%';
+      controls.innerHTML = '';
+
+      // Inject dynamic controls per tool
+      if (toolKey === 'rotate_pdf') {
+        controls.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Rotation (degrees)</label>
+              <select id="rotation" class="input">
+                <option value="90">90°</option>
+                <option value="180">180°</option>
+                <option value="270">270°</option>
+              </select>
+            </div>
+            <div>
+              <label>Rotate all pages</label>
+              <select id="rotate_all" class="input">
+                <option value="true">Yes</option>
+                <option value="false">No (first page only)</option>
+              </select>
+            </div>
+          </div>
+        `;
+      } else if (toolKey === 'delete_pages_pdf') {
+        controls.innerHTML = `
+          <div>
+            <label>Pages to delete (comma-separated, e.g., 1,3,5)</label>
+            <input id="pages" class="input" placeholder="e.g., 2,4-6 (ranges supported)" />
+          </div>
+        `;
+      } else if (toolKey === 'lock_pdf') {
+        controls.innerHTML = `
+          <div>
+            <label>4-digit PIN</label>
+            <input id="pin" class="input" maxlength="4" placeholder="e.g., 1234" />
+          </div>
+        `;
+      } else if (toolKey === 'unlock_pdf') {
+        controls.innerHTML = `
+          <div>
+            <label>Password/PIN</label>
+            <input id="password" class="input" placeholder="Enter password" />
+          </div>
+        `;
+      } else if (toolKey === 'text_to_pdf' || toolKey === 'text_to_word') {
+        controls.innerHTML = `
+          <div>
+            <label>Text content</label>
+            <textarea id="text_content" class="input" placeholder="Paste or type your text here..."></textarea>
+          </div>
+        `;
+      }
+    }
+
+    // Drag & drop
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      fileInput.files = e.dataTransfer.files;
+      showSelectedFiles();
+    });
+
+    browseBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', showSelectedFiles);
+
+    function showSelectedFiles() {
+      const files = Array.from(fileInput.files || []);
+      if (!files.length) { selectedFilesEl.textContent = ''; return; }
+      const list = files.map(f => `${f.name} (${formatBytes(f.size)})`).join(' • ');
+      selectedFilesEl.textContent = list;
+    }
+
+    function formatBytes(bytes) {
+      const sizes = ['B','KB','MB','GB'];
+      if (bytes === 0) return '0 B';
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function validateFiles() {
+      const files = Array.from(fileInput.files || []);
+      if (!files.length && !(currentTool === 'text_to_pdf' || currentTool === 'text_to_word')) {
+        showMessage('Please select at least one file.', true); return false;
+      }
+      for (const f of files) {
+        if (f.size < MIN_SIZE) { showMessage(`File ${f.name} is too small (min 1 KB).`, true); return false; }
+        if (f.size > MAX_SIZE) { showMessage(`File ${f.name} exceeds 50 MB.`, true); return false; }
+      }
+      if (currentTool === 'lock_pdf') {
+        const pin = document.getElementById('pin').value.trim();
+        if (!/^\d{4}$/.test(pin)) { showMessage('PIN must be exactly 4 digits.', true); return false; }
+      }
+      if (currentTool === 'unlock_pdf') {
+        const pwd = document.getElementById('password').value.trim();
+        if (!pwd) { showMessage('Please enter the password.', true); return false; }
+      }
+      if (currentTool === 'delete_pages_pdf') {
+        const pages = document.getElementById('pages').value.trim();
+        if (!pages) { showMessage('Please enter pages to delete.', true); return false; }
+      }
+      if ((currentTool === 'text_to_pdf' || currentTool === 'text_to_word')) {
+        const text = document.getElementById('text_content').value.trim();
+        if (!text) { showMessage('Please enter text content.', true); return false; }
+      }
+      return true;
+    }
+
+    function showMessage(msg, isError=false) {
+      message.textContent = msg;
+      message.className = 'msg ' + (isError ? 'error' : 'success');
+    }
+
+    function setProgress(p) {
+      progress.style.display = 'block';
+      progressBar.style.width = `${Math.min(100, Math.max(0, p))}%`;
+    }
+
+    convertBtn.addEventListener('click', async () => {
+      if (!currentTool) return;
+      if (!validateFiles()) return;
+
+      const tool = toolMap[currentTool];
+      const form = new FormData();
+
+      // Attach files if needed
+      const files = Array.from(fileInput.files || []);
+      if (files.length) {
+        for (const f of files) form.append('files', f);
+      }
+
+      // Attach extra fields
+      if (currentTool === 'rotate_pdf') {
+        form.append('rotation', document.getElementById('rotation').value);
+        form.append('rotate_all', document.getElementById('rotate_all').value);
+      } else if (currentTool === 'delete_pages_pdf') {
+        form.append('pages', document.getElementById('pages').value.trim());
+      } else if (currentTool === 'lock_pdf') {
+        form.append('pin', document.getElementById('pin').value.trim());
+      } else if (currentTool === 'unlock_pdf') {
+        form.append('password', document.getElementById('password').value.trim());
+      } else if (currentTool === 'text_to_pdf' || currentTool === 'text_to_word') {
+        form.append('text', document.getElementById('text_content').value.trim());
+      }
+
+      try {
+        showMessage('Starting conversion...');
+        setProgress(10);
+        const res = await fetch(tool.endpoint, { method: 'POST', body: form });
+        setProgress(60);
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || 'Conversion failed.');
+        }
+        const blob = await res.blob();
+        setProgress(90);
+        const disposition = res.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        const filename = match ? match[1] : `output_${Date.now()}`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+        a.remove(); URL.revokeObjectURL(url);
+        setProgress(100);
+        showMessage('Conversion complete. Your download should start automatically.');
+      } catch (err) {
+        showMessage(err.message || 'An error occurred.', true);
+        progress.style.display = 'none';
+        progressBar.style.width = '0%';
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      selectedFilesEl.textContent = '';
+      message.textContent = '';
+      message.className = 'msg';
+      progress.style.display = 'none';
+      progressBar.style.width = '0%';
+      // Clear text fields if present
+      const textEl = document.getElementById('text_content');
+      if (textEl) textEl.value = '';
+      const pagesEl = document.getElementById('pages');
+      if (pagesEl) pagesEl.value = '';
+      const pinEl = document.getElementById('pin');
+      if (pinEl) pinEl.value = '';
+      const pwdEl = document.getElementById('password');
+      if (pwdEl) pwdEl.value = '';
+    });
+
+    // Initial route
+    (function init() {
+      const path = location.pathname;
+      const params = new URLSearchParams(location.search);
+      if (path === '/tool' && params.get('tool')) {
+        initTool(params.get('tool'));
+      } else {
+        (routes[path] || routes['/'])();
+      }
+    })();
+  </script>
 </body>
 </html>
