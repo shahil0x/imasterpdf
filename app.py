@@ -32,15 +32,21 @@ def home():
 def process():
     tool = request.form.get("tool")
     password = request.form.get("password")
+    text_input = request.form.get("text")
     files = request.files.getlist("file")
 
-    if not tool or not files:
+    if not tool:
         return "Invalid request", 400
 
+    if tool != "Text to PDF" and (not files or files[0].filename == ""):
+        return "No file uploaded", 400
+
     # save first file
-    input_file = files[0]
-    input_path = os.path.join(UPLOAD, uid(input_file.filename.split(".")[-1]))
-    input_file.save(input_path)
+    input_path = None
+    if files and files[0].filename != "":
+        input_file = files[0]
+        input_path = os.path.join(UPLOAD, uid(input_file.filename.split(".")[-1]))
+        input_file.save(input_path)
 
     # ===== PDF TO WORD =====
     if tool == "PDF to Word":
@@ -131,9 +137,11 @@ def process():
     if tool == "Merge Word":
         final = Document()
         for f in files:
-            d = Document(f)
-            for p in d.paragraphs:
-                final.add_paragraph(p.text)
+            p = os.path.join(UPLOAD, uid("docx"))
+            f.save(p)
+            d = Document(p)
+            for para in d.paragraphs:
+                final.add_paragraph(para.text)
         out = os.path.join(OUTPUT, uid("docx"))
         final.save(out)
         return send_file(out, as_attachment=True)
@@ -149,11 +157,10 @@ def process():
 
     # ===== TEXT TO PDF =====
     if tool == "Text to PDF":
-        text = request.form.get("text", "")
         out = os.path.join(OUTPUT, uid("pdf"))
         c = canvas.Canvas(out)
         y = 800
-        for line in text.split("\n"):
+        for line in (text_input or "").split("\n"):
             c.drawString(40, y, line)
             y -= 15
         c.save()
@@ -161,7 +168,9 @@ def process():
 
     # ===== IMAGE TO PDF =====
     if tool == "Image to PDF":
-        imgs = [Image.open(f).convert("RGB") for f in files]
+        imgs = []
+        for f in files:
+            imgs.append(Image.open(f).convert("RGB"))
         out = os.path.join(OUTPUT, uid("pdf"))
         imgs[0].save(out, save_all=True, append_images=imgs[1:])
         return send_file(out, as_attachment=True)
@@ -170,4 +179,4 @@ def process():
 
 # ---------- RUN ----------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)

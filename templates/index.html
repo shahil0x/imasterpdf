@@ -1,173 +1,703 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>iMasterPDF – Free Online PDF & Word Tools</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Free online PDF and Word tools. Convert, merge, split, lock, unlock, and extract text securely without registration.">
-
-<!-- Google AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX"
-crossorigin="anonymous"></script>
-
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#222;height:100vh;overflow:hidden}
-header{position:fixed;top:0;width:100%;background:#fff;border-bottom:1px solid #ddd;z-index:100}
-nav{max-width:1200px;margin:auto;padding:14px;font-size:22px;font-weight:bold}
-main{height:calc(100vh - 60px);margin-top:60px;display:flex;transition:transform .4s ease}
-.page{min-width:100%;height:100%;overflow-y:auto;padding:14px}
-.container{max-width:1200px;margin:auto}
-h1,h2,h3{margin:10px 0}
-p{line-height:1.6;color:#444;font-size:15px}
-
-.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-.card{background:#fff;padding:18px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.08);text-align:center}
-.card a{display:inline-block;margin-top:10px;padding:8px 16px;background:#ef4444;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;cursor:pointer}
-
-.upload-area{background:#fff;padding:24px;border-radius:12px;max-width:800px;margin:auto;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.upload-box{border:3px dashed #ddd;border-radius:10px;padding:24px;text-align:center}
-.upload-box input{margin-top:10px}
-.password-box{margin-top:14px;display:none}
-.password-box input{padding:10px;width:100%;max-width:320px}
-
-.download-btn{margin-top:16px;padding:12px 26px;background:#10b981;color:#fff;border-radius:6px;font-weight:bold;border:none;cursor:pointer}
-.back-btn{display:inline-block;margin-top:12px;padding:8px 16px;background:#6b7280;color:#fff;border-radius:6px;text-decoration:none}
-
-.note{font-size:13px;color:#666;margin-top:10px}
-
-footer{position:fixed;bottom:0;width:100%;background:#fff;border-top:1px solid #ddd;text-align:center;padding:10px;font-size:13px}
-footer a{margin:0 6px;color:#555;cursor:pointer}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMasterPDF - Free Online PDF & Word Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #e74c3c;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 8px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 25px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #e74c3c;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+            margin-bottom: 40px;
+        }
+        
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 25px;
+            opacity: 0.9;
+        }
+        
+        .tagline {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 10px 25px;
+            display: inline-block;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .tools-section {
+            padding: 20px 0 60px;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2c3e50;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        
+        .tool-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid #eee;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tool-icon {
+            font-size: 40px;
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        
+        .tool-card h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .tool-card p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .content-area {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            margin-top: 30px;
+            min-height: 500px;
+        }
+        
+        .tool-interface {
+            display: none;
+        }
+        
+        .active-interface {
+            display: block;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 30px 0;
+            transition: border-color 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: #e74c3c;
+        }
+        
+        .upload-area i {
+            font-size: 60px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        
+        .upload-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        
+        .upload-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .file-info {
+            font-size: 14px;
+            color: #777;
+            margin-top: 15px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-secondary {
+            background-color: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+        }
+        
+        .policy-content, .about-content, .contact-content {
+            display: none;
+        }
+        
+        .policy-content h1, .about-content h1, .contact-content h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .policy-content h2, .about-content h2, .contact-content h2 {
+            color: #34495e;
+            margin: 25px 0 15px;
+        }
+        
+        .policy-content p, .about-content p, .contact-content p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 40px 0 20px;
+            margin-top: 60px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #e74c3c;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #34495e;
+            color: #95a5a6;
+            font-size: 14px;
+        }
+        
+        .cookie-notice {
+            background-color: #f8f9fa;
+            border-top: 1px solid #ddd;
+            padding: 15px 20px;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 100;
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .nav-links {
+                margin-top: 20px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-links li {
+                margin: 5px 15px;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-area {
+                padding: 25px;
+            }
+        }
+    </style>
 </head>
-
 <body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo"><i class="fas fa-file-pdf"></i> iMasterPDF</a>
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link" data-target="tools">Tools</a></li>
+                    <li><a href="#" class="nav-link" data-target="privacy">Privacy Policy</a></li>
+                    <li><a href="#" class="nav-link" data-target="terms">Terms & Conditions</a></li>
+                    <li><a href="#" class="nav-link" data-target="about">About</a></li>
+                    <li><a href="#" class="nav-link" data-target="contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
-<header><nav>iMasterPDF</nav></header>
+    <section class="hero">
+        <div class="container">
+            <h1>Free Online PDF & Word Tools</h1>
+            <p>Convert, merge, split, lock, unlock and extract files securely. No signup required.</p>
+            <div class="tagline">100% Free • No Registration • Secure Processing</div>
+        </div>
+    </section>
 
-<main id="main">
+    <div class="container">
+        <section class="tools-section">
+            <h2 class="section-title">Available Tools</h2>
+            
+            <div class="tools-grid" id="tools-grid">
+                <!-- Tools will be generated by JavaScript -->
+            </div>
+            
+            <div class="content-area">
+                <div class="tool-interface active-interface" id="default-interface">
+                    <h2 style="text-align: center; color: #2c3e50;">Select a Tool to Get Started</h2>
+                    <p style="text-align: center; color: #666; max-width: 600px; margin: 20px auto;">Click on any tool above to start converting, merging, splitting, or modifying your PDF and Word documents. All tools are completely free with no registration required.</p>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <i class="fas fa-file-alt" style="font-size: 80px; color: #e74c3c; opacity: 0.7;"></i>
+                    </div>
+                </div>
+                
+                <!-- PDF to Word Interface -->
+                <div class="tool-interface" id="pdf-to-word-interface">
+                    <h1>PDF to Word</h1>
+                    <p>Upload your file(s) and click convert to download.</p>
+                    <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+                    
+                    <div class="upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Select File(s)</h3>
+                        <p>Drag and drop your PDF files here or click to browse</p>
+                        <button class="upload-btn">Choose File</button>
+                        <p class="file-info">No file chosen | Max file size: 50 MB</p>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Convert & Download</button>
+                        <button class="btn btn-secondary back-to-tools">Back to Tools</button>
+                    </div>
+                </div>
+                
+                <!-- Privacy Policy -->
+                <div class="policy-content" id="privacy-content">
+                    <h1>Privacy Policy</h1>
+                    <p>At iMasterPDF, your privacy is important to us. This Privacy Policy explains how we handle information when you use our website.</p>
+                    
+                    <h2>Information We Collect</h2>
+                    <p>We do not collect personal information such as name, email address, or phone number. Uploaded files are processed temporarily and are automatically deleted from our servers after processing.</p>
+                    
+                    <h2>Cookies</h2>
+                    <p>We use cookies to improve user experience and to display advertisements through Google AdSense. Google may use cookies such as the DoubleClick cookie to serve ads based on your visits to this and other websites.</p>
+                    
+                    <h2>Google AdSense</h2>
+                    <p>Google AdSense uses cookies to show ads to users. Users may opt out of personalized advertising by visiting Google Ads Settings.</p>
+                    
+                    <h2>Third-Party Privacy Policies</h2>
+                    <p>iMasterPDF's Privacy Policy does not apply to other advertisers or websites. Please review their policies for more information.</p>
+                    
+                    <h2>Consent</h2>
+                    <p>By using our website, you consent to this Privacy Policy.</p>
+                    
+                    <button class="btn btn-secondary back-to-tools" style="margin-top: 30px;">Back to Tools</button>
+                </div>
+                
+                <!-- Terms & Conditions -->
+                <div class="policy-content" id="terms-content">
+                    <h1>Terms & Conditions</h1>
+                    <p>By accessing iMasterPDF, you agree to these Terms and Conditions.</p>
+                    
+                    <h2>Use of Services</h2>
+                    <p>All tools are provided free of charge and are intended for lawful use only. You are responsible for the files you upload.</p>
+                    
+                    <h2>No File Storage</h2>
+                    <p>Uploaded files are processed temporarily and automatically deleted. We do not store user files.</p>
+                    
+                    <h2>Disclaimer</h2>
+                    <p>iMasterPDF is provided "as is" without any warranties. We are not responsible for data loss or file corruption.</p>
+                    
+                    <h2>Changes</h2>
+                    <p>We may update these terms at any time without notice.</p>
+                    
+                    <button class="btn btn-secondary back-to-tools" style="margin-top: 30px;">Back to Tools</button>
+                </div>
+                
+                <!-- About -->
+                <div class="about-content" id="about-content">
+                    <h1>About iMasterPDF</h1>
+                    <p>iMasterPDF is a free online platform that provides simple and secure PDF and Word document tools.</p>
+                    <p>Our goal is to help users convert, merge, split, lock, unlock, and manage documents easily without registration.</p>
+                    <p>We focus on privacy, speed, and simplicity.</p>
+                    
+                    <button class="btn btn-secondary back-to-tools" style="margin-top: 30px;">Back to Tools</button>
+                </div>
+                
+                <!-- Contact -->
+                <div class="contact-content" id="contact-content">
+                    <h1>Contact Us</h1>
+                    <p>If you have any questions, feedback, or concerns, feel free to contact us.</p>
+                    <p>Email: <strong>support@imasterpdf.com</strong></p>
+                    
+                    <button class="btn btn-secondary back-to-tools" style="margin-top: 30px;">Back to Tools</button>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>iMasterPDF</h3>
+                    <p>Free online PDF and Word tools for everyone. No registration required. Secure and private.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Tools</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" data-target="pdf-to-word">PDF to Word</a></li>
+                        <li><a href="#" data-target="merge-pdf">Merge PDF</a></li>
+                        <li><a href="#" data-target="split-pdf">Split PDF</a></li>
+                        <li><a href="#" data-target="word-to-pdf">Word to PDF</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Legal</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" data-target="privacy">Privacy Policy</a></li>
+                        <li><a href="#" data-target="terms">Terms & Conditions</a></li>
+                        <li><a href="#" data-target="about">About Us</a></li>
+                        <li><a href="#" data-target="contact">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 iMasterPDF. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <div class="cookie-notice">
+        This website uses cookies to improve user experience and display advertisements.
+    </div>
 
-<!-- HOME -->
-<div class="page">
-<div class="container">
-
-<h1>Free Online PDF & Word Tools</h1>
-<p>Convert, merge, split, lock, unlock and extract files securely. No signup required.</p>
-
-<ins class="adsbygoogle" style="display:block;margin:12px 0"
-data-ad-client="ca-pub-XXXXXXXX"
-data-ad-slot="1234567890"
-data-ad-format="auto"></ins>
-
-<h2>Available Tools</h2>
-
-<div class="tools-grid">
-<div class="card"><h3>PDF to Word</h3><a onclick="openTool('PDF to Word')">Use Tool</a></div>
-<div class="card"><h3>Merge PDF</h3><a onclick="openTool('Merge PDF')">Use Tool</a></div>
-<div class="card"><h3>Split PDF</h3><a onclick="openTool('Split PDF')">Use Tool</a></div>
-<div class="card"><h3>Rotate PDF</h3><a onclick="openTool('Rotate PDF')">Use Tool</a></div>
-<div class="card"><h3>Lock PDF</h3><a onclick="openTool('Lock PDF')">Use Tool</a></div>
-<div class="card"><h3>Unlock PDF</h3><a onclick="openTool('Unlock PDF')">Use Tool</a></div>
-
-<div class="card"><h3>Word to PDF</h3><a onclick="openTool('Word to PDF')">Use Tool</a></div>
-<div class="card"><h3>Merge Word</h3><a onclick="openTool('Merge Word')">Use Tool</a></div>
-<div class="card"><h3>Word to Text</h3><a onclick="openTool('Word to Text')">Use Tool</a></div>
-
-<div class="card"><h3>Text to PDF</h3><a onclick="openTool('Text to PDF')">Use Tool</a></div>
-<div class="card"><h3>Image to PDF</h3><a onclick="openTool('Image to PDF')">Use Tool</a></div>
-</div>
-
-</div>
-</div>
-
-<!-- TOOL PAGE -->
-<div class="page">
-<div class="container">
-
-<h1 id="toolTitle"></h1>
-<p id="toolDesc"></p>
-
-<form action="/process" method="post" enctype="multipart/form-data" class="upload-area">
-
-<input type="hidden" name="tool" id="toolInput">
-
-<div class="upload-box">
-<h3>Select File(s)</h3>
-<input type="file" name="file" id="fileInput" required>
-<p class="note">Max file size: 50 MB</p>
-</div>
-
-<div class="password-box" id="passwordBox">
-<input type="password" name="password" placeholder="Enter PDF password" required>
-</div>
-
-<button class="download-btn" type="submit">Convert & Download</button>
-
-<a class="back-btn" onclick="goHome()">← Back</a>
-
-</form>
-
-</div>
-</div>
-
-<!-- PRIVACY -->
-<div class="page"><div class="container">
-<h1>Privacy Policy</h1>
-<p>Files are processed temporarily and deleted automatically.</p>
-</div></div>
-
-<!-- TERMS -->
-<div class="page"><div class="container">
-<h1>Terms & Conditions</h1>
-<p>Tools are provided as-is. Use responsibly.</p>
-</div></div>
-
-<!-- CONTACT -->
-<div class="page"><div class="container">
-<h1>Contact</h1>
-<p>Email: support@imasterpdf.com</p>
-</div></div>
-
-</main>
-
-<footer>
-© 2026 iMasterPDF |
-<a onclick="goPage(3)">Privacy</a> |
-<a onclick="goPage(4)">Terms</a> |
-<a onclick="goPage(5)">Contact</a>
-</footer>
-
-<script>
-function openTool(name){
-document.getElementById("toolTitle").innerText = name;
-document.getElementById("toolDesc").innerText =
-"Upload your file(s) and click convert to download.";
-
-document.getElementById("toolInput").value = name;
-
-const fileInput = document.getElementById("fileInput");
-const passwordBox = document.getElementById("passwordBox");
-
-fileInput.multiple = false;
-passwordBox.style.display = "none";
-
-if(name.includes("Merge")){
-fileInput.multiple = true;
-}
-
-if(name === "Lock PDF" || name === "Unlock PDF"){
-passwordBox.style.display = "block";
-}
-
-goPage(2);
-}
-
-function goHome(){goPage(1)}
-function goPage(n){
-document.getElementById("main").style.transform =
-"translateX(-"+((n-1)*100)+"%)";
-}
-</script>
-
+    <script>
+        // Define the tools
+        const tools = [
+            { id: "pdf-to-word", name: "PDF to Word", icon: "fas fa-file-word", desc: "Convert PDF documents to editable Word files" },
+            { id: "merge-pdf", name: "Merge PDF", icon: "fas fa-copy", desc: "Combine multiple PDF files into a single document" },
+            { id: "split-pdf", name: "Split PDF", icon: "fas fa-cut", desc: "Split a PDF into multiple documents or extract specific pages" },
+            { id: "rotate-pdf", name: "Rotate PDF", icon: "fas fa-redo", desc: "Rotate PDF pages to correct orientation" },
+            { id: "lock-pdf", name: "Lock PDF", icon: "fas fa-lock", desc: "Add password protection to your PDF files" },
+            { id: "unlock-pdf", name: "Unlock PDF", icon: "fas fa-unlock", desc: "Remove password protection from PDF files" },
+            { id: "word-to-pdf", name: "Word to PDF", icon: "fas fa-file-pdf", desc: "Convert Word documents to PDF format" },
+            { id: "merge-word", name: "Merge Word", icon: "fas fa-file-alt", desc: "Combine multiple Word documents into one file" },
+            { id: "word-to-text", name: "Word to Text", icon: "fas fa-file-text", desc: "Extract text from Word documents" },
+            { id: "text-to-pdf", name: "Text to PDF", icon: "fas fa-font", desc: "Convert plain text files to PDF format" },
+            { id: "image-to-pdf", name: "Image to PDF", icon: "fas fa-image", desc: "Convert images to PDF documents" }
+        ];
+        
+        // Get DOM elements
+        const toolsGrid = document.getElementById('tools-grid');
+        const toolInterfaces = document.querySelectorAll('.tool-interface');
+        const policyContents = document.querySelectorAll('.policy-content, .about-content, .contact-content');
+        const defaultInterface = document.getElementById('default-interface');
+        const backButtons = document.querySelectorAll('.back-to-tools');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const footerLinks = document.querySelectorAll('.footer-links a');
+        
+        // Generate tool cards
+        function generateToolCards() {
+            toolsGrid.innerHTML = '';
+            tools.forEach(tool => {
+                const toolCard = document.createElement('div');
+                toolCard.className = 'tool-card';
+                toolCard.dataset.toolId = tool.id;
+                
+                toolCard.innerHTML = `
+                    <div class="tool-icon">
+                        <i class="${tool.icon}"></i>
+                    </div>
+                    <h3>${tool.name}</h3>
+                    <p>${tool.desc}</p>
+                `;
+                
+                toolsGrid.appendChild(toolCard);
+            });
+            
+            // Add click events to tool cards
+            document.querySelectorAll('.tool-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const toolId = this.dataset.toolId;
+                    showToolInterface(toolId);
+                });
+            });
+        }
+        
+        // Show tool interface
+        function showToolInterface(toolId) {
+            // Hide all interfaces
+            toolInterfaces.forEach(interface => {
+                interface.classList.remove('active-interface');
+            });
+            
+            // Hide all policy content
+            policyContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Show the selected tool interface or default
+            if (toolId === 'pdf-to-word') {
+                document.getElementById('pdf-to-word-interface').classList.add('active-interface');
+            } else {
+                // For other tools, show default with tool name
+                defaultInterface.classList.add('active-interface');
+                defaultInterface.innerHTML = `
+                    <h1 style="text-align: center; color: #2c3e50;">${tools.find(t => t.id === toolId).name}</h1>
+                    <p style="text-align: center; color: #666; max-width: 600px; margin: 20px auto;">
+                        This tool is currently in development. Please check back soon for the full functionality.
+                    </p>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <i class="${tools.find(t => t.id === toolId).icon}" style="font-size: 80px; color: #e74c3c; opacity: 0.7;"></i>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary back-to-tools">Back to Tools</button>
+                    </div>
+                `;
+                
+                // Add back button event
+                defaultInterface.querySelector('.back-to-tools').addEventListener('click', showDefaultInterface);
+            }
+        }
+        
+        // Show default interface
+        function showDefaultInterface() {
+            // Hide all interfaces
+            toolInterfaces.forEach(interface => {
+                interface.classList.remove('active-interface');
+            });
+            
+            // Hide all policy content
+            policyContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Show default interface
+            defaultInterface.classList.add('active-interface');
+            defaultInterface.innerHTML = `
+                <h2 style="text-align: center; color: #2c3e50;">Select a Tool to Get Started</h2>
+                <p style="text-align: center; color: #666; max-width: 600px; margin: 20px auto;">Click on any tool above to start converting, merging, splitting, or modifying your PDF and Word documents. All tools are completely free with no registration required.</p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <i class="fas fa-file-alt" style="font-size: 80px; color: #e74c3c; opacity: 0.7;"></i>
+                </div>
+            `;
+        }
+        
+        // Show policy content
+        function showPolicyContent(contentId) {
+            // Hide all interfaces
+            toolInterfaces.forEach(interface => {
+                interface.classList.remove('active-interface');
+            });
+            
+            // Hide all policy content
+            policyContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Show the selected content
+            document.getElementById(contentId).style.display = 'block';
+        }
+        
+        // Initialize the page
+        function init() {
+            // Generate tool cards
+            generateToolCards();
+            
+            // Add click events to back buttons
+            backButtons.forEach(button => {
+                button.addEventListener('click', showDefaultInterface);
+            });
+            
+            // Add click events to navigation links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.dataset.target;
+                    
+                    if (target === 'tools') {
+                        showDefaultInterface();
+                    } else {
+                        showPolicyContent(`${target}-content`);
+                    }
+                });
+            });
+            
+            // Add click events to footer links
+            footerLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.dataset.target;
+                    
+                    if (target === 'pdf-to-word') {
+                        showToolInterface(target);
+                    } else if (target === 'tools') {
+                        showDefaultInterface();
+                    } else {
+                        showPolicyContent(`${target}-content`);
+                    }
+                });
+            });
+            
+            // Initialize with default interface
+            showDefaultInterface();
+        }
+        
+        // Start the application
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
