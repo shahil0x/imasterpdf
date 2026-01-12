@@ -1,12 +1,15 @@
-from flask import Flask, render_template, request, send_file
-import os, uuid
+from flask import Flask, request, send_file, render_template
 from PyPDF2 import PdfMerger, PdfReader, PdfWriter
-from pdf2docx import Converter
-from docx import Document
 from PIL import Image
+from docx2pdf import convert
 from reportlab.pdfgen import canvas
+import os
+import uuid
 
 app = Flask(__name__)
+
+# 50 MB limit
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "outputs"
@@ -14,155 +17,176 @@ OUTPUT_FOLDER = "outputs"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# ✅ 50 MB upload limit
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
-
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route("/process", methods=["POST"])
-def process():
-    tool = request.form.get("tool")
-    password = request.form.get("password", "")
-    files = request.files.getlist("file")
+# ---------- PDF MERGE ----------
+@app.route("/merge-pdf", methods=["POST"])
+def merge_pdf():
+    files = request.files.getlist("files")
+    merger = PdfMerger()
 
-    uid = str(uuid.uuid4())
-    output_path = os.path.join(OUTPUT_FOLDER, uid)
+    for file in files:
+        path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(path)
+        merger.append(path)
 
-    if tool == "PDF to Word":
-        pdf = files[0]
-        pdf_path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
-        docx_path = output_path + ".docx"
-        pdf.save(pdf_path)
-        cv = Converter(pdf_path)
-        cv.convert(docx_path)
-        cv.close()
-        return send_file(docx_path, as_attachment=True)
+    output = f"{OUTPUT_FOLDER}/merged_{uuid.uuid4()}.pdf"
+    merger.write(output)
+    merger.close()
 
-    if tool == "Merge PDF":
-        merger = PdfMerger()
-        for f in files:
-            path = os.path.join(UPLOAD_FOLDER, f.filename)
-            f.save(path)
-            merger.append(path)
-        out = output_path + ".pdf"
-        merger.write(out)
-        merger.close()
-        return send_file(out, as_attachment=True)
+    return send_file(output, as_attachment=True)
 
-    if tool == "Split PDF":
-        pdf = files[0]
-        path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
-        pdf.save(path)
-        reader = PdfReader(path)
-        writer = PdfWriter()
-        writer.add_page(reader.pages[0])
-        out = output_path + "_page1.pdf"
-        with open(out, "wb") as f:
-            writer.write(f)
-        return send_file(out, as_attachment=True)
+# ---------- PDF SPLIT ----------
+@app.route("/split-pdf", methods=["POST"])
+def split_pdf():
+    file = request.files["file"]
+    start = int(request.form["start"]) - 1
+    end = int(request.form["end"]) - 1
 
-    if tool == "Rotate PDF":
-        pdf = files[0]
-        path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
-        pdf.save(path)
-        reader = PdfReader(path)
-        writer = PdfWriter()
-        for page in reader.pages:
-            page.rotate(90)
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    reader = PdfReader(path)
+    writer = PdfWriter()
+
+    for i in range(start, end + 1):
+        writer.add_page(reader.pages[i])
+
+    output = f"{OUTPUT_FOLDER}/split_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
+
+    return send_file(output, as_attachment=True)
+
+# ---------- PDF ROTATE ----------
+@app.route("/rotate-pdf", methods=["POST"])
+def rotate_pdf():
+    file = request.files["file"]
+    angle = int(request.form["angle"])
+
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    reader = PdfReader(path)
+    writer = PdfWriter()
+
+    for page in reader.pages:
+        page.rotate(angle)
+        writer.add_page(page)
+
+    output = f"{OUTPUT_FOLDER}/rotated_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
+
+    return send_file(output, as_attachment=True)
+
+# ---------- DELETE PAGES ----------
+@app.route("/delete-pages", methods=["POST"])
+def delete_pages():
+    file = request.files["file"]
+    pages = list(map(lambda x: int(x) - 1, request.form["pages"].split(",")))
+
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    reader = PdfReader(path)
+    writer = PdfWriter()
+
+    for i, page in enumerate(reader.pages):
+        if i not in pages:
             writer.add_page(page)
-        out = output_path + ".pdf"
-        with open(out, "wb") as f:
-            writer.write(f)
-        return send_file(out, as_attachment=True)
 
-    if tool == "Lock PDF":
-        pdf = files[0]
-        path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
-        pdf.save(path)
-        reader = PdfReader(path)
-        writer = PdfWriter()
-        for page in reader.pages:
-            writer.add_page(page)
-        writer.encrypt(password)
-        out = output_path + ".pdf"
-        with open(out, "wb") as f:
-            writer.write(f)
-        return send_file(out, as_attachment=True)
+    output = f"{OUTPUT_FOLDER}/deleted_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
 
-    if tool == "Unlock PDF":
-        pdf = files[0]
-        path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
-        pdf.save(path)
-        reader = PdfReader(path)
-        reader.decrypt(password)
-        writer = PdfWriter()
-        for page in reader.pages:
-            writer.add_page(page)
-        out = output_path + ".pdf"
-        with open(out, "wb") as f:
-            writer.write(f)
-        return send_file(out, as_attachment=True)
+    return send_file(output, as_attachment=True)
 
-    if tool == "Word to PDF":
-        docx = files[0]
-        path = os.path.join(UPLOAD_FOLDER, uid + ".docx")
-        docx.save(path)
-        doc = Document(path)
-        out = output_path + ".pdf"
-        c = canvas.Canvas(out)
-        y = 800
-        for p in doc.paragraphs:
-            c.drawString(40, y, p.text)
-            y -= 14
-        c.save()
-        return send_file(out, as_attachment=True)
+# ---------- LOCK PDF ----------
+@app.route("/lock-pdf", methods=["POST"])
+def lock_pdf():
+    file = request.files["file"]
+    password = request.form["password"]
 
-    if tool == "Merge Word":
-        doc = Document()
-        for f in files:
-            path = os.path.join(UPLOAD_FOLDER, f.filename)
-            f.save(path)
-            d = Document(path)
-            for p in d.paragraphs:
-                doc.add_paragraph(p.text)
-        out = output_path + ".docx"
-        doc.save(out)
-        return send_file(out, as_attachment=True)
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
 
-    if tool == "Word to Text":
-        docx = files[0]
-        path = os.path.join(UPLOAD_FOLDER, uid + ".docx")
-        docx.save(path)
-        doc = Document(path)
-        out = output_path + ".txt"
-        with open(out, "w", encoding="utf-8") as f:
-            for p in doc.paragraphs:
-                f.write(p.text + "\n")
-        return send_file(out, as_attachment=True)
+    reader = PdfReader(path)
+    writer = PdfWriter()
 
-    if tool == "Text to PDF":
-        txt = files[0]
-        path = os.path.join(UPLOAD_FOLDER, uid + ".txt")
-        txt.save(path)
-        out = output_path + ".pdf"
-        c = canvas.Canvas(out)
-        y = 800
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                c.drawString(40, y, line.strip())
-                y -= 14
-        c.save()
-        return send_file(out, as_attachment=True)
+    for page in reader.pages:
+        writer.add_page(page)
 
-    if tool == "Image to PDF":
-        img = Image.open(files[0])
-        out = output_path + ".pdf"
-        img.convert("RGB").save(out)
-        return send_file(out, as_attachment=True)
+    writer.encrypt(password)
 
-    return "Unsupported tool", 400
+    output = f"{OUTPUT_FOLDER}/locked_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
+
+    return send_file(output, as_attachment=True)
+
+# ---------- UNLOCK PDF ----------
+@app.route("/unlock-pdf", methods=["POST"])
+def unlock_pdf():
+    file = request.files["file"]
+    password = request.form["password"]
+
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    reader = PdfReader(path)
+    reader.decrypt(password)
+
+    writer = PdfWriter()
+    for page in reader.pages:
+        writer.add_page(page)
+
+    output = f"{OUTPUT_FOLDER}/unlocked_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
+
+    return send_file(output, as_attachment=True)
+
+# ---------- IMAGE → PDF ----------
+@app.route("/image-to-pdf", methods=["POST"])
+def image_to_pdf():
+    images = request.files.getlist("files")
+    image_list = []
+
+    for img in images:
+        image = Image.open(img).convert("RGB")
+        image_list.append(image)
+
+    output = f"{OUTPUT_FOLDER}/images_{uuid.uuid4()}.pdf"
+    image_list[0].save(output, save_all=True, append_images=image_list[1:])
+
+    return send_file(output, as_attachment=True)
+
+# ---------- WORD → PDF ----------
+@app.route("/word-to-pdf", methods=["POST"])
+def word_to_pdf():
+    file = request.files["file"]
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    output = f"{OUTPUT_FOLDER}/{uuid.uuid4()}.pdf"
+    convert(path, output)
+
+    return send_file(output, as_attachment=True)
+
+# ---------- TEXT → PDF ----------
+@app.route("/text-to-pdf", methods=["POST"])
+def text_to_pdf():
+    text = request.form["text"]
+
+    output = f"{OUTPUT_FOLDER}/text_{uuid.uuid4()}.pdf"
+    c = canvas.Canvas(output)
+    c.drawString(40, 800, text)
+    c.save()
+
+    return send_file(output, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
