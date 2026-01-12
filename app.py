@@ -1,7 +1,6 @@
-from flask import Flask, request, send_file, render_template
+from flask import Flask, render_template, request, send_file
 import os, uuid
-
-from PyPDF2 import PdfReader, PdfWriter, PdfMerger
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 from pdf2docx import Converter
 from docx import Document
 from PIL import Image
@@ -9,174 +8,161 @@ from reportlab.pdfgen import canvas
 
 app = Flask(__name__)
 
-# ---------- CONFIG ----------
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50 MB
+UPLOAD_FOLDER = "uploads"
+OUTPUT_FOLDER = "outputs"
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD = os.path.join(BASE_DIR, "uploads")
-OUTPUT = os.path.join(BASE_DIR, "outputs")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-os.makedirs(UPLOAD, exist_ok=True)
-os.makedirs(OUTPUT, exist_ok=True)
+# ✅ 50 MB upload limit
+app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 
-def uid(ext):
-    return f"{uuid.uuid4().hex}.{ext}"
-
-# ---------- HOME ----------
 @app.route("/")
-def home():
+def index():
     return render_template("index.html")
 
-# ---------- PROCESS ----------
 @app.route("/process", methods=["POST"])
 def process():
     tool = request.form.get("tool")
-    password = request.form.get("password")
-    text_input = request.form.get("text")
+    password = request.form.get("password", "")
     files = request.files.getlist("file")
 
-    if not tool:
-        return "Invalid request", 400
+    uid = str(uuid.uuid4())
+    output_path = os.path.join(OUTPUT_FOLDER, uid)
 
-    if tool != "Text to PDF" and (not files or files[0].filename == ""):
-        return "No file uploaded", 400
-
-    # save first file
-    input_path = None
-    if files and files[0].filename != "":
-        input_file = files[0]
-        input_path = os.path.join(UPLOAD, uid(input_file.filename.split(".")[-1]))
-        input_file.save(input_path)
-
-    # ===== PDF TO WORD =====
     if tool == "PDF to Word":
-        out = os.path.join(OUTPUT, uid("docx"))
-        cv = Converter(input_path)
-        cv.convert(out)
+        pdf = files[0]
+        pdf_path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
+        docx_path = output_path + ".docx"
+        pdf.save(pdf_path)
+        cv = Converter(pdf_path)
+        cv.convert(docx_path)
         cv.close()
-        return send_file(out, as_attachment=True)
+        return send_file(docx_path, as_attachment=True)
 
-    # ===== MERGE PDF =====
     if tool == "Merge PDF":
         merger = PdfMerger()
         for f in files:
-            p = os.path.join(UPLOAD, uid("pdf"))
-            f.save(p)
-            merger.append(p)
-        out = os.path.join(OUTPUT, uid("pdf"))
+            path = os.path.join(UPLOAD_FOLDER, f.filename)
+            f.save(path)
+            merger.append(path)
+        out = output_path + ".pdf"
         merger.write(out)
         merger.close()
         return send_file(out, as_attachment=True)
 
-    # ===== SPLIT PDF (FIRST PAGE) =====
     if tool == "Split PDF":
-        reader = PdfReader(input_path)
+        pdf = files[0]
+        path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
+        pdf.save(path)
+        reader = PdfReader(path)
         writer = PdfWriter()
         writer.add_page(reader.pages[0])
-        out = os.path.join(OUTPUT, uid("pdf"))
+        out = output_path + "_page1.pdf"
         with open(out, "wb") as f:
             writer.write(f)
         return send_file(out, as_attachment=True)
 
-    # ===== ROTATE PDF =====
     if tool == "Rotate PDF":
-        reader = PdfReader(input_path)
+        pdf = files[0]
+        path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
+        pdf.save(path)
+        reader = PdfReader(path)
         writer = PdfWriter()
-        for p in reader.pages:
-            p.rotate(90)
-            writer.add_page(p)
-        out = os.path.join(OUTPUT, uid("pdf"))
+        for page in reader.pages:
+            page.rotate(90)
+            writer.add_page(page)
+        out = output_path + ".pdf"
         with open(out, "wb") as f:
             writer.write(f)
         return send_file(out, as_attachment=True)
 
-    # ===== LOCK PDF =====
     if tool == "Lock PDF":
-        if not password:
-            return "Password required", 400
-        reader = PdfReader(input_path)
+        pdf = files[0]
+        path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
+        pdf.save(path)
+        reader = PdfReader(path)
         writer = PdfWriter()
-        for p in reader.pages:
-            writer.add_page(p)
+        for page in reader.pages:
+            writer.add_page(page)
         writer.encrypt(password)
-        out = os.path.join(OUTPUT, uid("pdf"))
+        out = output_path + ".pdf"
         with open(out, "wb") as f:
             writer.write(f)
         return send_file(out, as_attachment=True)
 
-    # ===== UNLOCK PDF =====
     if tool == "Unlock PDF":
-        reader = PdfReader(input_path)
-        if reader.is_encrypted:
-            if not password or not reader.decrypt(password):
-                return "Wrong password", 400
+        pdf = files[0]
+        path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
+        pdf.save(path)
+        reader = PdfReader(path)
+        reader.decrypt(password)
         writer = PdfWriter()
-        for p in reader.pages:
-            writer.add_page(p)
-        out = os.path.join(OUTPUT, uid("pdf"))
+        for page in reader.pages:
+            writer.add_page(page)
+        out = output_path + ".pdf"
         with open(out, "wb") as f:
             writer.write(f)
         return send_file(out, as_attachment=True)
 
-    # ===== WORD TO PDF =====
     if tool == "Word to PDF":
-        doc = Document(input_path)
-        out = os.path.join(OUTPUT, uid("pdf"))
+        docx = files[0]
+        path = os.path.join(UPLOAD_FOLDER, uid + ".docx")
+        docx.save(path)
+        doc = Document(path)
+        out = output_path + ".pdf"
         c = canvas.Canvas(out)
         y = 800
         for p in doc.paragraphs:
             c.drawString(40, y, p.text)
-            y -= 15
-            if y < 40:
-                c.showPage()
-                y = 800
+            y -= 14
         c.save()
         return send_file(out, as_attachment=True)
 
-    # ===== MERGE WORD =====
     if tool == "Merge Word":
-        final = Document()
+        doc = Document()
         for f in files:
-            p = os.path.join(UPLOAD, uid("docx"))
-            f.save(p)
-            d = Document(p)
-            for para in d.paragraphs:
-                final.add_paragraph(para.text)
-        out = os.path.join(OUTPUT, uid("docx"))
-        final.save(out)
+            path = os.path.join(UPLOAD_FOLDER, f.filename)
+            f.save(path)
+            d = Document(path)
+            for p in d.paragraphs:
+                doc.add_paragraph(p.text)
+        out = output_path + ".docx"
+        doc.save(out)
         return send_file(out, as_attachment=True)
 
-    # ===== WORD TO TEXT =====
     if tool == "Word to Text":
-        doc = Document(input_path)
-        text = "\n".join(p.text for p in doc.paragraphs)
-        out = os.path.join(OUTPUT, uid("txt"))
+        docx = files[0]
+        path = os.path.join(UPLOAD_FOLDER, uid + ".docx")
+        docx.save(path)
+        doc = Document(path)
+        out = output_path + ".txt"
         with open(out, "w", encoding="utf-8") as f:
-            f.write(text)
+            for p in doc.paragraphs:
+                f.write(p.text + "\n")
         return send_file(out, as_attachment=True)
 
-    # ===== TEXT TO PDF =====
     if tool == "Text to PDF":
-        out = os.path.join(OUTPUT, uid("pdf"))
+        txt = files[0]
+        path = os.path.join(UPLOAD_FOLDER, uid + ".txt")
+        txt.save(path)
+        out = output_path + ".pdf"
         c = canvas.Canvas(out)
         y = 800
-        for line in (text_input or "").split("\n"):
-            c.drawString(40, y, line)
-            y -= 15
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                c.drawString(40, y, line.strip())
+                y -= 14
         c.save()
         return send_file(out, as_attachment=True)
 
-    # ===== IMAGE TO PDF =====
     if tool == "Image to PDF":
-        imgs = []
-        for f in files:
-            imgs.append(Image.open(f).convert("RGB"))
-        out = os.path.join(OUTPUT, uid("pdf"))
-        imgs[0].save(out, save_all=True, append_images=imgs[1:])
+        img = Image.open(files[0])
+        out = output_path + ".pdf"
+        img.convert("RGB").save(out)
         return send_file(out, as_attachment=True)
 
-    return "Tool not supported", 400
+    return "Unsupported tool", 400
 
-# ---------- RUN ----------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True)
