@@ -13,8 +13,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from PIL import Image
 from pdfminer.high_level import extract_text
-# from weasyprint import HTML  # Render-friendly Word→PDF
-
 # -----------------------------------------------------------------------------
 # Flask app configuration
 # -----------------------------------------------------------------------------
