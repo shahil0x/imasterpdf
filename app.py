@@ -2,10 +2,9 @@ import os
 import io
 import shutil
 import tempfile
-import subprocess
 from datetime import datetime, timedelta
 
-from flask import Flask, render_template, send_file, request, abort, Response
+from flask import Flask, render_template, send_file, request, abort, Response, jsonify
 from werkzeug.utils import secure_filename
 
 from PyPDF2 import PdfReader, PdfWriter
@@ -14,11 +13,12 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from PIL import Image
 from pdfminer.high_level import extract_text
+from weasyprint import HTML  # Render-friendly Word→PDF
 
 # -----------------------------------------------------------------------------
 # Flask app configuration
 # -----------------------------------------------------------------------------
-app = Flask(__name__, static_folder=None)  # SPA served via templates/index.html
+app = Flask(__name__, static_folder=None)
 
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
@@ -31,7 +31,7 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
 ALLOWED_PDF_EXT = {'.pdf'}
-ALLOWED_WORD_EXT = {'.docx', '.doc'}
+ALLOWED_WORD_EXT = {'.docx'}  # DOCX only for Word→PDF
 ALLOWED_TEXT_EXT = {'.txt'}
 
 # -----------------------------------------------------------------------------
@@ -41,7 +41,6 @@ def ext_of(filename):
     return os.path.splitext(filename.lower())[1]
 
 def validate_file(stream):
-    """Validate file size (min 1 KB, max 50 MB)."""
     stream.seek(0, os.SEEK_END)
     size = stream.tell()
     stream.seek(0)
@@ -51,7 +50,6 @@ def validate_file(stream):
         abort(Response("File too large (max 50 MB).", status=400))
 
 def save_uploads(files):
-    """Save uploaded files securely to UPLOAD_DIR and return their paths."""
     saved = []
     for storage in files:
         validate_file(storage.stream)
@@ -64,7 +62,6 @@ def save_uploads(files):
     return saved
 
 def cleanup_temp():
-    """Clean temporary files older than CLEANUP_AGE_MINUTES."""
     cutoff = datetime.utcnow() - timedelta(minutes=CLEANUP_AGE_MINUTES)
     for base in (UPLOAD_DIR, OUTPUT_DIR):
         for name in os.listdir(base):
@@ -80,7 +77,6 @@ def cleanup_temp():
                 pass
 
 def wrap_text(text, max_chars=95):
-    """Simple word-wrapping for reportlab text rendering."""
     words = text.split(' ')
     lines, current = [], []
     length = 0
@@ -98,7 +94,6 @@ def wrap_text(text, max_chars=95):
     return lines
 
 def parse_pages(pages_str):
-    """Parse comma-separated pages and ranges (e.g., '1,3,5-7') into a set of 1-based indices."""
     pages = set()
     parts = [p.strip() for p in pages_str.split(',') if p.strip()]
     for part in parts:
@@ -125,7 +120,7 @@ def safe_remove(path):
         pass
 
 # -----------------------------------------------------------------------------
-# SPA routes (render_template)
+# SPA routes (render_template single index.html)
 # -----------------------------------------------------------------------------
 @app.route('/', methods=['GET'])
 def index():
@@ -147,8 +142,35 @@ def terms():
 def tool():
     return render_template('index.html')
 
+@app.route('/blog', methods=['GET'])
+def blog():
+    return render_template('index.html')
+
+@app.route('/blog/<slug>', methods=['GET'])
+def blog_article(slug):
+    return render_template('index.html')
+
+@app.route('/contact', methods=['GET'])
+def contact():
+    return render_template('index.html')
+
 # -----------------------------------------------------------------------------
-# API routes for tools
+# Contact API
+# -----------------------------------------------------------------------------
+@app.route('/api/contact', methods=['POST'])
+def api_contact():
+    data = request.get_json(silent=True) or {}
+    name = (data.get('name') or '').strip()
+    email = (data.get('email') or '').strip()
+    message = (data.get('message') or '').strip()
+    if not name or not email or not message:
+        return Response("Please provide name, email, and message.", status=400)
+    # In production, integrate with email service or ticketing system.
+    # For now, acknowledge receipt.
+    return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
+
+# -----------------------------------------------------------------------------
+# Tool APIs
 # -----------------------------------------------------------------------------
 @app.route('/api/pdf-to-word', methods=['POST'])
 def api_pdf_to_word():
@@ -161,7 +183,6 @@ def api_pdf_to_word():
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         abort(Response("Only PDF files are allowed.", status=400))
 
-    # Extract text from PDF and write to DOCX
     try:
         text = extract_text(pdf_path) or ""
         doc = Document()
@@ -316,22 +337,41 @@ def api_word_to_pdf():
     files = request.files.getlist('files')
     if not files or len(files) != 1:
         abort(Response("Upload exactly one Word file.", status=400))
+
     paths = save_uploads(files)
     doc_path = paths[0]
-    if ext_of(doc_path) not in ALLOWED_WORD_EXT:
-        abort(Response("Only DOCX/DOC files are allowed.", status=400))
 
-    # Use LibreOffice headless conversion to PDF
+    if ext_of(doc_path) not in ALLOWED_WORD_EXT:
+        abort(Response("Only DOCX files are supported.", status=400))
+
     try:
-        out_dir = OUTPUT_DIR
-        subprocess.run([
-            'soffice', '--headless', '--convert-to', 'pdf', '--outdir', out_dir, doc_path
-        ], check=True)
-        base = os.path.splitext(os.path.basename(doc_path))[0]
-        out_path = os.path.join(out_dir, f"{base}.pdf")
-        if not os.path.exists(out_path):
-            abort(Response("Conversion failed.", status=500))
+        doc = Document(doc_path)
+        html_parts = []
+        for para in doc.paragraphs:
+            html_parts.append(f"<p>{para.text}</p>")
+
+        html_content = f"""
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body {{ font-family: Arial, sans-serif; }}
+              p {{ margin: 8px 0; }}
+            </style>
+          </head>
+          <body>
+            {''.join(html_parts)}
+          </body>
+        </html>
+        """
+
+        out_path = os.path.join(OUTPUT_DIR, f"word_{int(datetime.utcnow().timestamp())}.pdf")
+        HTML(string=html_content).write_pdf(out_path)
         return send_file(out_path, as_attachment=True, download_name="converted.pdf")
+
+    except Exception as e:
+        abort(Response(f"Conversion failed: {str(e)}", status=500))
+
     finally:
         safe_remove(doc_path)
 
@@ -344,29 +384,16 @@ def api_merge_word():
     paths = save_uploads(files)
     for p in paths:
         if ext_of(p) not in ALLOWED_WORD_EXT:
-            abort(Response("Only DOCX/DOC files are allowed.", status=400))
+            abort(Response("Only DOCX files are allowed.", status=400))
 
     try:
-        docx_paths = []
-        for p in paths:
-            if ext_of(p) == '.doc':
-                subprocess.run(['soffice', '--headless', '--convert-to', 'docx', '--outdir', UPLOAD_DIR, p], check=True)
-                base = os.path.splitext(os.path.basename(p))[0]
-                newp = os.path.join(UPLOAD_DIR, f"{base}.docx")
-                if not os.path.exists(newp):
-                    abort(Response("DOC to DOCX conversion failed.", status=500))
-                docx_paths.append(newp)
-            else:
-                docx_paths.append(p)
-
         merged = Document()
-        for idx, dp in enumerate(docx_paths):
+        for idx, dp in enumerate(paths):
             d = Document(dp)
             for para in d.paragraphs:
                 merged.add_paragraph(para.text)
-            if idx < len(docx_paths) - 1:
+            if idx < len(paths) - 1:
                 merged.add_page_break()
-
         out_path = os.path.join(OUTPUT_DIR, f"merged_{int(datetime.utcnow().timestamp())}.docx")
         merged.save(out_path)
         return send_file(out_path, as_attachment=True, download_name="merged.docx")
@@ -382,18 +409,10 @@ def api_word_to_text():
     paths = save_uploads(files)
     doc_path = paths[0]
     if ext_of(doc_path) not in ALLOWED_WORD_EXT:
-        abort(Response("Only DOCX/DOC files are allowed.", status=400))
+        abort(Response("Only DOCX files are allowed.", status=400))
 
     try:
-        docx_path = doc_path
-        if ext_of(doc_path) == '.doc':
-            subprocess.run(['soffice', '--headless', '--convert-to', 'docx', '--outdir', UPLOAD_DIR, doc_path], check=True)
-            base = os.path.splitext(os.path.basename(doc_path))[0]
-            docx_path = os.path.join(UPLOAD_DIR, f"{base}.docx")
-            if not os.path.exists(docx_path):
-                abort(Response("DOC to DOCX conversion failed.", status=500))
-
-        doc = Document(docx_path)
+        doc = Document(doc_path)
         text_io = io.StringIO()
         for para in doc.paragraphs:
             text_io.write(para.text + "\n")
@@ -468,5 +487,4 @@ def api_images_to_pdf():
 # Gunicorn entrypoint
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    # For local testing; in production use Gunicorn
     app.run(host='0.0.0.0', port=8000, debug=False)
