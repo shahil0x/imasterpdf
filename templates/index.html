@@ -634,7 +634,7 @@
       delete_pages_pdf: { title: 'Delete Pages in PDF', desc: 'Remove selected pages from a PDF.', endpoint: '/api/delete-pages-pdf', multiple: false },
       lock_pdf: { title: 'Lock PDF (PIN)', desc: 'Protect PDF with a 4-digit PIN.', endpoint: '/api/lock-pdf', multiple: false },
       unlock_pdf: { title: 'Unlock PDF', desc: 'Remove password protection.', endpoint: '/api/unlock-pdf', multiple: false },
-      word_to_pdf: { title: 'Word to PDF', desc: 'Convert DOCX to PDF.', endpoint: '/api/word-to-pdf', multiple: false },
+      word_to_pdf: { title: 'Word to PDF', desc: 'Convert Word files (DOCX/DOC) to PDF.', endpoint: '/api/word-to-pdf', multiple: false },
       merge_word: { title: 'Merge Word', desc: 'Combine multiple Word documents.', endpoint: '/api/merge-word', multiple: true },
       word_to_text: { title: 'Word to Text', desc: 'Extract text from Word files.', endpoint: '/api/word-to-text', multiple: false },
       text_to_pdf: { title: 'Text to PDF', desc: 'Convert plain text to PDF.', endpoint: '/api/text-to-pdf', multiple: false },
@@ -857,7 +857,7 @@
 
       const files = Array.from(fileInput.files || []);
       if (files.length) {
-        for (const f of files) form.append('files', f);
+        for (const f of files) form.append('files', f);       
       }
 
       if (currentTool === 'rotate_pdf') {
