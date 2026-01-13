@@ -191,7 +191,9 @@ def api_pdf_to_word():
         return send_file(out_path, as_attachment=True, download_name="output.docx")
     finally:
         safe_remove(pdf_path)
-
+@app.route('/api/word-to-pdf', methods=['POST'])
+def api_word_to_pdf():
+    return "WORD TO PDF API WORKING"
 @app.route('/api/merge-pdf', methods=['POST'])
 def api_merge_pdf():
     cleanup_temp()
