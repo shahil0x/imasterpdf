@@ -170,30 +170,55 @@ def api_contact():
 # -----------------------------------------------------------------------------
 # Tool APIs
 # -----------------------------------------------------------------------------
-@app.route('/api/pdf-to-word', methods=['POST'])
-def api_pdf_to_word():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
-    paths = save_uploads(files)
-    pdf_path = paths[0]
-    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
-
-    try:
-        text = extract_text(pdf_path) or ""
-        doc = Document()
-        for line in text.splitlines():
-            doc.add_paragraph(line)
-        out_path = os.path.join(OUTPUT_DIR, f"converted_{int(datetime.utcnow().timestamp())}.docx")
-        doc.save(out_path)
-        return send_file(out_path, as_attachment=True, download_name="output.docx")
-    finally:
-        safe_remove(pdf_path)
 @app.route('/api/word-to-pdf', methods=['POST'])
 def api_word_to_pdf():
-    return "WORD TO PDF API WORKING"
+    cleanup_temp()
+
+    files = request.files.getlist('files')
+    if not files or len(files) != 1:
+        abort(Response("Upload exactly one Word file.", status=400))
+
+    paths = save_uploads(files)
+    doc_path = paths[0]
+
+    if ext_of(doc_path) != '.docx':
+        abort(Response("Only DOCX files are supported.", status=400))
+
+    try:
+        doc = Document(doc_path)
+
+        out_path = os.path.join(
+            OUTPUT_DIR,
+            f"word_{int(datetime.utcnow().timestamp())}.pdf"
+        )
+
+        c = canvas.Canvas(out_path, pagesize=A4)
+        width, height = A4
+
+        x = 50
+        y = height - 50
+        line_height = 14
+
+        for para in doc.paragraphs:
+            lines = wrap_text(para.text, max_chars=95)
+            for line in lines:
+                c.drawString(x, y, line)
+                y -= line_height
+                if y < 50:
+                    c.showPage()
+                    y = height - 50
+            y -= line_height // 2
+
+        c.save()
+
+        return send_file(
+            out_path,
+            mimetype="application/pdf",
+            download_name="converted.pdf"
+        )
+
+    finally:
+        safe_remove(doc_path)
 @app.route('/api/merge-pdf', methods=['POST'])
 def api_merge_pdf():
     cleanup_temp()
