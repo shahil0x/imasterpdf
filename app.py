@@ -4,7 +4,8 @@ import shutil
 import tempfile
 import subprocess
 from datetime import datetime, timedelta
-from flask import Flask, send_file, request, abort, Response
+
+from flask import Flask, render_template, send_file, request, abort, Response
 from werkzeug.utils import secure_filename
 
 from PyPDF2 import PdfReader, PdfWriter
@@ -14,10 +15,11 @@ from reportlab.lib.pagesizes import A4
 from PIL import Image
 from pdfminer.high_level import extract_text
 
-# Flask app
-app = Flask(__name__)
+# -----------------------------------------------------------------------------
+# Flask app configuration
+# -----------------------------------------------------------------------------
+app = Flask(__name__, static_folder=None)  # SPA served via templates/index.html
 
-# Config
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
 OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_outputs")
@@ -32,20 +34,24 @@ ALLOWED_PDF_EXT = {'.pdf'}
 ALLOWED_WORD_EXT = {'.docx', '.doc'}
 ALLOWED_TEXT_EXT = {'.txt'}
 
+# -----------------------------------------------------------------------------
+# Utility helpers
+# -----------------------------------------------------------------------------
 def ext_of(filename):
     return os.path.splitext(filename.lower())[1]
 
-def validate_file(f):
-    # Basic size validation
-    f.seek(0, os.SEEK_END)
-    size = f.tell()
-    f.seek(0)
+def validate_file(stream):
+    """Validate file size (min 1 KB, max 50 MB)."""
+    stream.seek(0, os.SEEK_END)
+    size = stream.tell()
+    stream.seek(0)
     if size < 1024:
         abort(Response("File too small (min 1 KB).", status=400))
     if size > MAX_CONTENT_LENGTH:
         abort(Response("File too large (max 50 MB).", status=400))
 
 def save_uploads(files):
+    """Save uploaded files securely to UPLOAD_DIR and return their paths."""
     saved = []
     for storage in files:
         validate_file(storage.stream)
@@ -58,7 +64,7 @@ def save_uploads(files):
     return saved
 
 def cleanup_temp():
-    # Remove old files
+    """Clean temporary files older than CLEANUP_AGE_MINUTES."""
     cutoff = datetime.utcnow() - timedelta(minutes=CLEANUP_AGE_MINUTES)
     for base in (UPLOAD_DIR, OUTPUT_DIR):
         for name in os.listdir(base):
@@ -73,31 +79,79 @@ def cleanup_temp():
             except Exception:
                 pass
 
+def wrap_text(text, max_chars=95):
+    """Simple word-wrapping for reportlab text rendering."""
+    words = text.split(' ')
+    lines, current = [], []
+    length = 0
+    for w in words:
+        add_len = len(w) + (1 if current else 0)
+        if length + add_len <= max_chars:
+            current.append(w)
+            length += add_len
+        else:
+            lines.append(' '.join(current))
+            current = [w]
+            length = len(w)
+    if current:
+        lines.append(' '.join(current))
+    return lines
+
+def parse_pages(pages_str):
+    """Parse comma-separated pages and ranges (e.g., '1,3,5-7') into a set of 1-based indices."""
+    pages = set()
+    parts = [p.strip() for p in pages_str.split(',') if p.strip()]
+    for part in parts:
+        if '-' in part:
+            a, b = part.split('-', 1)
+            try:
+                start = int(a); end = int(b)
+                for i in range(min(start, end), max(start, end)+1):
+                    pages.add(i)
+            except ValueError:
+                abort(Response("Invalid page range.", status=400))
+        else:
+            try:
+                pages.add(int(part))
+            except ValueError:
+                abort(Response("Invalid page number.", status=400))
+    return pages
+
+def safe_remove(path):
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+    except Exception:
+        pass
+
+# -----------------------------------------------------------------------------
+# SPA routes (render_template)
+# -----------------------------------------------------------------------------
 @app.route('/', methods=['GET'])
 def index():
-    # Serve single-page app
-    return send_file('index.html')
+    return render_template('index.html')
 
 @app.route('/about', methods=['GET'])
 def about():
-    return send_file('index.html')
+    return render_template('index.html')
 
 @app.route('/privacy', methods=['GET'])
 def privacy():
-    return send_file('index.html')
+    return render_template('index.html')
 
 @app.route('/terms', methods=['GET'])
 def terms():
-    return send_file('index.html')
+    return render_template('index.html')
 
 @app.route('/tool', methods=['GET'])
 def tool():
-    return send_file('index.html')
+    return render_template('index.html')
 
-# ---------- Tool Routes ----------
-
+# -----------------------------------------------------------------------------
+# API routes for tools
+# -----------------------------------------------------------------------------
 @app.route('/api/pdf-to-word', methods=['POST'])
-def pdf_to_word():
+def api_pdf_to_word():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
@@ -120,7 +174,7 @@ def pdf_to_word():
         safe_remove(pdf_path)
 
 @app.route('/api/merge-pdf', methods=['POST'])
-def merge_pdf():
+def api_merge_pdf():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) < 2:
@@ -144,7 +198,7 @@ def merge_pdf():
         for p in paths: safe_remove(p)
 
 @app.route('/api/rotate-pdf', methods=['POST'])
-def rotate_pdf():
+def api_rotate_pdf():
     cleanup_temp()
     rotation = int(request.form.get('rotation', '90'))
     rotate_all = request.form.get('rotate_all', 'true') == 'true'
@@ -171,7 +225,7 @@ def rotate_pdf():
         safe_remove(pdf_path)
 
 @app.route('/api/delete-pages-pdf', methods=['POST'])
-def delete_pages_pdf():
+def api_delete_pages_pdf():
     cleanup_temp()
     pages_str = request.form.get('pages', '').strip()
     files = request.files.getlist('files')
@@ -184,7 +238,6 @@ def delete_pages_pdf():
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         abort(Response("Only PDF files are allowed.", status=400))
 
-    # Parse pages (supports ranges like 2-5)
     to_delete = parse_pages(pages_str)
 
     writer = PdfWriter()
@@ -202,7 +255,7 @@ def delete_pages_pdf():
         safe_remove(pdf_path)
 
 @app.route('/api/lock-pdf', methods=['POST'])
-def lock_pdf():
+def api_lock_pdf():
     cleanup_temp()
     pin = request.form.get('pin', '').strip()
     if not pin or not pin.isdigit() or len(pin) != 4:
@@ -229,7 +282,7 @@ def lock_pdf():
         safe_remove(pdf_path)
 
 @app.route('/api/unlock-pdf', methods=['POST'])
-def unlock_pdf():
+def api_unlock_pdf():
     cleanup_temp()
     password = request.form.get('password', '').strip()
     files = request.files.getlist('files')
@@ -258,7 +311,7 @@ def unlock_pdf():
         safe_remove(pdf_path)
 
 @app.route('/api/word-to-pdf', methods=['POST'])
-def word_to_pdf():
+def api_word_to_pdf():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
@@ -274,7 +327,6 @@ def word_to_pdf():
         subprocess.run([
             'soffice', '--headless', '--convert-to', 'pdf', '--outdir', out_dir, doc_path
         ], check=True)
-        # Find converted PDF
         base = os.path.splitext(os.path.basename(doc_path))[0]
         out_path = os.path.join(out_dir, f"{base}.pdf")
         if not os.path.exists(out_path):
@@ -284,7 +336,7 @@ def word_to_pdf():
         safe_remove(doc_path)
 
 @app.route('/api/merge-word', methods=['POST'])
-def merge_word():
+def api_merge_word():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) < 2:
@@ -294,7 +346,6 @@ def merge_word():
         if ext_of(p) not in ALLOWED_WORD_EXT:
             abort(Response("Only DOCX/DOC files are allowed.", status=400))
 
-    # Convert DOC to DOCX if needed, then merge
     try:
         docx_paths = []
         for p in paths:
@@ -323,7 +374,7 @@ def merge_word():
         for p in paths: safe_remove(p)
 
 @app.route('/api/word-to-text', methods=['POST'])
-def word_to_text():
+def api_word_to_text():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
@@ -333,7 +384,6 @@ def word_to_text():
     if ext_of(doc_path) not in ALLOWED_WORD_EXT:
         abort(Response("Only DOCX/DOC files are allowed.", status=400))
 
-    # Convert DOC to DOCX if needed, then extract text
     try:
         docx_path = doc_path
         if ext_of(doc_path) == '.doc':
@@ -353,21 +403,19 @@ def word_to_text():
         safe_remove(doc_path)
 
 @app.route('/api/text-to-pdf', methods=['POST'])
-def text_to_pdf():
+def api_text_to_pdf():
     cleanup_temp()
     text = (request.form.get('text') or '').strip()
     if not text:
         abort(Response("Text content is required.", status=400))
 
     out_path = os.path.join(OUTPUT_DIR, f"text_{int(datetime.utcnow().timestamp())}.pdf")
-    # Simple text to PDF using reportlab
     c = canvas.Canvas(out_path, pagesize=A4)
     width, height = A4
     left_margin = 50
     top = height - 50
     line_height = 14
     for line in text.splitlines():
-        # Wrap long lines
         for chunk in wrap_text(line, max_chars=95):
             c.drawString(left_margin, top, chunk)
             top -= line_height
@@ -378,7 +426,7 @@ def text_to_pdf():
     return send_file(out_path, as_attachment=True, download_name="text.pdf")
 
 @app.route('/api/text-to-word', methods=['POST'])
-def text_to_word():
+def api_text_to_word():
     cleanup_temp()
     text = (request.form.get('text') or '').strip()
     if not text:
@@ -391,7 +439,7 @@ def text_to_word():
     return send_file(out_path, as_attachment=True, download_name="text.docx")
 
 @app.route('/api/images-to-pdf', methods=['POST'])
-def images_to_pdf():
+def api_images_to_pdf():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) < 1:
@@ -401,7 +449,6 @@ def images_to_pdf():
         if ext_of(p) not in ALLOWED_IMAGE_EXT:
             abort(Response("Only image files (JPG, PNG, WEBP, BMP, TIFF) are allowed.", status=400))
 
-    # Convert images to a single PDF
     try:
         images = []
         for p in paths:
@@ -417,51 +464,9 @@ def images_to_pdf():
     finally:
         for p in paths: safe_remove(p)
 
-# ---------- Helpers ----------
-
-def wrap_text(text, max_chars=95):
-    words = text.split(' ')
-    lines, current = [], []
-    length = 0
-    for w in words:
-        if length + len(w) + (1 if current else 0) <= max_chars:
-            current.append(w)
-            length += len(w) + (1 if current else 0)
-        else:
-            lines.append(' '.join(current))
-            current = [w]
-            length = len(w)
-    if current:
-        lines.append(' '.join(current))
-    return lines
-
-def parse_pages(pages_str):
-    pages = set()
-    parts = [p.strip() for p in pages_str.split(',') if p.strip()]
-    for part in parts:
-        if '-' in part:
-            a, b = part.split('-', 1)
-            try:
-                start = int(a); end = int(b)
-                for i in range(min(start, end), max(start, end)+1):
-                    pages.add(i)
-            except ValueError:
-                abort(Response("Invalid page range.", status=400))
-        else:
-            try:
-                pages.add(int(part))
-            except ValueError:
-                abort(Response("Invalid page number.", status=400))
-    return pages
-
-def safe_remove(path):
-    try:
-        if os.path.exists(path):
-            os.remove(path)
-    except Exception:
-        pass
-
+# -----------------------------------------------------------------------------
 # Gunicorn entrypoint
+# -----------------------------------------------------------------------------
 if __name__ == '__main__':
     # For local testing; in production use Gunicorn
     app.run(host='0.0.0.0', port=8000, debug=False)
