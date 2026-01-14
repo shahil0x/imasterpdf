@@ -1,133 +1,73 @@
-import os
-import uuid
-import tempfile
-from datetime import datetime, timedelta
-
-from flask import Flask, request, send_file, render_template, jsonify, abort, Response
-from werkzeug.utils import secure_filename
-
+from flask import Flask, request, send_file, render_template
 from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 from PIL import Image
 from docx import Document
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+import os
+import uuid
+app = Flask(__name__)
 
-# -----------------------------------------------------------------------------
-# App Config
-# -----------------------------------------------------------------------------
-app = Flask(__name__, static_folder=None)
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50 MB
+# 50 MB limit
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
-UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imaster_uploads")
-OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "imaster_outputs")
-CLEANUP_MINUTES = 30
+UPLOAD_FOLDER = "uploads"
+OUTPUT_FOLDER = "outputs"
 
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
-def cleanup_temp():
-    cutoff = datetime.utcnow() - timedelta(minutes=CLEANUP_MINUTES)
-    for folder in (UPLOAD_DIR, OUTPUT_DIR):
-        for f in os.listdir(folder):
-            path = os.path.join(folder, f)
-            try:
-                if datetime.utcfromtimestamp(os.path.getmtime(path)) < cutoff:
-                    os.remove(path)
-            except:
-                pass
-
-def save_file(file):
-    name = secure_filename(file.filename)
-    unique = f"{uuid.uuid4()}_{name}"
-    path = os.path.join(UPLOAD_DIR, unique)
-    file.save(path)
-    return path
-
-# -----------------------------------------------------------------------------
-# SPA Routes
-# -----------------------------------------------------------------------------
 @app.route("/")
-@app.route("/about")
-@app.route("/privacy")
-@app.route("/terms")
-@app.route("/tool")
-@app.route("/blog")
-@app.route("/blog/<slug>")
-@app.route("/contact")
-def index(slug=None):
+def index():
     return render_template("index.html")
-# Contact API
-# -----------------------------------------------------------------------------
-@app.route('/api/contact', methods=['POST'])
-def api_contact():
-    data = request.get_json(silent=True) or {}
-    name = (data.get('name') or '').strip()
-    email = (data.get('email') or '').strip()
-    message = (data.get('message') or '').strip()
-    if not name or not email or not message:
-        return Response("Please provide name, email, and message.", status=400)
-    # In production, integrate with email service or ticketing system.
-    # For now, acknowledge receipt.
-    return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
 
-# -----------------------------------------------------------------------------
-# PDF TOOLS
-# -----------------------------------------------------------------------------
-@app.route("/api/merge-pdf", methods=["POST"])
+# ---------- PDF MERGE ----------
+@app.route("/merge-pdf", methods=["POST"])
 def merge_pdf():
-    cleanup_temp()
     files = request.files.getlist("files")
-    if len(files) < 2:
-        abort(Response("Upload at least two PDFs", 400))
-
     merger = PdfMerger()
-    paths = []
 
-    for f in files:
-        path = save_file(f)
-        paths.append(path)
+    for file in files:
+        path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(path)
         merger.append(path)
 
-    output = os.path.join(OUTPUT_DIR, f"merged_{uuid.uuid4()}.pdf")
+    output = f"{OUTPUT_FOLDER}/merged_{uuid.uuid4()}.pdf"
     merger.write(output)
     merger.close()
 
-    for p in paths:
-        os.remove(p)
-
     return send_file(output, as_attachment=True)
 
-@app.route("/api/split-pdf", methods=["POST"])
+# ---------- PDF SPLIT ----------
+@app.route("/split-pdf", methods=["POST"])
 def split_pdf():
-    cleanup_temp()
     file = request.files["file"]
     start = int(request.form["start"]) - 1
     end = int(request.form["end"]) - 1
 
-    path = save_file(file)
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
     reader = PdfReader(path)
     writer = PdfWriter()
 
     for i in range(start, end + 1):
         writer.add_page(reader.pages[i])
 
-    output = os.path.join(OUTPUT_DIR, f"split_{uuid.uuid4()}.pdf")
+    output = f"{OUTPUT_FOLDER}/split_{uuid.uuid4()}.pdf"
     with open(output, "wb") as f:
         writer.write(f)
 
-    os.remove(path)
     return send_file(output, as_attachment=True)
 
-@app.route("/api/rotate-pdf", methods=["POST"])
+# ---------- PDF ROTATE ----------
+@app.route("/rotate-pdf", methods=["POST"])
 def rotate_pdf():
-    cleanup_temp()
     file = request.files["file"]
     angle = int(request.form["angle"])
 
-    path = save_file(file)
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
     reader = PdfReader(path)
     writer = PdfWriter()
 
@@ -135,20 +75,21 @@ def rotate_pdf():
         page.rotate(angle)
         writer.add_page(page)
 
-    output = os.path.join(OUTPUT_DIR, f"rotated_{uuid.uuid4()}.pdf")
+    output = f"{OUTPUT_FOLDER}/rotated_{uuid.uuid4()}.pdf"
     with open(output, "wb") as f:
         writer.write(f)
 
-    os.remove(path)
     return send_file(output, as_attachment=True)
 
-@app.route("/api/delete-pages", methods=["POST"])
+# ---------- DELETE PAGES ----------
+@app.route("/delete-pages", methods=["POST"])
 def delete_pages():
-    cleanup_temp()
     file = request.files["file"]
-    pages = [int(p) - 1 for p in request.form["pages"].split(",")]
+    pages = list(map(lambda x: int(x) - 1, request.form["pages"].split(",")))
 
-    path = save_file(file)
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
     reader = PdfReader(path)
     writer = PdfWriter()
 
@@ -156,20 +97,21 @@ def delete_pages():
         if i not in pages:
             writer.add_page(page)
 
-    output = os.path.join(OUTPUT_DIR, f"deleted_{uuid.uuid4()}.pdf")
+    output = f"{OUTPUT_FOLDER}/deleted_{uuid.uuid4()}.pdf"
     with open(output, "wb") as f:
         writer.write(f)
 
-    os.remove(path)
     return send_file(output, as_attachment=True)
 
-@app.route("/api/lock-pdf", methods=["POST"])
+# ---------- LOCK PDF ----------
+@app.route("/lock-pdf", methods=["POST"])
 def lock_pdf():
-    cleanup_temp()
     file = request.files["file"]
     password = request.form["password"]
 
-    path = save_file(file)
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
     reader = PdfReader(path)
     writer = PdfWriter()
 
@@ -177,154 +119,73 @@ def lock_pdf():
         writer.add_page(page)
 
     writer.encrypt(password)
-    output = os.path.join(OUTPUT_DIR, f"locked_{uuid.uuid4()}.pdf")
 
+    output = f"{OUTPUT_FOLDER}/locked_{uuid.uuid4()}.pdf"
     with open(output, "wb") as f:
         writer.write(f)
 
-    os.remove(path)
     return send_file(output, as_attachment=True)
 
-@app.route("/api/unlock-pdf", methods=["POST"])
+# ---------- UNLOCK PDF ----------
+@app.route("/unlock-pdf", methods=["POST"])
 def unlock_pdf():
-    cleanup_temp()
     file = request.files["file"]
     password = request.form["password"]
 
-    path = save_file(file)
-    reader = PdfReader(path)
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
 
-    if reader.is_encrypted:
-        if not reader.decrypt(password):
-            abort(Response("Wrong password", 400))
+    reader = PdfReader(path)
+    reader.decrypt(password)
 
     writer = PdfWriter()
     for page in reader.pages:
         writer.add_page(page)
 
-    output = os.path.join(OUTPUT_DIR, f"unlocked_{uuid.uuid4()}.pdf")
+    output = f"{OUTPUT_FOLDER}/unlocked_{uuid.uuid4()}.pdf"
     with open(output, "wb") as f:
         writer.write(f)
 
-    os.remove(path)
     return send_file(output, as_attachment=True)
 
-# -----------------------------------------------------------------------------
-# IMAGE TO PDF
-# -----------------------------------------------------------------------------
-@app.route("/api/images-to-pdf", methods=["POST"])
-def images_to_pdf():
-    cleanup_temp()
+# ---------- IMAGE → PDF ----------
+@app.route("/image-to-pdf", methods=["POST"])
+def image_to_pdf():
     images = request.files.getlist("files")
-    if not images:
-        abort(Response("Upload images", 400))
+    image_list = []
 
-    imgs = [Image.open(img).convert("RGB") for img in images]
-    output = os.path.join(OUTPUT_DIR, f"images_{uuid.uuid4()}.pdf")
+    for img in images:
+        image = Image.open(img).convert("RGB")
+        image_list.append(image)
 
-    if len(imgs) == 1:
-        imgs[0].save(output)
-    else:
-        imgs[0].save(output, save_all=True, append_images=imgs[1:])
+    output = f"{OUTPUT_FOLDER}/images_{uuid.uuid4()}.pdf"
+    image_list[0].save(output, save_all=True, append_images=image_list[1:])
 
     return send_file(output, as_attachment=True)
 
-# -----------------------------------------------------------------------------
-# WORD TOOLS
-# -----------------------------------------------------------------------------
-@app.route("/api/word-to-pdf", methods=["POST"])
+# ---------- WORD → PDF ----------
+@app.route("/word-to-pdf", methods=["POST"])
 def word_to_pdf():
-    cleanup_temp()
     file = request.files["file"]
-    path = save_file(file)
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
 
-    output = os.path.join(OUTPUT_DIR, f"{uuid.uuid4()}.pdf")
+    output = f"{OUTPUT_FOLDER}/{uuid.uuid4()}.pdf"
     convert(path, output)
 
-    os.remove(path)
     return send_file(output, as_attachment=True)
 
-@app.route("/api/merge-word", methods=["POST"])
-def merge_word():
-    cleanup_temp()
-    files = request.files.getlist("files")
-    if len(files) < 2:
-        abort(Response("Upload at least two Word files", 400))
-
-    merged = Document()
-    paths = []
-
-    for idx, f in enumerate(files):
-        path = save_file(f)
-        paths.append(path)
-        doc = Document(path)
-        for p in doc.paragraphs:
-            merged.add_paragraph(p.text)
-        if idx < len(files) - 1:
-            merged.add_page_break()
-
-    output = os.path.join(OUTPUT_DIR, f"merged_{uuid.uuid4()}.docx")
-    merged.save(output)
-
-    for p in paths:
-        os.remove(p)
-
-    return send_file(output, as_attachment=True)
-
-@app.route("/api/word-to-text", methods=["POST"])
-def word_to_text():
-    cleanup_temp()
-    file = request.files["file"]
-    path = save_file(file)
-
-    doc = Document(path)
-    text = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
-
-    output = os.path.join(OUTPUT_DIR, f"text_{uuid.uuid4()}.txt")
-    with open(output, "w", encoding="utf-8") as f:
-        f.write(text)
-
-    os.remove(path)
-    return send_file(output, as_attachment=True)
-
-@app.route("/api/text-to-word", methods=["POST"])
-def text_to_word():
-    cleanup_temp()
-    text = request.form["text"]
-
-    doc = Document()
-    for line in text.splitlines():
-        doc.add_paragraph(line)
-
-    output = os.path.join(OUTPUT_DIR, f"text_{uuid.uuid4()}.docx")
-    doc.save(output)
-
-    return send_file(output, as_attachment=True)
-
-# -----------------------------------------------------------------------------
-# TEXT TO PDF
-# -----------------------------------------------------------------------------
-@app.route("/api/text-to-pdf", methods=["POST"])
+# ---------- TEXT → PDF ----------
+@app.route("/text-to-pdf", methods=["POST"])
 def text_to_pdf():
-    cleanup_temp()
     text = request.form["text"]
 
-    output = os.path.join(OUTPUT_DIR, f"text_{uuid.uuid4()}.pdf")
-    c = canvas.Canvas(output, pagesize=A4)
+    output = f"{OUTPUT_FOLDER}/text_{uuid.uuid4()}.pdf"
+    c = canvas.Canvas(output)
     c.drawString(40, 800, text)
     c.save()
 
     return send_file(output, as_attachment=True)
 
-# -----------------------------------------------------------------------------
-# Errors
-# -----------------------------------------------------------------------------
-@app.errorhandler(413)
-def file_too_large(e):
-    return jsonify({"error": "File too large (50MB max)"}), 413
-
-# -----------------------------------------------------------------------------
-# Run
-# -----------------------------------------------------------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    app.run(debug=True)
