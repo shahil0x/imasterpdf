@@ -2,6 +2,7 @@ import os
 import io
 import shutil
 import tempfile
+import uuid
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, send_file, request, abort, Response, jsonify
@@ -13,7 +14,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from PIL import Image
 from pdfminer.high_level import extract_text
-# from weasyprint import HTML  # Render-friendly Word→PDF
+from weasyprint import HTML  # Render-friendly Word→PDF
 
 # -----------------------------------------------------------------------------
 # Flask app configuration
@@ -56,12 +57,16 @@ def save_uploads(files):
         filename = secure_filename(storage.filename)
         if not filename:
             abort(Response("Invalid filename.", status=400))
-        path = os.path.join(UPLOAD_DIR, f"{datetime.utcnow().timestamp()}_{filename}")
+        # Use unique ID to prevent filename conflicts
+        unique_id = str(uuid.uuid4())[:8]
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        path = os.path.join(UPLOAD_DIR, f"{timestamp}_{unique_id}_{filename}")
         storage.save(path)
         saved.append(path)
     return saved
 
 def cleanup_temp():
+    """Clean up old temporary files"""
     cutoff = datetime.utcnow() - timedelta(minutes=CLEANUP_AGE_MINUTES)
     for base in (UPLOAD_DIR, OUTPUT_DIR):
         for name in os.listdir(base):
@@ -75,6 +80,13 @@ def cleanup_temp():
                         os.remove(path)
             except Exception:
                 pass
+
+def create_output_path(extension):
+    """Create a unique output file path"""
+    unique_id = str(uuid.uuid4())[:8]
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    filename = f"output_{timestamp}_{unique_id}{extension}"
+    return os.path.join(OUTPUT_DIR, filename)
 
 def wrap_text(text, max_chars=95):
     words = text.split(' ')
@@ -112,12 +124,14 @@ def parse_pages(pages_str):
                 abort(Response("Invalid page number.", status=400))
     return pages
 
-def safe_remove(path):
-    try:
-        if os.path.exists(path):
-            os.remove(path)
-    except Exception:
-        pass
+def cleanup_files(file_paths):
+    """Safely remove multiple files"""
+    for path in file_paths:
+        try:
+            if os.path.exists(path):
+                os.remove(path)
+        except Exception:
+            pass
 
 # -----------------------------------------------------------------------------
 # SPA routes (render_template single index.html)
@@ -165,8 +179,6 @@ def api_contact():
     message = (data.get('message') or '').strip()
     if not name or not email or not message:
         return Response("Please provide name, email, and message.", status=400)
-    # In production, integrate with email service or ticketing system.
-    # For now, acknowledge receipt.
     return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
 
 # -----------------------------------------------------------------------------
@@ -187,12 +199,16 @@ def api_pdf_to_word():
         text = extract_text(pdf_path) or ""
         doc = Document()
         for line in text.splitlines():
-            doc.add_paragraph(line)
-        out_path = os.path.join(OUTPUT_DIR, f"converted_{int(datetime.utcnow().timestamp())}.docx")
+            if line.strip():
+                doc.add_paragraph(line)
+        out_path = create_output_path('.docx')
         doc.save(out_path)
-        return send_file(out_path, as_attachment=True, download_name="output.docx")
+        return send_file(out_path, 
+                        as_attachment=True, 
+                        download_name="converted.docx",
+                        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     finally:
-        safe_remove(pdf_path)
+        cleanup_files(paths)
 
 @app.route('/api/merge-pdf', methods=['POST'])
 def api_merge_pdf():
@@ -206,17 +222,20 @@ def api_merge_pdf():
             abort(Response("Only PDF files are allowed.", status=400))
 
     writer = PdfWriter()
+    out_path = create_output_path('.pdf')
     try:
         for p in paths:
             reader = PdfReader(p)
             for page in reader.pages:
                 writer.add_page(page)
-        out_path = os.path.join(OUTPUT_DIR, f"merged_{int(datetime.utcnow().timestamp())}.pdf")
         with open(out_path, 'wb') as f:
             writer.write(f)
-        return send_file(out_path, as_attachment=True, download_name="merged.pdf")
+        return send_file(out_path, 
+                        as_attachment=True, 
+                        download_name="merged.pdf",
+                        mimetype='application/pdf')
     finally:
-        for p in paths: safe_remove(p)
+        cleanup_files(paths)
 
 @app.route('/api/rotate-pdf', methods=['POST'])
 def api_rotate_pdf():
@@ -232,18 +251,21 @@ def api_rotate_pdf():
         abort(Response("Only PDF files are allowed.", status=400))
 
     writer = PdfWriter()
+    out_path = create_output_path('.pdf')
     try:
         reader = PdfReader(pdf_path)
         for idx, page in enumerate(reader.pages):
             if rotate_all or idx == 0:
                 page.rotate(rotation)
             writer.add_page(page)
-        out_path = os.path.join(OUTPUT_DIR, f"rotated_{int(datetime.utcnow().timestamp())}.pdf")
         with open(out_path, 'wb') as f:
             writer.write(f)
-        return send_file(out_path, as_attachment=True, download_name="rotated.pdf")
+        return send_file(out_path, 
+                        as_attachment=True, 
+                        download_name="rotated.pdf",
+                        mimetype='application/pdf')
     finally:
-        safe_remove(pdf_path)
+        cleanup_files(paths)
 
 @app.route('/api/delete-pages-pdf', methods=['POST'])
 def api_delete_pages_pdf():
@@ -260,20 +282,23 @@ def api_delete_pages_pdf():
         abort(Response("Only PDF files are allowed.", status=400))
 
     to_delete = parse_pages(pages_str)
-
     writer = PdfWriter()
+    out_path = create_output_path('.pdf')
+    
     try:
         reader = PdfReader(pdf_path)
         total = len(reader.pages)
         for i in range(total):
             if (i+1) not in to_delete:
                 writer.add_page(reader.pages[i])
-        out_path = os.path.join(OUTPUT_DIR, f"pages_removed_{int(datetime.utcnow().timestamp())}.pdf")
         with open(out_path, 'wb') as f:
             writer.write(f)
-        return send_file(out_path, as_attachment=True, download_name="pages_removed.pdf")
+        return send_file(out_path, 
+                        as_attachment=True, 
+                        download_name="pages_removed.pdf",
+                        mimetype='application/pdf')
     finally:
-        safe_remove(pdf_path)
+        cleanup_files(paths)
 
 @app.route('/api/lock-pdf', methods=['POST'])
 def api_lock_pdf():
@@ -290,17 +315,20 @@ def api_lock_pdf():
         abort(Response("Only PDF files are allowed.", status=400))
 
     writer = PdfWriter()
+    out_path = create_output_path('.pdf')
     try:
         reader = PdfReader(pdf_path)
         for page in reader.pages:
             writer.add_page(page)
         writer.encrypt(pin)
-        out_path = os.path.join(OUTPUT_DIR, f"locked_{int(datetime.utcnow().timestamp())}.pdf")
         with open(out_path, 'wb') as f:
             writer.write(f)
-        return send_file(out_path, as_attachment=True, download_name="locked.pdf")
+        return send_file(out_path, 
+                        as_attachment=True, 
+                        download_name="locked.pdf",
+                        mimetype='application/pdf')
     finally:
-        safe_remove(pdf_path)
+        cleanup_files(paths)
 
 @app.route('/api/unlock-pdf', methods=['POST'])
 def api_unlock_pdf():
@@ -317,6 +345,7 @@ def api_unlock_pdf():
         abort(Response("Only PDF files are allowed.", status=400))
 
     writer = PdfWriter()
+    out_path = create_output_path('.pdf')
     try:
         reader = PdfReader(pdf_path)
         if reader.is_encrypted:
@@ -324,12 +353,14 @@ def api_unlock_pdf():
                 abort(Response("Incorrect password.", status=400))
         for page in reader.pages:
             writer.add_page(page)
-        out_path = os.path.join(OUTPUT_DIR, f"unlocked_{int(datetime.utcnow().timestamp())}.pdf")
         with open(out_path, 'wb') as f:
             writer.write(f)
-        return send_file(out_path, as_attachment=True, download_name="unlocked.pdf")
+        return send_file(out_path, 
+                        as_attachment=True, 
+                        download_name="unlocked.pdf",
+                        mimetype='application/pdf')
     finally:
-        safe_remove(pdf_path)
+        cleanup_files(paths)
 
 @app.route('/api/word-to-pdf', methods=['POST'])
 def api_word_to_pdf():
@@ -348,15 +379,16 @@ def api_word_to_pdf():
         doc = Document(doc_path)
         html_parts = []
         for para in doc.paragraphs:
-            html_parts.append(f"<p>{para.text}</p>")
+            if para.text.strip():
+                html_parts.append(f"<p>{para.text}</p>")
 
         html_content = f"""
         <html>
           <head>
             <meta charset="utf-8">
             <style>
-              body {{ font-family: Arial, sans-serif; }}
-              p {{ margin: 8px 0; }}
+              body {{ font-family: Arial, sans-serif; margin: 40px; }}
+              p {{ margin: 12px 0; line-height: 1.5; }}
             </style>
           </head>
           <body>
@@ -365,15 +397,17 @@ def api_word_to_pdf():
         </html>
         """
 
-        out_path = os.path.join(OUTPUT_DIR, f"word_{int(datetime.utcnow().timestamp())}.pdf")
+        out_path = create_output_path('.pdf')
         HTML(string=html_content).write_pdf(out_path)
-        return send_file(out_path, as_attachment=True, download_name="converted.pdf")
+        return send_file(out_path, 
+                        as_attachment=True, 
+                        download_name="converted.pdf",
+                        mimetype='application/pdf')
 
     except Exception as e:
         abort(Response(f"Conversion failed: {str(e)}", status=500))
-
     finally:
-        safe_remove(doc_path)
+        cleanup_files(paths)
 
 @app.route('/api/merge-word', methods=['POST'])
 def api_merge_word():
@@ -391,14 +425,18 @@ def api_merge_word():
         for idx, dp in enumerate(paths):
             d = Document(dp)
             for para in d.paragraphs:
-                merged.add_paragraph(para.text)
+                if para.text.strip():
+                    merged.add_paragraph(para.text)
             if idx < len(paths) - 1:
                 merged.add_page_break()
-        out_path = os.path.join(OUTPUT_DIR, f"merged_{int(datetime.utcnow().timestamp())}.docx")
+        out_path = create_output_path('.docx')
         merged.save(out_path)
-        return send_file(out_path, as_attachment=True, download_name="merged.docx")
+        return send_file(out_path, 
+                        as_attachment=True, 
+                        download_name="merged.docx",
+                        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     finally:
-        for p in paths: safe_remove(p)
+        cleanup_files(paths)
 
 @app.route('/api/word-to-text', methods=['POST'])
 def api_word_to_text():
@@ -413,13 +451,21 @@ def api_word_to_text():
 
     try:
         doc = Document(doc_path)
-        text_io = io.StringIO()
+        text_content = []
         for para in doc.paragraphs:
-            text_io.write(para.text + "\n")
-        out_bytes = io.BytesIO(text_io.getvalue().encode('utf-8'))
-        return send_file(out_bytes, as_attachment=True, download_name="output.txt", mimetype='text/plain')
+            if para.text.strip():
+                text_content.append(para.text)
+        
+        text_output = "\n".join(text_content)
+        out_bytes = io.BytesIO(text_output.encode('utf-8'))
+        out_bytes.seek(0)
+        
+        return send_file(out_bytes, 
+                        as_attachment=True, 
+                        download_name="converted.txt",
+                        mimetype='text/plain')
     finally:
-        safe_remove(doc_path)
+        cleanup_files(paths)
 
 @app.route('/api/text-to-pdf', methods=['POST'])
 def api_text_to_pdf():
@@ -428,21 +474,35 @@ def api_text_to_pdf():
     if not text:
         abort(Response("Text content is required.", status=400))
 
-    out_path = os.path.join(OUTPUT_DIR, f"text_{int(datetime.utcnow().timestamp())}.pdf")
+    out_path = create_output_path('.pdf')
     c = canvas.Canvas(out_path, pagesize=A4)
     width, height = A4
     left_margin = 50
     top = height - 50
     line_height = 14
-    for line in text.splitlines():
-        for chunk in wrap_text(line, max_chars=95):
-            c.drawString(left_margin, top, chunk)
+    
+    # Split text into lines
+    lines = text.split('\n')
+    for line in lines:
+        if line.strip():
+            for chunk in wrap_text(line, max_chars=95):
+                c.drawString(left_margin, top, chunk)
+                top -= line_height
+                if top < 50:
+                    c.showPage()
+                    top = height - 50
+        else:
+            # Empty line
             top -= line_height
             if top < 50:
                 c.showPage()
                 top = height - 50
+    
     c.save()
-    return send_file(out_path, as_attachment=True, download_name="text.pdf")
+    return send_file(out_path, 
+                    as_attachment=True, 
+                    download_name="text.pdf",
+                    mimetype='application/pdf')
 
 @app.route('/api/text-to-word', methods=['POST'])
 def api_text_to_word():
@@ -450,12 +510,19 @@ def api_text_to_word():
     text = (request.form.get('text') or '').strip()
     if not text:
         abort(Response("Text content is required.", status=400))
+    
     doc = Document()
-    for line in text.splitlines():
-        doc.add_paragraph(line)
-    out_path = os.path.join(OUTPUT_DIR, f"text_{int(datetime.utcnow().timestamp())}.docx")
+    lines = text.split('\n')
+    for line in lines:
+        if line.strip():
+            doc.add_paragraph(line)
+    
+    out_path = create_output_path('.docx')
     doc.save(out_path)
-    return send_file(out_path, as_attachment=True, download_name="text.docx")
+    return send_file(out_path, 
+                    as_attachment=True, 
+                    download_name="text.docx",
+                    mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
 @app.route('/api/images-to-pdf', methods=['POST'])
 def api_images_to_pdf():
@@ -471,20 +538,26 @@ def api_images_to_pdf():
     try:
         images = []
         for p in paths:
-            img = Image.open(p).convert('RGB')
+            img = Image.open(p)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                img = img.convert('RGB')
             images.append(img)
-        out_path = os.path.join(OUTPUT_DIR, f"images_{int(datetime.utcnow().timestamp())}.pdf")
+        
+        out_path = create_output_path('.pdf')
         if len(images) == 1:
-            images[0].save(out_path, save_all=True)
+            images[0].save(out_path, "PDF", resolution=100.0)
         else:
-            first, rest = images[0], images[1:]
-            first.save(out_path, save_all=True, append_images=rest)
-        return send_file(out_path, as_attachment=True, download_name="images.pdf")
+            images[0].save(out_path, "PDF", resolution=100.0, save_all=True, append_images=images[1:])
+        
+        return send_file(out_path, 
+                        as_attachment=True, 
+                        download_name="images.pdf",
+                        mimetype='application/pdf')
     finally:
-        for p in paths: safe_remove(p)
+        cleanup_files(paths)
 
 # -----------------------------------------------------------------------------
 # Gunicorn entrypoint
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)# 
+    app.run(host='0.0.0.0', port=8000, debug=False)
