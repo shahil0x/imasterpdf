@@ -33,8 +33,8 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
 # -----------------------------------------------------------------------------
 # Helpers
 # -----------------------------------------------------------------------------
-def unique_name(prefix, ext):
-    return f"{prefix}_{int(datetime.utcnow().timestamp())}_{uuid.uuid4().hex}{ext}"
+def unique_output(ext):
+    return os.path.join(OUTPUT_DIR, f"{uuid.uuid4().hex}.{ext}")
 
 def cleanup_temp():
     cutoff = datetime.utcnow() - timedelta(minutes=CLEANUP_AGE_MINUTES)
@@ -56,10 +56,7 @@ def save_uploads(files):
         name = secure_filename(f.filename)
         if not name:
             abort(Response("Invalid filename", 400))
-        path = os.path.join(
-            UPLOAD_DIR,
-            unique_name("upload", "_" + name)
-        )
+        path = os.path.join(UPLOAD_DIR, f"{uuid.uuid4().hex}_{name}")
         f.save(path)
         paths.append(path)
     return paths
@@ -121,7 +118,7 @@ def word_to_pdf():
     doc_path = save_uploads(request.files.getlist("files"))[0]
     doc = Document(doc_path)
 
-    out = os.path.join(OUTPUT_DIR, unique_name("word", ".pdf"))
+    out = unique_output("pdf")
     c = canvas.Canvas(out, pagesize=A4)
     y = A4[1] - 50
 
@@ -150,7 +147,7 @@ def merge_pdf():
         for page in reader.pages:
             writer.add_page(page)
 
-    out = os.path.join(OUTPUT_DIR, unique_name("merged", ".pdf"))
+    out = unique_output("pdf")
     with open(out, "wb") as f:
         writer.write(f)
 
@@ -172,7 +169,7 @@ def rotate_pdf():
         p.rotate_clockwise(deg)
         writer.add_page(p)
 
-    out = os.path.join(OUTPUT_DIR, unique_name("rotated", ".pdf"))
+    out = unique_output("pdf")
     with open(out, "wb") as f:
         writer.write(f)
 
@@ -194,7 +191,7 @@ def delete_pages():
         if i not in pages:
             writer.add_page(p)
 
-    out = os.path.join(OUTPUT_DIR, unique_name("pages_removed", ".pdf"))
+    out = unique_output("pdf")
     with open(out, "wb") as f:
         writer.write(f)
 
@@ -217,7 +214,7 @@ def lock_pdf():
 
     writer.encrypt(pin)
 
-    out = os.path.join(OUTPUT_DIR, unique_name("locked", ".pdf"))
+    out = unique_output("pdf")
     with open(out, "wb") as f:
         writer.write(f)
 
@@ -239,7 +236,7 @@ def unlock_pdf():
     for p in reader.pages:
         writer.add_page(p)
 
-    out = os.path.join(OUTPUT_DIR, unique_name("unlocked", ".pdf"))
+    out = unique_output("pdf")
     with open(out, "wb") as f:
         writer.write(f)
 
@@ -254,7 +251,7 @@ def images_to_pdf():
     paths = save_uploads(request.files.getlist("files"))
     images = [Image.open(p).convert("RGB") for p in paths]
 
-    out = os.path.join(OUTPUT_DIR, unique_name("images", ".pdf"))
+    out = unique_output("pdf")
     images[0].save(out, save_all=True, append_images=images[1:])
 
     return safe_send(out, "images.pdf", "application/pdf")
@@ -267,7 +264,7 @@ def text_to_pdf():
     cleanup_temp()
     text = request.form.get("text", "")
 
-    out = os.path.join(OUTPUT_DIR, unique_name("text", ".pdf"))
+    out = unique_output("pdf")
     c = canvas.Canvas(out, pagesize=A4)
     y = A4[1] - 50
 
@@ -290,7 +287,7 @@ def word_to_text():
     path = save_uploads(request.files.getlist("files"))[0]
     doc = Document(path)
 
-    out = os.path.join(OUTPUT_DIR, unique_name("text", ".txt"))
+    out = unique_output("txt")
     with open(out, "w", encoding="utf-8") as f:
         for p in doc.paragraphs:
             f.write(p.text + "\n")
@@ -309,7 +306,7 @@ def text_to_word():
     for l in text.splitlines():
         doc.add_paragraph(l)
 
-    out = os.path.join(OUTPUT_DIR, unique_name("text", ".docx"))
+    out = unique_output("docx")
     doc.save(out)
 
     return safe_send(
@@ -333,7 +330,7 @@ def merge_word():
             merged.add_paragraph(para.text)
         merged.add_page_break()
 
-    out = os.path.join(OUTPUT_DIR, unique_name("merged", ".docx"))
+    out = unique_output("docx")
     merged.save(out)
 
     return safe_send(
