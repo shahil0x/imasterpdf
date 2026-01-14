@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import uuid
+from io import BytesIO
 from datetime import datetime, timedelta
 
 from flask import (
@@ -76,16 +77,22 @@ def wrap_text(text, width=95):
         lines.append(" ".join(cur))
     return lines
 
+# ✅ MEMORY SAFE SEND (CRITICAL FIX)
 def safe_send(path, filename, mimetype):
     if not os.path.exists(path) or os.path.getsize(path) == 0:
         abort(Response("Failed to generate file", 500))
 
+    with open(path, "rb") as f:
+        data = f.read()
+
+    buffer = BytesIO(data)
+    buffer.seek(0)
+
     return send_file(
-        path,
+        buffer,
         as_attachment=True,
         download_name=filename,
-        mimetype=mimetype,
-        conditional=False
+        mimetype=mimetype
     )
 
 # -----------------------------------------------------------------------------
