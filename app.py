@@ -1,19 +1,10 @@
-import os
-import io
-import shutil
-import tempfile
-import uuid
-from datetime import datetime, timedelta
-
-from flask import Flask, render_template, send_file, request, abort, Response, jsonify
-from werkzeug.utils import secure_filename
-
-from PyPDF2 import PdfReader, PdfWriter
-from docx import Document
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+from flask import Flask, request, send_file, render_template
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 from PIL import Image
-from pdfminer.high_level import extract_text
+from docx2pdf import convert
+from reportlab.pdfgen import canvas
+import os
+import uuid
 
 app = Flask(__name__)
 
@@ -29,55 +20,7 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 @app.route("/")
 def index():
     return render_template("index.html")
-# -----------------------------------------------------------------------------
-# SPA routes (render_template single index.html)
-# -----------------------------------------------------------------------------
-@app.route('/', methods=['GET'])
-def index():
-    return render_template('index.html')
 
-@app.route('/about', methods=['GET'])
-def about():
-    return render_template('index.html')
-
-@app.route('/privacy', methods=['GET'])
-def privacy():
-    return render_template('index.html')
-
-@app.route('/terms', methods=['GET'])
-def terms():
-    return render_template('index.html')
-
-@app.route('/tool', methods=['GET'])
-def tool():
-    return render_template('index.html')
-
-@app.route('/blog', methods=['GET'])
-def blog():
-    return render_template('index.html')
-
-@app.route('/blog/<slug>', methods=['GET'])
-def blog_article(slug):
-    return render_template('index.html')
-
-@app.route('/contact', methods=['GET'])
-def contact():
-    return render_template('index.html')
-
-# -----------------------------------------------------------------------------
-# Contact API
-# -----------------------------------------------------------------------------
-@app.route('/api/contact', methods=['POST'])
-def api_contact():
-    data = request.get_json(silent=True) or {}
-    name = (data.get('name') or '').strip()
-    email = (data.get('email') or '').strip()
-    message = (data.get('message') or '').strip()
-    if not name or not email or not message:
-        return Response("Please provide name, email, and message.", status=400)
-    # In production, integrate with email service or ticketing system.
-    # For now, acknowledge receipt.
-    return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
 # ---------- PDF MERGE ----------
 @app.route("/merge-pdf", methods=["POST"])
 def merge_pdf():
