@@ -14,127 +14,21 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from PIL import Image
 from pdfminer.high_level import extract_text
-# from weasyprint import HTML  # Render-friendly Word→PDF
 
-# -----------------------------------------------------------------------------
-# Flask app configuration
-# -----------------------------------------------------------------------------
-app = Flask(__name__, static_folder=None)
+app = Flask(__name__)
 
-MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
-UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
-OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_outputs")
-CLEANUP_AGE_MINUTES = 30
+# 50 MB limit
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+UPLOAD_FOLDER = "uploads"
+OUTPUT_FOLDER = "outputs"
 
-ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
-ALLOWED_PDF_EXT = {'.pdf'}
-ALLOWED_WORD_EXT = {'.docx'}  # DOCX only for Word→PDF
-ALLOWED_TEXT_EXT = {'.txt'}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# -----------------------------------------------------------------------------
-# Utility helpers
-# -----------------------------------------------------------------------------
-def ext_of(filename):
-    return os.path.splitext(filename.lower())[1]
-
-def validate_file(stream):
-    stream.seek(0, os.SEEK_END)
-    size = stream.tell()
-    stream.seek(0)
-    if size < 1024:
-        abort(Response("File too small (min 1 KB).", status=400))
-    if size > MAX_CONTENT_LENGTH:
-        abort(Response("File too large (max 50 MB).", status=400))
-
-def generate_unique_filename(original_filename, suffix=""):
-    """Generate a unique filename with timestamp and random component"""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    random_str = str(uuid.uuid4())[:8]
-    name, ext = os.path.splitext(original_filename)
-    safe_name = secure_filename(name)
-    
-    # If suffix is provided, include it
-    if suffix:
-        return f"{safe_name}_{suffix}_{timestamp}_{random_str}{ext}"
-    return f"{safe_name}_{timestamp}_{random_str}{ext}"
-
-def save_uploads(files):
-    saved = []
-    for storage in files:
-        validate_file(storage.stream)
-        filename = secure_filename(storage.filename)
-        if not filename:
-            abort(Response("Invalid filename.", status=400))
-        
-        # Generate unique filename
-        unique_filename = generate_unique_filename(storage.filename)
-        path = os.path.join(UPLOAD_DIR, unique_filename)
-        storage.save(path)
-        saved.append(path)
-    return saved
-
-def cleanup_temp():
-    cutoff = datetime.utcnow() - timedelta(minutes=CLEANUP_AGE_MINUTES)
-    for base in (UPLOAD_DIR, OUTPUT_DIR):
-        for name in os.listdir(base):
-            path = os.path.join(base, name)
-            try:
-                mtime = datetime.utcfromtimestamp(os.path.getmtime(path))
-                if mtime < cutoff:
-                    if os.path.isdir(path):
-                        shutil.rmtree(path, ignore_errors=True)
-                    else:
-                        os.remove(path)
-            except Exception:
-                pass
-
-def wrap_text(text, max_chars=95):
-    words = text.split(' ')
-    lines, current = [], []
-    length = 0
-    for w in words:
-        add_len = len(w) + (1 if current else 0)
-        if length + add_len <= max_chars:
-            current.append(w)
-            length += add_len
-        else:
-            lines.append(' '.join(current))
-            current = [w]
-            length = len(w)
-    if current:
-        lines.append(' '.join(current))
-    return lines
-
-def parse_pages(pages_str):
-    pages = set()
-    parts = [p.strip() for p in pages_str.split(',') if p.strip()]
-    for part in parts:
-        if '-' in part:
-            a, b = part.split('-', 1)
-            try:
-                start = int(a); end = int(b)
-                for i in range(min(start, end), max(start, end)+1):
-                    pages.add(i)
-            except ValueError:
-                abort(Response("Invalid page range.", status=400))
-        else:
-            try:
-                pages.add(int(part))
-            except ValueError:
-                abort(Response("Invalid page number.", status=400))
-    return pages
-
-def safe_remove(path):
-    try:
-        if os.path.exists(path):
-            os.remove(path)
-    except Exception:
-        pass
-
+@app.route("/")
+def index():
+    return render_template("index.html")
 # -----------------------------------------------------------------------------
 # SPA routes (render_template single index.html)
 # -----------------------------------------------------------------------------
@@ -184,525 +78,172 @@ def api_contact():
     # In production, integrate with email service or ticketing system.
     # For now, acknowledge receipt.
     return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
+# ---------- PDF MERGE ----------
+@app.route("/merge-pdf", methods=["POST"])
+def merge_pdf():
+    files = request.files.getlist("files")
+    merger = PdfMerger()
 
-# -----------------------------------------------------------------------------
-# Tool APIs
-# -----------------------------------------------------------------------------
-@app.route('/api/pdf-to-word', methods=['POST'])
-def api_pdf_to_word():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
-    paths = save_uploads(files)
-    pdf_path = paths[0]
-    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+    for file in files:
+        path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(path)
+        merger.append(path)
 
-    try:
-        # Extract original filename for output naming
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "converted")
-        output_name = os.path.splitext(output_name)[0] + ".docx"
-        
-        text = extract_text(pdf_path) or ""
-        doc = Document()
-        for line in text.splitlines():
-            if line.strip():
-                doc.add_paragraph(line)
-        
-        # Create a BytesIO buffer for the Word file
-        buffer = io.BytesIO()
-        doc.save(buffer)
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        )
-    finally:
-        safe_remove(pdf_path)
+    output = f"{OUTPUT_FOLDER}/merged_{uuid.uuid4()}.pdf"
+    merger.write(output)
+    merger.close()
 
-@app.route('/api/merge-pdf', methods=['POST'])
-def api_merge_pdf():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) < 2:
-        abort(Response("Upload at least two PDFs.", status=400))
-    paths = save_uploads(files)
-    for p in paths:
-        if ext_of(p) not in ALLOWED_PDF_EXT:
-            abort(Response("Only PDF files are allowed.", status=400))
+    return send_file(output, as_attachment=True)
 
+# ---------- PDF SPLIT ----------
+@app.route("/split-pdf", methods=["POST"])
+def split_pdf():
+    file = request.files["file"]
+    start = int(request.form["start"]) - 1
+    end = int(request.form["end"]) - 1
+
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    reader = PdfReader(path)
     writer = PdfWriter()
-    try:
-        for p in paths:
-            reader = PdfReader(p)
-            for page in reader.pages:
-                writer.add_page(page)
-        
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "merged")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        # Create a BytesIO buffer for the PDF
-        buffer = io.BytesIO()
-        writer.write(buffer)
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
-    finally:
-        for p in paths:
-            safe_remove(p)
 
-@app.route('/api/rotate-pdf', methods=['POST'])
-def api_rotate_pdf():
-    cleanup_temp()
-    rotation = int(request.form.get('rotation', '90'))
-    rotate_all = request.form.get('rotate_all', 'true') == 'true'
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
-    paths = save_uploads(files)
-    pdf_path = paths[0]
-    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+    for i in range(start, end + 1):
+        writer.add_page(reader.pages[i])
 
+    output = f"{OUTPUT_FOLDER}/split_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
+
+    return send_file(output, as_attachment=True)
+
+# ---------- PDF ROTATE ----------
+@app.route("/rotate-pdf", methods=["POST"])
+def rotate_pdf():
+    file = request.files["file"]
+    angle = int(request.form["angle"])
+
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    reader = PdfReader(path)
     writer = PdfWriter()
-    try:
-        reader = PdfReader(pdf_path)
-        
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, f"rotated_{rotation}")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        for idx, page in enumerate(reader.pages):
-            if rotate_all or idx == 0:
-                page.rotate(rotation)
+
+    for page in reader.pages:
+        page.rotate(angle)
+        writer.add_page(page)
+
+    output = f"{OUTPUT_FOLDER}/rotated_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
+
+    return send_file(output, as_attachment=True)
+
+# ---------- DELETE PAGES ----------
+@app.route("/delete-pages", methods=["POST"])
+def delete_pages():
+    file = request.files["file"]
+    pages = list(map(lambda x: int(x) - 1, request.form["pages"].split(",")))
+
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    reader = PdfReader(path)
+    writer = PdfWriter()
+
+    for i, page in enumerate(reader.pages):
+        if i not in pages:
             writer.add_page(page)
-        
-        # Create a BytesIO buffer for the PDF
-        buffer = io.BytesIO()
-        writer.write(buffer)
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
-    finally:
-        safe_remove(pdf_path)
 
-@app.route('/api/delete-pages-pdf', methods=['POST'])
-def api_delete_pages_pdf():
-    cleanup_temp()
-    pages_str = request.form.get('pages', '').strip()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
-    if not pages_str:
-        abort(Response("Pages to delete are required.", status=400))
-    paths = save_uploads(files)
-    pdf_path = paths[0]
-    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+    output = f"{OUTPUT_FOLDER}/deleted_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
 
-    to_delete = parse_pages(pages_str)
+    return send_file(output, as_attachment=True)
+
+# ---------- LOCK PDF ----------
+@app.route("/lock-pdf", methods=["POST"])
+def lock_pdf():
+    file = request.files["file"]
+    password = request.form["password"]
+
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    reader = PdfReader(path)
+    writer = PdfWriter()
+
+    for page in reader.pages:
+        writer.add_page(page)
+
+    writer.encrypt(password)
+
+    output = f"{OUTPUT_FOLDER}/locked_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
+
+    return send_file(output, as_attachment=True)
+
+# ---------- UNLOCK PDF ----------
+@app.route("/unlock-pdf", methods=["POST"])
+def unlock_pdf():
+    file = request.files["file"]
+    password = request.form["password"]
+
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    reader = PdfReader(path)
+    reader.decrypt(password)
 
     writer = PdfWriter()
-    try:
-        reader = PdfReader(pdf_path)
-        total = len(reader.pages)
-        
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "pages_removed")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        for i in range(total):
-            if (i+1) not in to_delete:
-                writer.add_page(reader.pages[i])
-        
-        # Create a BytesIO buffer for the PDF
-        buffer = io.BytesIO()
-        writer.write(buffer)
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
-    finally:
-        safe_remove(pdf_path)
+    for page in reader.pages:
+        writer.add_page(page)
 
-@app.route('/api/lock-pdf', methods=['POST'])
-def api_lock_pdf():
-    cleanup_temp()
-    pin = request.form.get('pin', '').strip()
-    if not pin or not pin.isdigit() or len(pin) != 4:
-        abort(Response("PIN must be exactly 4 digits.", status=400))
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
-    paths = save_uploads(files)
-    pdf_path = paths[0]
-    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+    output = f"{OUTPUT_FOLDER}/unlocked_{uuid.uuid4()}.pdf"
+    with open(output, "wb") as f:
+        writer.write(f)
 
-    writer = PdfWriter()
-    try:
-        reader = PdfReader(pdf_path)
-        
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "locked")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        for page in reader.pages:
-            writer.add_page(page)
-        writer.encrypt(pin)
-        
-        # Create a BytesIO buffer for the PDF
-        buffer = io.BytesIO()
-        writer.write(buffer)
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
-    finally:
-        safe_remove(pdf_path)
+    return send_file(output, as_attachment=True)
 
-@app.route('/api/unlock-pdf', methods=['POST'])
-def api_unlock_pdf():
-    cleanup_temp()
-    password = request.form.get('password', '').strip()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
-    if not password:
-        abort(Response("Password is required.", status=400))
-    paths = save_uploads(files)
-    pdf_path = paths[0]
-    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+# ---------- IMAGE → PDF ----------
+@app.route("/image-to-pdf", methods=["POST"])
+def image_to_pdf():
+    images = request.files.getlist("files")
+    image_list = []
 
-    writer = PdfWriter()
-    try:
-        reader = PdfReader(pdf_path)
-        
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "unlocked")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        if reader.is_encrypted:
-            if not reader.decrypt(password):
-                abort(Response("Incorrect password.", status=400))
-        for page in reader.pages:
-            writer.add_page(page)
-        
-        # Create a BytesIO buffer for the PDF
-        buffer = io.BytesIO()
-        writer.write(buffer)
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
-    finally:
-        safe_remove(pdf_path)
+    for img in images:
+        image = Image.open(img).convert("RGB")
+        image_list.append(image)
 
-@app.route('/api/word-to-pdf', methods=['POST'])
-def api_word_to_pdf():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one Word file.", status=400))
+    output = f"{OUTPUT_FOLDER}/images_{uuid.uuid4()}.pdf"
+    image_list[0].save(output, save_all=True, append_images=image_list[1:])
 
-    paths = save_uploads(files)
-    doc_path = paths[0]
+    return send_file(output, as_attachment=True)
 
-    if ext_of(doc_path) not in ALLOWED_WORD_EXT:
-        abort(Response("Only DOCX files are supported.", status=400))
+# ---------- WORD → PDF ----------
+@app.route("/word-to-pdf", methods=["POST"])
+def word_to_pdf():
+    file = request.files["file"]
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
 
-    try:
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "converted")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        # Since weasyprint is commented out, use reportlab as fallback
-        doc = Document(doc_path)
-        
-        # Create PDF using reportlab
-        buffer = io.BytesIO()
-        c = canvas.Canvas(buffer, pagesize=A4)
-        width, height = A4
-        left_margin = 50
-        top = height - 50
-        line_height = 14
-        
-        for para in doc.paragraphs:
-            if para.text.strip():
-                lines = wrap_text(para.text, max_chars=95)
-                for line in lines:
-                    c.drawString(left_margin, top, line)
-                    top -= line_height
-                    if top < 50:
-                        c.showPage()
-                        top = height - 50
-                # Add space between paragraphs
-                top -= line_height / 2
-                if top < 50:
-                    c.showPage()
-                    top = height - 50
-        
-        c.save()
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
+    output = f"{OUTPUT_FOLDER}/{uuid.uuid4()}.pdf"
+    convert(path, output)
 
-    except Exception as e:
-        abort(Response(f"Conversion failed: {str(e)}", status=500))
-    finally:
-        safe_remove(doc_path)
+    return send_file(output, as_attachment=True)
 
-@app.route('/api/merge-word', methods=['POST'])
-def api_merge_word():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) < 2:
-        abort(Response("Upload at least two Word files.", status=400))
-    paths = save_uploads(files)
-    for p in paths:
-        if ext_of(p) not in ALLOWED_WORD_EXT:
-            abort(Response("Only DOCX files are allowed.", status=400))
+# ---------- TEXT → PDF ----------
+@app.route("/text-to-pdf", methods=["POST"])
+def text_to_pdf():
+    text = request.form["text"]
 
-    try:
-        merged = Document()
-        for idx, dp in enumerate(paths):
-            d = Document(dp)
-            for para in d.paragraphs:
-                if para.text.strip():
-                    merged.add_paragraph(para.text)
-            if idx < len(paths) - 1:
-                merged.add_page_break()
-        
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "merged")
-        output_name = os.path.splitext(output_name)[0] + ".docx"
-        
-        # Create a BytesIO buffer for the Word file
-        buffer = io.BytesIO()
-        merged.save(buffer)
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        )
-    finally:
-        for p in paths:
-            safe_remove(p)
-
-@app.route('/api/word-to-text', methods=['POST'])
-def api_word_to_text():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one Word file.", status=400))
-    paths = save_uploads(files)
-    doc_path = paths[0]
-    if ext_of(doc_path) not in ALLOWED_WORD_EXT:
-        abort(Response("Only DOCX files are allowed.", status=400))
-
-    try:
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "converted")
-        output_name = os.path.splitext(output_name)[0] + ".txt"
-        
-        doc = Document(doc_path)
-        text_io = io.StringIO()
-        for para in doc.paragraphs:
-            if para.text.strip():
-                text_io.write(para.text + "\n")
-        
-        buffer = io.BytesIO(text_io.getvalue().encode('utf-8'))
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='text/plain'
-        )
-    finally:
-        safe_remove(doc_path)
-
-@app.route('/api/text-to-pdf', methods=['POST'])
-def api_text_to_pdf():
-    cleanup_temp()
-    text = (request.form.get('text') or '').strip()
-    if not text:
-        abort(Response("Text content is required.", status=400))
-
-    # Generate unique filename
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    random_str = str(uuid.uuid4())[:8]
-    output_name = f"text_converted_{timestamp}_{random_str}.pdf"
-
-    # Create PDF in memory
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
-    left_margin = 50
-    top = height - 50
-    line_height = 14
-    
-    lines = text.splitlines()
-    for line in lines:
-        if line.strip():
-            for chunk in wrap_text(line, max_chars=95):
-                c.drawString(left_margin, top, chunk)
-                top -= line_height
-                if top < 50:
-                    c.showPage()
-                    top = height - 50
-        else:
-            # Empty line
-            top -= line_height
-            if top < 50:
-                c.showPage()
-                top = height - 50
-    
+    output = f"{OUTPUT_FOLDER}/text_{uuid.uuid4()}.pdf"
+    c = canvas.Canvas(output)
+    c.drawString(40, 800, text)
     c.save()
-    buffer.seek(0)
-    
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=output_name,
-        mimetype='application/pdf'
-    )
 
-@app.route('/api/text-to-word', methods=['POST'])
-def api_text_to_word():
-    cleanup_temp()
-    text = (request.form.get('text') or '').strip()
-    if not text:
-        abort(Response("Text content is required.", status=400))
-    
-    # Generate unique filename
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    random_str = str(uuid.uuid4())[:8]
-    output_name = f"text_converted_{timestamp}_{random_str}.docx"
-    
-    doc = Document()
-    lines = text.splitlines()
-    for line in lines:
-        if line.strip():
-            doc.add_paragraph(line)
-    
-    # Create a BytesIO buffer for the Word file
-    buffer = io.BytesIO()
-    doc.save(buffer)
-    buffer.seek(0)
-    
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=output_name,
-        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    )
+    return send_file(output, as_attachment=True)
 
-@app.route('/api/images-to-pdf', methods=['POST'])
-def api_images_to_pdf():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) < 1:
-        abort(Response("Upload at least one image.", status=400))
-    paths = save_uploads(files)
-    for p in paths:
-        if ext_of(p) not in ALLOWED_IMAGE_EXT:
-            abort(Response("Only image files (JPG, PNG, WEBP, BMP, TIFF) are allowed.", status=400))
-
-    try:
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "images_to_pdf")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        images = []
-        for p in paths:
-            img = Image.open(p).convert('RGB')
-            images.append(img)
-        
-        # Create PDF in memory
-        buffer = io.BytesIO()
-        if len(images) == 1:
-            images[0].save(buffer, format='PDF', save_all=True)
-        else:
-            first, rest = images[0], images[1:]
-            first.save(buffer, format='PDF', save_all=True, append_images=rest)
-        
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
-    finally:
-        for p in paths:
-            safe_remove(p)
-
-# -----------------------------------------------------------------------------
-# Error handlers
-# -----------------------------------------------------------------------------
-@app.errorhandler(413)
-def too_large(e):
-    return jsonify({"error": "File too large (max 50 MB)."}), 413
-
-@app.errorhandler(400)
-def bad_request(e):
-    return jsonify({"error": str(e.description) if e.description else "Bad request."}), 400
-
-@app.errorhandler(500)
-def server_error(e):
-    return jsonify({"error": "Internal server error."}), 500
-
-# -----------------------------------------------------------------------------
-# Gunicorn entrypoint
-# -----------------------------------------------------------------------------
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
+if __name__ == "__main__":
+    app.run(debug=True)
