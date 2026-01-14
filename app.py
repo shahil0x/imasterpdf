@@ -1,14 +1,10 @@
 import os
-import shutil
 import tempfile
 import uuid
 from io import BytesIO
 from datetime import datetime, timedelta
 
-from flask import (
-    Flask, render_template, send_file,
-    request, abort, Response, jsonify
-)
+from flask import Flask, render_template, send_file, request, abort, Response, jsonify
 from werkzeug.utils import secure_filename
 
 from PyPDF2 import PdfReader, PdfWriter
@@ -18,17 +14,18 @@ from reportlab.lib.pagesizes import A4
 from PIL import Image
 
 # -----------------------------------------------------------------------------
-# Flask app configuration
+# App config
 # -----------------------------------------------------------------------------
 app = Flask(__name__, static_folder=None)
 
-MAX_CONTENT_LENGTH = 50 * 1024 * 1024
+MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
 OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_outputs")
 CLEANUP_AGE_MINUTES = 30
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
 
 # -----------------------------------------------------------------------------
@@ -41,13 +38,10 @@ def cleanup_temp():
     cutoff = datetime.utcnow() - timedelta(minutes=CLEANUP_AGE_MINUTES)
     for base in (UPLOAD_DIR, OUTPUT_DIR):
         for f in os.listdir(base):
-            p = os.path.join(base, f)
+            path = os.path.join(base, f)
             try:
-                if datetime.utcfromtimestamp(os.path.getmtime(p)) < cutoff:
-                    if os.path.isdir(p):
-                        shutil.rmtree(p, ignore_errors=True)
-                    else:
-                        os.remove(p)
+                if datetime.utcfromtimestamp(os.path.getmtime(path)) < cutoff:
+                    os.remove(path)
             except:
                 pass
 
@@ -77,15 +71,14 @@ def wrap_text(text, width=95):
         lines.append(" ".join(cur))
     return lines
 
-# ✅ MEMORY SAFE SEND (CRITICAL FIX)
+# ✅ MEMORY SAFE SEND (NO CORRUPTION)
 def safe_send(path, filename, mimetype):
     if not os.path.exists(path) or os.path.getsize(path) == 0:
         abort(Response("Failed to generate file", 500))
 
     with open(path, "rb") as f:
-        data = f.read()
+        buffer = BytesIO(f.read())
 
-    buffer = BytesIO(data)
     buffer.seek(0)
 
     return send_file(
@@ -110,7 +103,7 @@ def spa(slug=None):
     return render_template("index.html")
 
 # -----------------------------------------------------------------------------
-# Contact
+# API
 # -----------------------------------------------------------------------------
 @app.route("/api/contact", methods=["POST"])
 def api_contact():
@@ -172,9 +165,9 @@ def rotate_pdf():
     reader = PdfReader(pdf)
     writer = PdfWriter()
 
-    for p in reader.pages:
-        p.rotate_clockwise(deg)
-        writer.add_page(p)
+    for page in reader.pages:
+        page.rotate_clockwise(deg)
+        writer.add_page(page)
 
     out = unique_output("pdf")
     with open(out, "wb") as f:
@@ -194,9 +187,9 @@ def delete_pages():
     reader = PdfReader(pdf)
     writer = PdfWriter()
 
-    for i, p in enumerate(reader.pages):
+    for i, page in enumerate(reader.pages):
         if i not in pages:
-            writer.add_page(p)
+            writer.add_page(page)
 
     out = unique_output("pdf")
     with open(out, "wb") as f:
@@ -216,8 +209,8 @@ def lock_pdf():
     reader = PdfReader(pdf)
     writer = PdfWriter()
 
-    for p in reader.pages:
-        writer.add_page(p)
+    for page in reader.pages:
+        writer.add_page(page)
 
     writer.encrypt(pin)
 
@@ -240,8 +233,8 @@ def unlock_pdf():
     reader.decrypt(pwd)
 
     writer = PdfWriter()
-    for p in reader.pages:
-        writer.add_page(p)
+    for page in reader.pages:
+        writer.add_page(page)
 
     out = unique_output("pdf")
     with open(out, "wb") as f:
@@ -310,8 +303,8 @@ def text_to_word():
     text = request.form.get("text", "")
     doc = Document()
 
-    for l in text.splitlines():
-        doc.add_paragraph(l)
+    for line in text.splitlines():
+        doc.add_paragraph(line)
 
     out = unique_output("docx")
     doc.save(out)
@@ -347,7 +340,7 @@ def merge_word():
     )
 
 # -----------------------------------------------------------------------------
-# Run
+# Run (Gunicorn)
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=False)
+    app.run(host="0.0.0.0", port=10000, debug=False)

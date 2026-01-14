@@ -2,6 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# System dependencies for PDF / Image libraries
 RUN apt-get update && apt-get install -y \
     build-essential \
     libjpeg-dev \
@@ -25,4 +26,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:10000"]
+# 🔥 CRITICAL GUNICORN FIX FOR PDF STREAMING
+CMD [
+  "gunicorn",
+  "app:app",
+  "--bind", "0.0.0.0:10000",
+  "--workers", "2",
+  "--worker-class", "gthread",
+  "--threads", "4",
+  "--timeout", "0",
+  "--worker-tmp-dir", "/dev/shm",
+  "--log-level", "info"
+]
