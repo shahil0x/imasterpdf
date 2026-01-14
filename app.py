@@ -1,7 +1,5 @@
 import os
-import io
 import uuid
-import shutil
 import tempfile
 from datetime import datetime, timedelta
 
@@ -10,7 +8,7 @@ from werkzeug.utils import secure_filename
 
 from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 from PIL import Image
-from docx2pdf import convert
+from docx import Document
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 
@@ -61,12 +59,23 @@ def save_file(file):
 @app.route("/contact")
 def index(slug=None):
     return render_template("index.html")
+# Contact API
+# -----------------------------------------------------------------------------
+@app.route('/api/contact', methods=['POST'])
+def api_contact():
+    data = request.get_json(silent=True) or {}
+    name = (data.get('name') or '').strip()
+    email = (data.get('email') or '').strip()
+    message = (data.get('message') or '').strip()
+    if not name or not email or not message:
+        return Response("Please provide name, email, and message.", status=400)
+    # In production, integrate with email service or ticketing system.
+    # For now, acknowledge receipt.
+    return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
 
 # -----------------------------------------------------------------------------
-# TOOL APIs (SIMPLIFIED FROM CODE 2)
+# PDF TOOLS
 # -----------------------------------------------------------------------------
-
-# ---------- MERGE PDF ----------
 @app.route("/api/merge-pdf", methods=["POST"])
 def merge_pdf():
     cleanup_temp()
@@ -91,7 +100,6 @@ def merge_pdf():
 
     return send_file(output, as_attachment=True)
 
-# ---------- SPLIT PDF ----------
 @app.route("/api/split-pdf", methods=["POST"])
 def split_pdf():
     cleanup_temp()
@@ -113,7 +121,6 @@ def split_pdf():
     os.remove(path)
     return send_file(output, as_attachment=True)
 
-# ---------- ROTATE PDF ----------
 @app.route("/api/rotate-pdf", methods=["POST"])
 def rotate_pdf():
     cleanup_temp()
@@ -135,7 +142,6 @@ def rotate_pdf():
     os.remove(path)
     return send_file(output, as_attachment=True)
 
-# ---------- DELETE PAGES ----------
 @app.route("/api/delete-pages", methods=["POST"])
 def delete_pages():
     cleanup_temp()
@@ -157,7 +163,6 @@ def delete_pages():
     os.remove(path)
     return send_file(output, as_attachment=True)
 
-# ---------- LOCK PDF ----------
 @app.route("/api/lock-pdf", methods=["POST"])
 def lock_pdf():
     cleanup_temp()
@@ -180,7 +185,6 @@ def lock_pdf():
     os.remove(path)
     return send_file(output, as_attachment=True)
 
-# ---------- UNLOCK PDF ----------
 @app.route("/api/unlock-pdf", methods=["POST"])
 def unlock_pdf():
     cleanup_temp()
@@ -205,7 +209,9 @@ def unlock_pdf():
     os.remove(path)
     return send_file(output, as_attachment=True)
 
-# ---------- IMAGE → PDF ----------
+# -----------------------------------------------------------------------------
+# IMAGE TO PDF
+# -----------------------------------------------------------------------------
 @app.route("/api/images-to-pdf", methods=["POST"])
 def images_to_pdf():
     cleanup_temp()
@@ -216,10 +222,16 @@ def images_to_pdf():
     imgs = [Image.open(img).convert("RGB") for img in images]
     output = os.path.join(OUTPUT_DIR, f"images_{uuid.uuid4()}.pdf")
 
-    imgs[0].save(output, save_all=True, append_images=imgs[1:])
+    if len(imgs) == 1:
+        imgs[0].save(output)
+    else:
+        imgs[0].save(output, save_all=True, append_images=imgs[1:])
+
     return send_file(output, as_attachment=True)
 
-# ---------- WORD → PDF ----------
+# -----------------------------------------------------------------------------
+# WORD TOOLS
+# -----------------------------------------------------------------------------
 @app.route("/api/word-to-pdf", methods=["POST"])
 def word_to_pdf():
     cleanup_temp()
@@ -232,7 +244,66 @@ def word_to_pdf():
     os.remove(path)
     return send_file(output, as_attachment=True)
 
-# ---------- TEXT → PDF ----------
+@app.route("/api/merge-word", methods=["POST"])
+def merge_word():
+    cleanup_temp()
+    files = request.files.getlist("files")
+    if len(files) < 2:
+        abort(Response("Upload at least two Word files", 400))
+
+    merged = Document()
+    paths = []
+
+    for idx, f in enumerate(files):
+        path = save_file(f)
+        paths.append(path)
+        doc = Document(path)
+        for p in doc.paragraphs:
+            merged.add_paragraph(p.text)
+        if idx < len(files) - 1:
+            merged.add_page_break()
+
+    output = os.path.join(OUTPUT_DIR, f"merged_{uuid.uuid4()}.docx")
+    merged.save(output)
+
+    for p in paths:
+        os.remove(p)
+
+    return send_file(output, as_attachment=True)
+
+@app.route("/api/word-to-text", methods=["POST"])
+def word_to_text():
+    cleanup_temp()
+    file = request.files["file"]
+    path = save_file(file)
+
+    doc = Document(path)
+    text = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+
+    output = os.path.join(OUTPUT_DIR, f"text_{uuid.uuid4()}.txt")
+    with open(output, "w", encoding="utf-8") as f:
+        f.write(text)
+
+    os.remove(path)
+    return send_file(output, as_attachment=True)
+
+@app.route("/api/text-to-word", methods=["POST"])
+def text_to_word():
+    cleanup_temp()
+    text = request.form["text"]
+
+    doc = Document()
+    for line in text.splitlines():
+        doc.add_paragraph(line)
+
+    output = os.path.join(OUTPUT_DIR, f"text_{uuid.uuid4()}.docx")
+    doc.save(output)
+
+    return send_file(output, as_attachment=True)
+
+# -----------------------------------------------------------------------------
+# TEXT TO PDF
+# -----------------------------------------------------------------------------
 @app.route("/api/text-to-pdf", methods=["POST"])
 def text_to_pdf():
     cleanup_temp()
