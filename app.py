@@ -2,6 +2,7 @@ import os
 import io
 import shutil
 import tempfile
+import uuid
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, send_file, request, abort, Response, jsonify
@@ -49,6 +50,18 @@ def validate_file(stream):
     if size > MAX_CONTENT_LENGTH:
         abort(Response("File too large (max 50 MB).", status=400))
 
+def generate_unique_filename(original_filename, suffix=""):
+    """Generate a unique filename with timestamp and random component"""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    random_str = str(uuid.uuid4())[:8]
+    name, ext = os.path.splitext(original_filename)
+    safe_name = secure_filename(name)
+    
+    # If suffix is provided, include it
+    if suffix:
+        return f"{safe_name}_{suffix}_{timestamp}_{random_str}{ext}"
+    return f"{safe_name}_{timestamp}_{random_str}{ext}"
+
 def save_uploads(files):
     saved = []
     for storage in files:
@@ -56,7 +69,10 @@ def save_uploads(files):
         filename = secure_filename(storage.filename)
         if not filename:
             abort(Response("Invalid filename.", status=400))
-        path = os.path.join(UPLOAD_DIR, f"{datetime.utcnow().timestamp()}_{filename}")
+        
+        # Generate unique filename
+        unique_filename = generate_unique_filename(storage.filename)
+        path = os.path.join(UPLOAD_DIR, unique_filename)
         storage.save(path)
         saved.append(path)
     return saved
@@ -184,6 +200,11 @@ def api_pdf_to_word():
         abort(Response("Only PDF files are allowed.", status=400))
 
     try:
+        # Extract original filename for output naming
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "converted")
+        output_name = os.path.splitext(output_name)[0] + ".docx"
+        
         text = extract_text(pdf_path) or ""
         doc = Document()
         for line in text.splitlines():
@@ -198,7 +219,7 @@ def api_pdf_to_word():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="output.docx",
+            download_name=output_name,
             mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
     finally:
@@ -222,6 +243,11 @@ def api_merge_pdf():
             for page in reader.pages:
                 writer.add_page(page)
         
+        # Generate output filename
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "merged")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        
         # Create a BytesIO buffer for the PDF
         buffer = io.BytesIO()
         writer.write(buffer)
@@ -230,7 +256,7 @@ def api_merge_pdf():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="merged.pdf",
+            download_name=output_name,
             mimetype='application/pdf'
         )
     finally:
@@ -253,6 +279,12 @@ def api_rotate_pdf():
     writer = PdfWriter()
     try:
         reader = PdfReader(pdf_path)
+        
+        # Generate output filename
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, f"rotated_{rotation}")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        
         for idx, page in enumerate(reader.pages):
             if rotate_all or idx == 0:
                 page.rotate(rotation)
@@ -266,7 +298,7 @@ def api_rotate_pdf():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="rotated.pdf",
+            download_name=output_name,
             mimetype='application/pdf'
         )
     finally:
@@ -292,6 +324,12 @@ def api_delete_pages_pdf():
     try:
         reader = PdfReader(pdf_path)
         total = len(reader.pages)
+        
+        # Generate output filename
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "pages_removed")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        
         for i in range(total):
             if (i+1) not in to_delete:
                 writer.add_page(reader.pages[i])
@@ -304,7 +342,7 @@ def api_delete_pages_pdf():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="pages_removed.pdf",
+            download_name=output_name,
             mimetype='application/pdf'
         )
     finally:
@@ -327,6 +365,12 @@ def api_lock_pdf():
     writer = PdfWriter()
     try:
         reader = PdfReader(pdf_path)
+        
+        # Generate output filename
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "locked")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        
         for page in reader.pages:
             writer.add_page(page)
         writer.encrypt(pin)
@@ -339,7 +383,7 @@ def api_lock_pdf():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="locked.pdf",
+            download_name=output_name,
             mimetype='application/pdf'
         )
     finally:
@@ -362,6 +406,12 @@ def api_unlock_pdf():
     writer = PdfWriter()
     try:
         reader = PdfReader(pdf_path)
+        
+        # Generate output filename
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "unlocked")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        
         if reader.is_encrypted:
             if not reader.decrypt(password):
                 abort(Response("Incorrect password.", status=400))
@@ -376,7 +426,7 @@ def api_unlock_pdf():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="unlocked.pdf",
+            download_name=output_name,
             mimetype='application/pdf'
         )
     finally:
@@ -396,6 +446,11 @@ def api_word_to_pdf():
         abort(Response("Only DOCX files are supported.", status=400))
 
     try:
+        # Generate output filename
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "converted")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        
         # Since weasyprint is commented out, use reportlab as fallback
         doc = Document(doc_path)
         
@@ -428,7 +483,7 @@ def api_word_to_pdf():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="converted.pdf",
+            download_name=output_name,
             mimetype='application/pdf'
         )
 
@@ -458,6 +513,11 @@ def api_merge_word():
             if idx < len(paths) - 1:
                 merged.add_page_break()
         
+        # Generate output filename
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "merged")
+        output_name = os.path.splitext(output_name)[0] + ".docx"
+        
         # Create a BytesIO buffer for the Word file
         buffer = io.BytesIO()
         merged.save(buffer)
@@ -466,7 +526,7 @@ def api_merge_word():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="merged.docx",
+            download_name=output_name,
             mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
     finally:
@@ -485,6 +545,11 @@ def api_word_to_text():
         abort(Response("Only DOCX files are allowed.", status=400))
 
     try:
+        # Generate output filename
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "converted")
+        output_name = os.path.splitext(output_name)[0] + ".txt"
+        
         doc = Document(doc_path)
         text_io = io.StringIO()
         for para in doc.paragraphs:
@@ -497,7 +562,7 @@ def api_word_to_text():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="output.txt",
+            download_name=output_name,
             mimetype='text/plain'
         )
     finally:
@@ -509,6 +574,11 @@ def api_text_to_pdf():
     text = (request.form.get('text') or '').strip()
     if not text:
         abort(Response("Text content is required.", status=400))
+
+    # Generate unique filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    random_str = str(uuid.uuid4())[:8]
+    output_name = f"text_converted_{timestamp}_{random_str}.pdf"
 
     # Create PDF in memory
     buffer = io.BytesIO()
@@ -540,7 +610,7 @@ def api_text_to_pdf():
     return send_file(
         buffer,
         as_attachment=True,
-        download_name="text.pdf",
+        download_name=output_name,
         mimetype='application/pdf'
     )
 
@@ -550,6 +620,11 @@ def api_text_to_word():
     text = (request.form.get('text') or '').strip()
     if not text:
         abort(Response("Text content is required.", status=400))
+    
+    # Generate unique filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    random_str = str(uuid.uuid4())[:8]
+    output_name = f"text_converted_{timestamp}_{random_str}.docx"
     
     doc = Document()
     lines = text.splitlines()
@@ -565,7 +640,7 @@ def api_text_to_word():
     return send_file(
         buffer,
         as_attachment=True,
-        download_name="text.docx",
+        download_name=output_name,
         mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
 
@@ -581,6 +656,11 @@ def api_images_to_pdf():
             abort(Response("Only image files (JPG, PNG, WEBP, BMP, TIFF) are allowed.", status=400))
 
     try:
+        # Generate output filename
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "images_to_pdf")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        
         images = []
         for p in paths:
             img = Image.open(p).convert('RGB')
@@ -599,12 +679,27 @@ def api_images_to_pdf():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="images.pdf",
+            download_name=output_name,
             mimetype='application/pdf'
         )
     finally:
         for p in paths:
             safe_remove(p)
+
+# -----------------------------------------------------------------------------
+# Error handlers
+# -----------------------------------------------------------------------------
+@app.errorhandler(413)
+def too_large(e):
+    return jsonify({"error": "File too large (max 50 MB)."}), 413
+
+@app.errorhandler(400)
+def bad_request(e):
+    return jsonify({"error": str(e.description) if e.description else "Bad request."}), 400
+
+@app.errorhandler(500)
+def server_error(e):
+    return jsonify({"error": "Internal server error."}), 500
 
 # -----------------------------------------------------------------------------
 # Gunicorn entrypoint
