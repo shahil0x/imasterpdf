@@ -16,6 +16,18 @@ from reportlab.lib.pagesizes import A4
 # App Config
 # -----------------------------------------------------------------------------
 app = Flask(__name__, static_folder=None)
+@app.route("/test-download")
+def test_download():
+    data = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+
+    return Response(
+        data,
+        headers={
+            "Content-Type": "application/pdf",
+            "Content-Disposition": 'attachment; filename="test.pdf"',
+            "Content-Length": str(len(data)),
+        }
+    )
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50 MB
 
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imaster_uploads")
