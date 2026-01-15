@@ -16,6 +16,13 @@ from reportlab.lib.pagesizes import A4
 # App Config
 # -----------------------------------------------------------------------------
 app = Flask(__name__, static_folder=None)
+@app.after_request
+def fix_binary_download(response):
+    response.headers["Content-Encoding"] = "identity"
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Accept-Ranges"] = "none"
+    return response
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50MB
 
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imaster_uploads")
@@ -49,11 +56,12 @@ def save_file(file):
 def send_pdf(path):
     return send_file(
         path,
-        mimetype="application/pdf",
         as_attachment=True,
-        download_name=os.path.basename(path)
+        download_name=os.path.basename(path),
+        conditional=False,
+        etag=False,
+        max_age=0
     )
-
 # -----------------------------------------------------------------------------
 # SPA Routes
 # -----------------------------------------------------------------------------
