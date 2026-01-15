@@ -1079,9 +1079,10 @@
         // Use mock conversion since API doesn't exist
         const result = await mockConversion(files, currentTool);
         
+        // Create download link
         const xhr = new XMLHttpRequest();
 xhr.open("POST", "/convert", true);
-xhr.responseType = "blob"; // 🔴 MUST be blob
+xhr.responseType = "blob";
 
 xhr.onload = () => {
     if (xhr.status === 200) {
@@ -1089,7 +1090,7 @@ xhr.onload = () => {
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = uid + ".pdf"; // or ".docx"
+        a.download = uid + ".pdf";
         document.body.appendChild(a);
         a.click();
 
@@ -1103,20 +1104,18 @@ xhr.onload = () => {
     } else {
         showMessage("Download failed", true);
     }
+
+    
+    progressContainer.style.display = 'none';
+};
+
+xhr.onerror = () => {
+    showMessage("Network error occurred", true);
+    progressContainer.style.display = 'none';
 };
 
 xhr.send(formData);
-        
-        // Hide progress after 2 seconds
-        setTimeout(() => {
-          progressContainer.style.display = 'none';
-        }, 2000);
-        
-      } catch (err) {
-        showMessage(err.message || 'An error occurred during conversion.', true);
-        progressContainer.style.display = 'none';
-      }
-    });
+      
 
     resetBtn.addEventListener('click', () => {
       fileInput.value = '';
