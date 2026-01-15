@@ -1029,94 +1029,151 @@
     }
 
     // Mock conversion function (since API endpoints don't exist)
-    function mockConversion(files, toolKey) {
-      return new Promise((resolve, reject) => {
-        let progress = 0;
-        const interval = setInterval(() => {
-          progress += 5;
-          updateProgress(progress);
-          
-          if (progress >= 100) {
-            clearInterval(interval);
-            
-            // Create a mock blob for download
-            const blob = new Blob(['Mock converted file content'], { type: 'application/octet-stream' });
-            
-            // Generate filename based on tool
-            const extensions = {
-              pdf_to_word: '.docx',
-              merge_pdf: '_merged.pdf',
-              rotate_pdf: '_rotated.pdf',
-              delete_pages_pdf: '_cleaned.pdf',
-              lock_pdf: '_locked.pdf',
-              unlock_pdf: '_unlocked.pdf',
-              word_to_pdf: '.pdf',
-              merge_word: '_merged.docx',
-              word_to_text: '.txt',
-              text_to_pdf: '.pdf',
-              text_to_word: '.docx',
-              images_to_pdf: '_converted.pdf'
-            };
-            
-            const filename = `converted${extensions[toolKey] || '_output'}`;
-            resolve({ blob, filename });
-          }
-        }, 100);
-      });
-    }
+    // Remove or keep mockConversion function for testing
+function mockConversion(files, toolKey) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // Generate mock blob with appropriate content type
+      let contentType = 'application/pdf';
+      let extension = '.pdf';
+      
+      if (toolKey === 'pdf_to_word' || toolKey === 'merge_word' || toolKey === 'text_to_word') {
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        extension = '.docx';
+      } else if (toolKey === 'word_to_text') {
+        contentType = 'text/plain';
+        extension = '.txt';
+      }
+      
+      const content = `This is a mock ${toolKey} conversion result.\nFile processed: ${files.map(f => f.name).join(', ')}`;
+      const blob = new Blob([content], { type: contentType });
+      const filename = `converted_${Date.now()}${extension}`;
+      
+      resolve({ blob, filename });
+    }, 1000);
+  });
+}
 
     convertBtn.addEventListener('click', async () => {
-      if (!currentTool) return;
-      if (!validateFiles()) return;
+  if (!currentTool) return;
+  if (!validateFiles()) return;
 
-      const files = Array.from(fileInput.files || []);
-      const tool = toolMap[currentTool];
+  const files = Array.from(fileInput.files || []);
+  const formData = new FormData();
+  
+  // Add files to formData
+  files.forEach(file => {
+    formData.append('files', file);
+  });
+  
+  // Add tool-specific parameters
+  if (currentTool === 'rotate_pdf') {
+    const rotation = document.getElementById('rotation').value;
+    const rotateAll = document.getElementById('rotate_all').value;
+    formData.append('rotation', rotation);
+    formData.append('rotateAll', rotateAll);
+  } else if (currentTool === 'delete_pages_pdf') {
+    const pages = document.getElementById('pages').value;
+    formData.append('pages', pages);
+  } else if (currentTool === 'lock_pdf') {
+    const pin = document.getElementById('pin').value;
+    formData.append('pin', pin);
+  } else if (currentTool === 'unlock_pdf') {
+    const password = document.getElementById('password').value;
+    formData.append('password', password);
+  } else if (currentTool === 'text_to_pdf' || currentTool === 'text_to_word') {
+    const textContent = document.getElementById('text_content').value;
+    formData.append('text', textContent);
+  }
+  
+  // Add tool identifier
+  formData.append('tool', currentTool);
 
-      try {
-        showMessage('Starting conversion...');
-        updateProgress(0);
-        
-        // Use mock conversion since API doesn't exist
-        const result = await mockConversion(files, currentTool);
-        
-        // Create download link
-        const xhr = new XMLHttpRequest();
-xhr.open("POST", "/convert", true);
-xhr.responseType = "blob";
+  // Show progress
+  showMessage('Starting conversion...', false);
+  progressContainer.style.display = 'block';
+  updateProgress(0);
 
-xhr.onload = () => {
-    if (xhr.status === 200) {
-        const url = URL.createObjectURL(xhr.response);
+  // Generate unique ID for filename
+  const uid = 'converted_' + Date.now();
 
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = uid + ".pdf";
-        document.body.appendChild(a);
-        a.click();
+  // XMLHttpRequest for file upload/download
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/convert', true);
+  xhr.responseType = 'blob';
 
-        a.remove();
-        URL.revokeObjectURL(url);
-
-        showMessage(
-            "Conversion complete! Your download has started.",
-            false
-        );
-    } else {
-        showMessage("Download failed", true);
+  // Track upload progress
+  xhr.upload.onprogress = (e) => {
+    if (e.lengthComputable) {
+      const percentComplete = Math.round((e.loaded / e.total) * 100);
+      updateProgress(percentComplete);
     }
+  };
 
+  // Handle response
+  xhr.onload = () => {
+    progressContainer.style.display = 'none';
+    updateProgress(0);
     
-    progressContainer.style.display = 'none';
-};
-
-xhr.onerror = () => {
-    showMessage("Network error occurred", true);
-    progressContainer.style.display = 'none';
-};
-
-xhr.send(formData);
+    if (xhr.status === 200) {
+      const blob = xhr.response;
+      const contentType = xhr.getResponseHeader('Content-Type') || '';
       
+      // Determine file extension based on content type and tool
+      let extension = '.pdf';
+      if (currentTool === 'pdf_to_word') extension = '.docx';
+      if (currentTool === 'word_to_text') extension = '.txt';
+      if (currentTool === 'merge_word') extension = '.docx';
+      if (currentTool === 'text_to_word') extension = '.docx';
+      if (contentType.includes('msword')) extension = '.docx';
+      if (contentType.includes('plain')) extension = '.txt';
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = uid + extension;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
 
+      showMessage('Conversion complete! Your download has started.', false);
+    } else {
+      showMessage('Conversion failed: Server error ' + xhr.status, true);
+    }
+  };
+
+  xhr.onerror = () => {
+    progressContainer.style.display = 'none';
+    updateProgress(0);
+    showMessage('Network error occurred. Please check your connection.', true);
+  };
+
+  // Track download progress
+  xhr.onprogress = (e) => {
+    if (e.lengthComputable) {
+      const percentComplete = Math.round((e.loaded / e.total) * 100);
+      updateProgress(percentComplete);
+    }
+  };
+
+  // Simulate progress for demo (since /convert endpoint doesn't exist)
+  // Remove this in production when you have a real endpoint
+  const simulateProgress = setInterval(() => {
+    const current = parseInt(progressFill.style.width) || 0;
+    if (current < 90) {
+      updateProgress(current + 10);
+    }
+  }, 300);
+
+  xhr.onloadend = () => {
+    clearInterval(simulateProgress);
+    updateProgress(100);
+  };
+
+  // Send request
+  xhr.send(formData);
+});
     resetBtn.addEventListener('click', () => {
       fileInput.value = '';
       selectedFilesEl.textContent = '';
