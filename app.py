@@ -35,11 +35,14 @@ def cleanup_folder(folder):
         except:
             pass
 
-from flask import send_from_directory
+from flask import Flask, render_template
+
+app = Flask(__name__)
 
 @app.route("/", methods=["GET", "HEAD"])
 def index():
-    return send_from_directory(".", "index.html")
+    return render_template("index.html")
+
 
 
 @app.route('/api/upload', methods=['POST'])
