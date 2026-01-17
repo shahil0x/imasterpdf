@@ -301,15 +301,17 @@
         }
 
         .option-group input,
-        .option-group select {
+        .option-group select,
+        .option-group textarea {
             width: 100%;
             padding: 0.8rem;
             border: 1px solid var(--gray-color);
             border-radius: var(--radius);
             font-size: 1rem;
+            font-family: inherit;
         }
 
-        /* Progress Container - Updated */
+        /* Progress Container */
         .progress-container {
             display: none;
             margin: 2rem 0;
@@ -938,7 +940,7 @@
                 "author": "iMasterPDF Editorial",
                 "date": "2026-01-14",
                 "summary": "Learn the easiest methods to convert PDF files to editable Word documents online with our step-by-step guide.",
-                "content": "<p>Converting PDF files to Word format is one of the most common document tasks for students, professionals, and businesses...</p>"
+                "content": "<p>Converting PDF files to Word format is one of the most common document tasks for students, professionals, and businesses. With iMasterPDF, you can convert your PDFs to editable Word documents in just three simple steps: upload your PDF, click convert, and download your DOCX file.</p><p>Our tool preserves formatting, tables, and images as much as possible, making it perfect for resumes, contracts, reports, and academic papers. The conversion happens securely in the cloud, and files are automatically deleted after processing.</p>"
             },
             {
                 "slug": "how-to-merge-pdf-files-for-free",
@@ -946,7 +948,7 @@
                 "author": "iMasterPDF Editorial",
                 "date": "2026-01-14",
                 "summary": "Discover the best free methods to combine multiple PDF files into one document with perfect formatting.",
-                "content": "<p>Merging PDF files is an essential skill in today's digital workplace...</p>"
+                "content": "<p>Merging PDF files is an essential skill in today's digital workplace. Whether you're combining multiple reports, assembling a portfolio, or creating a single document from scanned pages, iMasterPDF makes it easy.</p><p>Our merge tool supports up to 20 files at once, lets you rearrange pages with drag-and-drop, and maintains the original quality of all documents. The process is completely free and requires no registration.</p>"
             },
             {
                 "slug": "how-to-compress-pdf-without-losing-quality",
@@ -954,7 +956,7 @@
                 "author": "iMasterPDF Editorial",
                 "date": "2026-01-14",
                 "summary": "Learn professional methods to reduce PDF file size while maintaining readability and visual quality.",
-                "content": "<p>PDF file sizes can become unwieldy, especially when they contain high-resolution images...</p>"
+                "content": "<p>PDF file sizes can become unwieldy, especially when they contain high-resolution images or embedded fonts. With iMasterPDF's compression tool, you can reduce file size by up to 80% while keeping documents readable and professional.</p><p>We offer three compression levels: high quality (minimal compression), balanced (recommended), and maximum compression for sharing via email. All compression happens locally for maximum privacy.</p>"
             },
             {
                 "slug": "best-free-pdf-tools-for-students",
@@ -962,7 +964,7 @@
                 "author": "iMasterPDF Editorial",
                 "date": "2026-01-14",
                 "summary": "Discover essential free PDF tools that every student needs for academic success.",
-                "content": "<p>PDF documents are ubiquitous in academic life - from lecture notes and research papers to assignments and e-books...</p>"
+                "content": "<p>PDF documents are ubiquitous in academic life - from lecture notes and research papers to assignments and e-books. iMasterPDF offers students a complete suite of tools including PDF to Word conversion for editing assignments, PDF merging for combining research, and PDF compression for email submissions.</p><p>All tools are completely free, work on any device, and require no software installation - perfect for students on a budget.</p>"
             },
             {
                 "slug": "how-to-unlock-pdf-legally",
@@ -970,7 +972,7 @@
                 "author": "iMasterPDF Editorial",
                 "date": "2026-01-14",
                 "summary": "Learn legitimate ways to unlock password-protected PDFs when you have the right to access them.",
-                "content": "<p>Password-protected PDFs are common in business, education, and personal use...</p>"
+                "content": "<p>Password-protected PDFs are common in business, education, and personal use. If you've forgotten a password or received a protected file you need to edit, iMasterPDF can help - legally and ethically.</p><p>Our unlock tool requires you to provide the original password, ensuring it's used only for legitimate purposes like accessing your own documents or files shared with you. We never store passwords and files are deleted immediately after processing.</p>"
             },
             {
                 "slug": "pdf-vs-word-which-is-better",
@@ -978,7 +980,7 @@
                 "author": "iMasterPDF Editorial",
                 "date": "2026-01-14",
                 "summary": "Detailed comparison of PDF and Word formats to help you choose the right format for every situation.",
-                "content": "<p>The PDF vs Word debate has been ongoing since both formats became mainstream...</p>"
+                "content": "<p>The PDF vs Word debate has been ongoing since both formats became mainstream. PDF is perfect for final documents, printing, and sharing - it preserves formatting across all devices. Word is ideal for editing, collaboration, and documents that need frequent changes.</p><p>With iMasterPDF, you can easily convert between both formats depending on your needs. Convert Word to PDF for sharing final versions, or PDF to Word when you need to make edits.</p>"
             }
         ]
     }
@@ -1146,27 +1148,11 @@
                 accept: '.pdf',
                 options: [
                     {
-                        type: 'select',
-                        name: 'split_type',
-                        label: 'Split Method',
-                        options: [
-                            { value: 'all', label: 'Split all pages' },
-                            { value: 'range', label: 'Split page range' }
-                        ]
-                    },
-                    {
-                        type: 'number',
-                        name: 'start_page',
-                        label: 'Start Page',
-                        min: 1,
-                        defaultValue: 1
-                    },
-                    {
-                        type: 'number',
-                        name: 'end_page',
-                        label: 'End Page',
-                        min: 1,
-                        defaultValue: 1
+                        type: 'text',
+                        name: 'pages',
+                        label: 'Pages to Keep (e.g., 1,3,5 or 1-5)',
+                        placeholder: 'Enter page numbers or ranges',
+                        required: true
                     }
                 ]
             },
@@ -1214,7 +1200,7 @@
                 options: [
                     {
                         type: 'select',
-                        name: 'angle',
+                        name: 'rotation',
                         label: 'Rotation Angle',
                         options: [
                             { value: '90', label: '90° Clockwise' },
@@ -1233,9 +1219,9 @@
                 options: [
                     {
                         type: 'password',
-                        name: 'password',
-                        label: 'Set Password',
-                        placeholder: 'Enter password',
+                        name: 'pin',
+                        label: 'Set Password (4 digits)',
+                        placeholder: 'Enter 4-digit PIN',
                         required: true
                     }
                 ]
@@ -1335,8 +1321,25 @@
         // Global variables
         let currentTool = null;
         let uploadedFiles = [];
-        let sessionId = null;
         const MAX_SIZE = 50 * 1024 * 1024;
+
+        // API Endpoints mapping
+        const apiEndpoints = {
+            'pdf_to_word': '/api/pdf-to-word',
+            'merge_pdf': '/api/merge-pdf',
+            'split_pdf': '/api/delete-pages-pdf',
+            'compress_pdf': '/api/compress-pdf',
+            'word_to_pdf': '/api/word-to-pdf',
+            'rotate_pdf': '/api/rotate-pdf',
+            'lock_pdf': '/api/lock-pdf',
+            'unlock_pdf': '/api/unlock-pdf',
+            'images_to_pdf': '/api/images-to-pdf',
+            'extract_text': '/api/pdf-to-word', // Using PDF to Word for text extraction
+            'word_to_text': '/api/word-to-text',
+            'merge_word': '/api/merge-word',
+            'text_to_pdf': '/api/text-to-pdf',
+            'text_to_word': '/api/text-to-word'
+        };
 
         // Navigation functions
         function showSection(id) {
@@ -1410,6 +1413,9 @@
             } else {
                 document.getElementById('optionsPanel').classList.remove('active');
             }
+            
+            // Show upload area
+            document.getElementById('uploadArea').classList.add('active');
             
             // Show action buttons
             document.getElementById('actionButtons').classList.add('active');
@@ -1546,24 +1552,6 @@
                 
                 container.appendChild(div);
             });
-            
-            updateOptionVisibility();
-        }
-
-        function updateOptionVisibility() {
-            const toolInfo = tools[currentTool];
-            if (!toolInfo.options) return;
-            
-            toolInfo.options.forEach(option => {
-                const div = document.querySelector(`[data-option-name="${option.name}"]`);
-                if (option.showIf) {
-                    const [key, value] = Object.entries(option.showIf)[0];
-                    const select = document.getElementById('option_' + key);
-                    if (select) {
-                        div.style.display = select.value === value ? 'block' : 'none';
-                    }
-                }
-            });
         }
 
         function getOptions() {
@@ -1619,61 +1607,78 @@
             document.getElementById('message').style.display = 'none';
             
             try {
-                // For text tools, create FormData with text
+                // Create FormData
                 const formData = new FormData();
-                formData.append('tool', currentTool);
+                const options = getOptions();
                 
-                if (['text_to_pdf', 'text_to_word'].includes(currentTool)) {
+                // Add options to FormData
+                Object.keys(options).forEach(key => {
+                    formData.append(key, options[key]);
+                });
+                
+                // Get the correct API endpoint
+                const endpoint = apiEndpoints[currentTool];
+                if (!endpoint) {
+                    throw new Error('Tool not supported yet');
+                }
+                
+                // Add files to FormData (for file-based tools)
+                if (!['text_to_pdf', 'text_to_word'].includes(currentTool)) {
+                    uploadedFiles.forEach(file => {
+                        formData.append('files', file);
+                    });
+                } else {
+                    // For text tools, add text content
                     const textElement = document.getElementById('option_text');
                     if (textElement) {
                         formData.append('text', textElement.value);
                     }
-                } else {
-                    // For file tools, upload files
-                    uploadedFiles.forEach(file => {
-                        formData.append('files', file);
-                    });
                 }
-                
-                // Step 1: Upload files/text
-                const uploadResponse = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const uploadData = await uploadResponse.json();
-                
-                if (!uploadData.success) {
-                    throw new Error(uploadData.error || 'Upload failed');
-                }
-                
-                sessionId = uploadData.session_id;
                 
                 // Update progress
                 document.getElementById('progress-fill').style.width = '50%';
                 document.getElementById('progress-text').textContent = '50%';
                 
-                // Step 2: Get options
-                const options = getOptions();
-                
-                // Step 3: Convert
-                const convertResponse = await fetch('/api/convert', {
+                // Make the API call
+                const response = await fetch(endpoint, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        tool: currentTool,
-                        session_id: sessionId,
-                        options: options,
-                        text: document.getElementById('option_text')?.value || ''
-                    })
+                    body: formData
                 });
                 
-                const convertData = await convertResponse.json();
+                // Update progress
+                document.getElementById('progress-fill').style.width = '90%';
+                document.getElementById('progress-text').textContent = '90%';
                 
-                if (!convertData.success) {
-                    throw new Error(convertData.error || 'Conversion failed');
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Processing failed');
+                }
+                
+                // Get the blob from response
+                const blob = await response.blob();
+                
+                // Generate a filename
+                let filename = 'download';
+                if (response.headers.get('Content-Disposition')) {
+                    const match = response.headers.get('Content-Disposition').match(/filename="(.+)"/);
+                    if (match) filename = match[1];
+                } else {
+                    // Default filename based on tool
+                    const extMap = {
+                        'pdf_to_word': '.docx',
+                        'merge_pdf': '.pdf',
+                        'split_pdf': '.pdf',
+                        'word_to_pdf': '.pdf',
+                        'rotate_pdf': '.pdf',
+                        'lock_pdf': '.pdf',
+                        'unlock_pdf': '.pdf',
+                        'images_to_pdf': '.pdf',
+                        'word_to_text': '.txt',
+                        'merge_word': '.docx',
+                        'text_to_pdf': '.pdf',
+                        'text_to_word': '.docx'
+                    };
+                    filename = `${currentTool}_${Date.now()}${extMap[currentTool] || '.pdf'}`;
                 }
                 
                 // Update progress
@@ -1685,10 +1690,18 @@
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('resultArea').classList.add('active');
                     
+                    // Create download link
+                    const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
-                    downloadLink.href = convertData.download_url;
-                    downloadLink.download = convertData.filename;
-                    downloadLink.textContent = `Download ${convertData.filename}`;
+                    downloadLink.href = downloadUrl;
+                    downloadLink.download = filename;
+                    downloadLink.textContent = `Download ${filename}`;
+                    downloadLink.target = '_blank';
+                    
+                    // Clean up URL object when link is clicked
+                    downloadLink.onclick = () => {
+                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+                    };
                     
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
                 }, 500);
@@ -1710,7 +1723,6 @@
         function resetTool() {
             currentTool = null;
             uploadedFiles = [];
-            sessionId = null;
             
             document.getElementById('uploadArea').classList.remove('active');
             document.getElementById('optionsPanel').classList.remove('active');
@@ -1809,13 +1821,6 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Set up event listeners
-            document.addEventListener('change', (e) => {
-                if (e.target.matches('select')) {
-                    updateOptionVisibility();
-                }
-            });
-            
             // Initialize navigation
             const path = window.location.pathname;
             if (routes[path]) {
