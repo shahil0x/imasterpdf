@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iMasterPDF - Free Online PDF Tools</title>
-    <meta name="description" content="iMasterPDF offers free online PDF and document tools: convert, merge, rotate, lock, unlock, and more. Plus in-depth guides and articles." />
+    <title>iMasterPDF - Free Online Document Tools</title>
+    <meta name="description" content="iMasterPDF offers free online PDF and document tools: convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly." />
     <meta name="keywords" content="PDF tools, Word to PDF, PDF to Word, Merge PDF, Rotate PDF, Lock PDF, Unlock PDF, Text to PDF, Image to PDF, PDF guides, document security" />
     <meta name="author" content="iMasterPDF" />
 
@@ -443,7 +443,7 @@
         /* Blog */
         .blog-list {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 18px;
             margin-top: 20px;
         }
@@ -649,9 +649,6 @@
                     <a href="/blog" data-link>Blog</a>
                     <a href="/about" data-link>About</a>
                     <a href="/contact" data-link>Contact</a>
-                    <button class="btn" onclick="showTool('compress_pdf')">
-                        <i class="fas fa-compress-alt"></i> Compress PDF
-                    </button>
                 </div>
             </nav>
         </div>
@@ -660,9 +657,9 @@
     <!-- Hero Section -->
     <section class="hero" id="hero">
         <div class="container">
-            <h1>Your All-in-One PDF Solution</h1>
-            <p>Merge, split, compress, convert, and edit PDF files with our powerful online tools. No installation needed. Completely free!</p>
-            <button class="btn btn-secondary" onclick="showTool('merge_pdf')">
+            <h1>iMasterPDF - Free Online Document Tools</h1>
+            <p>Convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly.</p>
+            <button class="btn btn-secondary" onclick="showTool('pdf_to_word')">
                 <i class="fas fa-file-upload"></i> Get Started
             </button>
         </div>
@@ -674,67 +671,88 @@
         <section id="home">
             <!-- Tools Grid -->
             <div class="tools-section">
-                <h2 class="section-title">Popular PDF Tools</h2>
+                <h2 class="section-title">PDF Tools</h2>
                 <div class="tools-grid">
+                    <div class="tool-card" onclick="showTool('pdf_to_word')">
+                        <i class="fas fa-file-word"></i>
+                        <h3>PDF to Word</h3>
+                        <p>Convert PDF into editable DOCX</p>
+                    </div>
                     <div class="tool-card" onclick="showTool('merge_pdf')">
                         <i class="fas fa-object-group"></i>
                         <h3>Merge PDF</h3>
                         <p>Combine multiple PDFs into one</p>
                     </div>
-                    <div class="tool-card" onclick="showTool('split_pdf')">
-                        <i class="fas fa-cut"></i>
-                        <h3>Split PDF</h3>
-                        <p>Split PDF into multiple files</p>
-                    </div>
-                    <div class="tool-card" onclick="showTool('compress_pdf')">
-                        <i class="fas fa-compress-alt"></i>
-                        <h3>Compress PDF</h3>
-                        <p>Reduce PDF file size</p>
-                    </div>
-                    <div class="tool-card" onclick="showTool('pdf_to_word')">
-                        <i class="fas fa-file-word"></i>
-                        <h3>PDF to Word</h3>
-                        <p>Convert PDF to editable Word</p>
-                    </div>
-                    <div class="tool-card" onclick="showTool('word_to_pdf')">
-                        <i class="fas fa-file-pdf"></i>
-                        <h3>Word to PDF</h3>
-                        <p>Convert Word documents to PDF</p>
-                    </div>
                     <div class="tool-card" onclick="showTool('rotate_pdf')">
                         <i class="fas fa-redo"></i>
                         <h3>Rotate PDF</h3>
-                        <p>Rotate PDF pages</p>
+                        <p>Rotate pages by 90°, 180°, or 270°</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('delete_pages_pdf')">
+                        <i class="fas fa-trash-alt"></i>
+                        <h3>Delete Pages in PDF</h3>
+                        <p>Remove selected pages from a PDF</p>
                     </div>
                     <div class="tool-card" onclick="showTool('lock_pdf')">
                         <i class="fas fa-lock"></i>
-                        <h3>Protect PDF</h3>
-                        <p>Add password protection</p>
+                        <h3>Lock PDF (PIN)</h3>
+                        <p>Protect PDF with a 4-digit PIN</p>
                     </div>
                     <div class="tool-card" onclick="showTool('unlock_pdf')">
                         <i class="fas fa-unlock"></i>
                         <h3>Unlock PDF</h3>
                         <p>Remove password protection</p>
                     </div>
-                    <div class="tool-card" onclick="showTool('images_to_pdf')">
-                        <i class="fas fa-images"></i>
-                        <h3>Images to PDF</h3>
-                        <p>Convert images to PDF</p>
-                    </div>
-                    <div class="tool-card" onclick="showTool('extract_text')">
-                        <i class="fas fa-font"></i>
-                        <h3>Extract Text</h3>
-                        <p>Extract text from PDF</p>
-                    </div>
-                    <div class="tool-card" onclick="showTool('word_to_text')">
-                        <i class="fas fa-file-alt"></i>
-                        <h3>Word to Text</h3>
-                        <p>Convert Word to plain text</p>
+                </div>
+            </div>
+
+            <!-- Word Tools Section -->
+            <div class="tools-section">
+                <h2 class="section-title">Word Tools</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="showTool('word_to_pdf')">
+                        <i class="fas fa-file-pdf"></i>
+                        <h3>Word to PDF</h3>
+                        <p>Convert DOCX to PDF</p>
                     </div>
                     <div class="tool-card" onclick="showTool('merge_word')">
                         <i class="fas fa-file-word"></i>
                         <h3>Merge Word</h3>
                         <p>Combine multiple Word documents</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('word_to_text')">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Word to Text</h3>
+                        <p>Extract text from Word files</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Tools Section -->
+            <div class="tools-section">
+                <h2 class="section-title">Text Tools</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="showTool('text_to_pdf')">
+                        <i class="fas fa-file-pdf"></i>
+                        <h3>Text to PDF</h3>
+                        <p>Convert plain text to PDF</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('text_to_word')">
+                        <i class="fas fa-file-word"></i>
+                        <h3>Text to Word</h3>
+                        <p>Create a Word document from text</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Tools Section -->
+            <div class="tools-section">
+                <h2 class="section-title">Image Tools</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="showTool('images_to_pdf')">
+                        <i class="fas fa-images"></i>
+                        <h3>Images to PDF</h3>
+                        <p>Convert JPG, PNG, WEBP, BMP, TIFF to PDF</p>
                     </div>
                 </div>
             </div>
@@ -915,7 +933,6 @@
             <div>
                 <h4>Links</h4>
                 <p><a href="/" data-link>Home</a></p>
-                <p><a href="/" data-link>Tools</a></p>
                 <p><a href="/blog" data-link>Blog</a></p>
                 <p><a href="/about" data-link>About</a></p>
                 <p><a href="/contact" data-link>Contact</a></p>
@@ -1029,21 +1046,21 @@
                     'Download corrected PDF'
                 ]
             },
-            split_pdf: { 
-                title: 'Split PDF', 
-                desc: 'Split PDF into individual pages.',
+            delete_pages_pdf: { 
+                title: 'Delete Pages in PDF', 
+                desc: 'Remove selected pages from a PDF.',
                 steps: [
                     'Upload PDF document',
-                    'Specify pages to split',
-                    'Download individual PDFs'
+                    'Specify pages to remove (e.g., 1,3,5 or 2-4)',
+                    'Download cleaned PDF'
                 ]
             },
             lock_pdf: { 
-                title: 'Lock PDF (Password)', 
-                desc: 'Protect PDF with a password.',
+                title: 'Lock PDF (PIN)', 
+                desc: 'Protect PDF with a 4-digit PIN.',
                 steps: [
                     'Upload your PDF file',
-                    'Set a password for protection',
+                    'Set a 4-digit PIN for protection',
                     'Download password-protected PDF'
                 ]
             },
@@ -1109,86 +1126,25 @@
                     'Arrange image order',
                     'Download combined PDF'
                 ]
-            },
-            extract_text: { 
-                title: 'Extract Text from PDF', 
-                desc: 'Extract text content from PDF files.',
-                steps: [
-                    'Upload PDF document',
-                    'Click "Extract Text"',
-                    'Download text file'
-                ]
-            },
-            compress_pdf: { 
-                title: 'Compress PDF', 
-                desc: 'Reduce PDF file size.',
-                steps: [
-                    'Upload PDF file',
-                    'Select compression level',
-                    'Download compressed PDF'
-                ]
             }
         };
 
         // Tool definitions with options
         const tools = {
-            'merge_pdf': {
-                title: 'Merge PDF',
-                description: 'Combine multiple PDF files into a single document',
-                icon: 'fas fa-object-group',
-                multiple: true,
-                accept: '.pdf',
-                options: []
-            },
-            'split_pdf': {
-                title: 'Split PDF',
-                description: 'Extract specific pages or split into individual pages',
-                icon: 'fas fa-cut',
-                multiple: false,
-                accept: '.pdf',
-                options: [
-                    {
-                        type: 'text',
-                        name: 'pages',
-                        label: 'Pages to Keep (e.g., 1,3,5 or 1-5)',
-                        placeholder: 'Enter page numbers or ranges',
-                        required: true
-                    }
-                ]
-            },
-            'compress_pdf': {
-                title: 'Compress PDF',
-                description: 'Reduce PDF file size while maintaining quality',
-                icon: 'fas fa-compress-alt',
-                multiple: false,
-                accept: '.pdf',
-                options: [
-                    {
-                        type: 'select',
-                        name: 'quality',
-                        label: 'Compression Level',
-                        options: [
-                            { value: 'high', label: 'High quality (less compression)' },
-                            { value: 'medium', label: 'Medium quality' },
-                            { value: 'low', label: 'High compression (smaller size)' }
-                        ]
-                    }
-                ]
-            },
             'pdf_to_word': {
                 title: 'PDF to Word',
-                description: 'Convert PDF files to editable Word documents',
+                description: 'Convert PDF into editable DOCX',
                 icon: 'fas fa-file-word',
                 multiple: false,
                 accept: '.pdf',
                 options: []
             },
-            'word_to_pdf': {
-                title: 'Word to PDF',
-                description: 'Convert Word documents to PDF format',
-                icon: 'fas fa-file-pdf',
+            'merge_pdf': {
+                title: 'Merge PDF',
+                description: 'Combine multiple PDFs into a single document',
+                icon: 'fas fa-object-group',
                 multiple: true,
-                accept: '.doc,.docx',
+                accept: '.pdf',
                 options: []
             },
             'rotate_pdf': {
@@ -1210,9 +1166,25 @@
                     }
                 ]
             },
+            'delete_pages_pdf': {
+                title: 'Delete Pages in PDF',
+                description: 'Remove selected pages from a PDF',
+                icon: 'fas fa-trash-alt',
+                multiple: false,
+                accept: '.pdf',
+                options: [
+                    {
+                        type: 'text',
+                        name: 'pages',
+                        label: 'Pages to Remove (e.g., 1,3,5 or 2-4)',
+                        placeholder: 'Enter page numbers or ranges',
+                        required: true
+                    }
+                ]
+            },
             'lock_pdf': {
-                title: 'Protect PDF',
-                description: 'Add password protection to your PDF',
+                title: 'Lock PDF (PIN)',
+                description: 'Add password protection with 4-digit PIN',
                 icon: 'fas fa-lock',
                 multiple: false,
                 accept: '.pdf',
@@ -1220,9 +1192,10 @@
                     {
                         type: 'password',
                         name: 'pin',
-                        label: 'Set Password (4 digits)',
+                        label: 'Set 4-digit PIN',
                         placeholder: 'Enter 4-digit PIN',
-                        required: true
+                        required: true,
+                        pattern: '[0-9]{4}'
                     }
                 ]
             },
@@ -1242,37 +1215,11 @@
                     }
                 ]
             },
-            'images_to_pdf': {
-                title: 'Images to PDF',
-                description: 'Convert multiple images to a single PDF',
-                icon: 'fas fa-images',
+            'word_to_pdf': {
+                title: 'Word to PDF',
+                description: 'Convert Word documents to PDF format',
+                icon: 'fas fa-file-pdf',
                 multiple: true,
-                accept: 'image/*',
-                options: [
-                    {
-                        type: 'select',
-                        name: 'orientation',
-                        label: 'Page Orientation',
-                        options: [
-                            { value: 'portrait', label: 'Portrait' },
-                            { value: 'landscape', label: 'Landscape' }
-                        ]
-                    }
-                ]
-            },
-            'extract_text': {
-                title: 'Extract Text',
-                description: 'Extract text content from PDF files',
-                icon: 'fas fa-font',
-                multiple: false,
-                accept: '.pdf',
-                options: []
-            },
-            'word_to_text': {
-                title: 'Word to Text',
-                description: 'Convert Word documents to plain text',
-                icon: 'fas fa-file-alt',
-                multiple: false,
                 accept: '.doc,.docx',
                 options: []
             },
@@ -1281,6 +1228,14 @@
                 description: 'Combine multiple Word documents',
                 icon: 'fas fa-file-word',
                 multiple: true,
+                accept: '.doc,.docx',
+                options: []
+            },
+            'word_to_text': {
+                title: 'Word to Text',
+                description: 'Convert Word documents to plain text',
+                icon: 'fas fa-file-alt',
+                multiple: false,
                 accept: '.doc,.docx',
                 options: []
             },
@@ -1315,6 +1270,14 @@
                         required: true
                     }
                 ]
+            },
+            'images_to_pdf': {
+                title: 'Images to PDF',
+                description: 'Convert multiple images to a single PDF',
+                icon: 'fas fa-images',
+                multiple: true,
+                accept: 'image/*',
+                options: []
             }
         };
 
@@ -1327,18 +1290,16 @@
         const apiEndpoints = {
             'pdf_to_word': '/api/pdf-to-word',
             'merge_pdf': '/api/merge-pdf',
-            'split_pdf': '/api/delete-pages-pdf',
-            'compress_pdf': '/api/compress-pdf',
-            'word_to_pdf': '/api/word-to-pdf',
             'rotate_pdf': '/api/rotate-pdf',
+            'delete_pages_pdf': '/api/delete-pages-pdf',
             'lock_pdf': '/api/lock-pdf',
             'unlock_pdf': '/api/unlock-pdf',
-            'images_to_pdf': '/api/images-to-pdf',
-            'extract_text': '/api/pdf-to-word', // Using PDF to Word for text extraction
-            'word_to_text': '/api/word-to-text',
+            'word_to_pdf': '/api/word-to-pdf',
             'merge_word': '/api/merge-word',
+            'word_to_text': '/api/word-to-text',
             'text_to_pdf': '/api/text-to-pdf',
-            'text_to_word': '/api/text-to-word'
+            'text_to_word': '/api/text-to-word',
+            'images_to_pdf': '/api/images-to-pdf'
         };
 
         // Navigation functions
@@ -1520,18 +1481,12 @@
                             </select>
                         `;
                         break;
-                    case 'number':
-                        inputHtml = `
-                            <input type="number" id="option_${option.name}" name="${option.name}" 
-                                   min="${option.min || 1}" value="${option.defaultValue || ''}" 
-                                   ${option.required ? 'required' : ''} class="input">
-                        `;
-                        break;
                     case 'password':
                     case 'text':
                         inputHtml = `
                             <input type="${option.type}" id="option_${option.name}" name="${option.name}" 
                                    placeholder="${option.placeholder || ''}" 
+                                   ${option.pattern ? `pattern="${option.pattern}"` : ''}
                                    ${option.required ? 'required' : ''} class="input">
                         `;
                         break;
@@ -1657,8 +1612,8 @@
                 // Get the blob from response
                 const blob = await response.blob();
                 
-                // Generate a filename
-                let filename = 'download';
+                // Generate a filename with UUID
+                let filename = `imasterpdf_${generateUUID()}`;
                 if (response.headers.get('Content-Disposition')) {
                     const match = response.headers.get('Content-Disposition').match(/filename="(.+)"/);
                     if (match) filename = match[1];
@@ -1667,18 +1622,18 @@
                     const extMap = {
                         'pdf_to_word': '.docx',
                         'merge_pdf': '.pdf',
-                        'split_pdf': '.pdf',
-                        'word_to_pdf': '.pdf',
                         'rotate_pdf': '.pdf',
+                        'delete_pages_pdf': '.pdf',
                         'lock_pdf': '.pdf',
                         'unlock_pdf': '.pdf',
-                        'images_to_pdf': '.pdf',
-                        'word_to_text': '.txt',
+                        'word_to_pdf': '.pdf',
                         'merge_word': '.docx',
+                        'word_to_text': '.txt',
                         'text_to_pdf': '.pdf',
-                        'text_to_word': '.docx'
+                        'text_to_word': '.docx',
+                        'images_to_pdf': '.pdf'
                     };
-                    filename = `${currentTool}_${Date.now()}${extMap[currentTool] || '.pdf'}`;
+                    filename = `${filename}${extMap[currentTool] || '.pdf'}`;
                 }
                 
                 // Update progress
@@ -1711,6 +1666,13 @@
                 document.getElementById('progressContainer').classList.remove('active');
                 console.error('Processing error:', error);
             }
+        }
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
         }
 
         function showMessage(text, type) {
@@ -1828,16 +1790,7 @@
             } else {
                 goHome();
             }
-            
-            // Initialize drag and drop for upload area
-            const uploadArea = document.getElementById('uploadArea');
-            if (uploadArea) {
-                uploadArea.classList.add('active');
-            }
         });
-
-        // Set current year
-        document.getElementById('year').textContent = new Date().getFullYear();
     </script>
 </body>
 </html>

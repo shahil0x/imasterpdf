@@ -51,16 +51,16 @@ def validate_file(stream):
         abort(Response("File too large (max 50 MB).", status=400))
 
 def generate_unique_filename(original_filename, suffix=""):
-    """Generate a unique filename with timestamp and random component"""
+    """Generate a unique filename with UUID and timestamp"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    random_str = str(uuid.uuid4())[:8]
+    unique_id = str(uuid.uuid4())[:12]  # Use first 12 chars of UUID
     name, ext = os.path.splitext(original_filename)
     safe_name = secure_filename(name)
     
     # If suffix is provided, include it
     if suffix:
-        return f"{safe_name}_{suffix}_{timestamp}_{random_str}{ext}"
-    return f"{safe_name}_{timestamp}_{random_str}{ext}"
+        return f"{safe_name}_{suffix}_{timestamp}_{unique_id}{ext}"
+    return f"{safe_name}_{timestamp}_{unique_id}{ext}"
 
 def save_uploads(files):
     saved = []
@@ -70,7 +70,7 @@ def save_uploads(files):
         if not filename:
             abort(Response("Invalid filename.", status=400))
         
-        # Generate unique filename
+        # Generate unique filename with UUID
         unique_filename = generate_unique_filename(storage.filename)
         path = os.path.join(UPLOAD_DIR, unique_filename)
         storage.save(path)
@@ -176,7 +176,7 @@ def api_pdf_to_word():
     try:
         # Extract original filename for output naming
         original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "converted")
+        output_name = generate_unique_filename(original_name, "converted_to_word")
         output_name = os.path.splitext(output_name)[0] + ".docx"
         
         # Extract text from PDF
@@ -221,7 +221,7 @@ def api_merge_pdf():
         for p in paths:
             merger.append(p)
         
-        # Generate output filename
+        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "merged")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -244,47 +244,6 @@ def api_merge_pdf():
             safe_remove(p)
         merger.close()
 
-@app.route('/api/compress-pdf', methods=['POST'])
-def api_compress_pdf():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
-    
-    paths = save_uploads(files)
-    pdf_path = paths[0]
-    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
-    
-    try:
-        # Generate output filename
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "compressed")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        # Simple compression by copying (in production, implement actual compression)
-        reader = PdfReader(pdf_path)
-        writer = PdfWriter()
-        
-        for page in reader.pages:
-            writer.add_page(page)
-        
-        # Create a BytesIO buffer for the PDF
-        buffer = io.BytesIO()
-        writer.write(buffer)
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
-    except Exception as e:
-        abort(Response(f"Compression failed: {str(e)}", status=500))
-    finally:
-        safe_remove(pdf_path)
-
 @app.route('/api/rotate-pdf', methods=['POST'])
 def api_rotate_pdf():
     cleanup_temp()
@@ -301,7 +260,7 @@ def api_rotate_pdf():
     try:
         reader = PdfReader(pdf_path)
         
-        # Generate output filename
+        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, f"rotated_{rotation}")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -334,26 +293,26 @@ def api_delete_pages_pdf():
     if not files or len(files) != 1:
         abort(Response("Upload exactly one PDF.", status=400))
     if not pages_str:
-        abort(Response("Pages to keep are required.", status=400))
+        abort(Response("Pages to remove are required.", status=400))
     paths = save_uploads(files)
     pdf_path = paths[0]
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         abort(Response("Only PDF files are allowed.", status=400))
 
-    pages_to_keep = parse_pages(pages_str)
+    pages_to_remove = parse_pages(pages_str)
 
     writer = PdfWriter()
     try:
         reader = PdfReader(pdf_path)
         total = len(reader.pages)
         
-        # Generate output filename
+        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "pages_kept")
+        output_name = generate_unique_filename(original_name, "pages_removed")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
         for i in range(total):
-            if (i+1) in pages_to_keep:
+            if (i+1) not in pages_to_remove:
                 writer.add_page(reader.pages[i])
         
         # Create a BytesIO buffer for the PDF
@@ -368,7 +327,7 @@ def api_delete_pages_pdf():
             mimetype='application/pdf'
         )
     except Exception as e:
-        abort(Response(f"Splitting failed: {str(e)}", status=500))
+        abort(Response(f"Page removal failed: {str(e)}", status=500))
     finally:
         safe_remove(pdf_path)
 
@@ -390,7 +349,7 @@ def api_lock_pdf():
     try:
         reader = PdfReader(pdf_path)
         
-        # Generate output filename
+        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "locked")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -433,7 +392,7 @@ def api_unlock_pdf():
     try:
         reader = PdfReader(pdf_path)
         
-        # Generate output filename
+        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "unlocked")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -474,9 +433,9 @@ def api_word_to_pdf():
         abort(Response("Only DOC/DOCX files are supported.", status=400))
 
     try:
-        # Generate output filename
+        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "converted")
+        output_name = generate_unique_filename(original_name, "converted_to_pdf")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
         # Read Word document
@@ -541,7 +500,7 @@ def api_merge_word():
             if idx < len(paths) - 1:
                 merged.add_paragraph("\n--- End of Document ---\n")
         
-        # Generate output filename
+        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "merged")
         output_name = os.path.splitext(output_name)[0] + ".docx"
@@ -575,9 +534,9 @@ def api_word_to_text():
         abort(Response("Only DOC/DOCX files are allowed.", status=400))
 
     try:
-        # Generate output filename
+        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "converted")
+        output_name = generate_unique_filename(original_name, "extracted_text")
         output_name = os.path.splitext(output_name)[0] + ".txt"
         
         doc = Document(doc_path)
@@ -607,10 +566,10 @@ def api_text_to_pdf():
     if not text:
         abort(Response("Text content is required.", status=400))
 
-    # Generate unique filename
+    # Generate unique filename with UUID
+    unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    random_str = str(uuid.uuid4())[:8]
-    output_name = f"text_converted_{timestamp}_{random_str}.pdf"
+    output_name = f"text_converted_{timestamp}_{unique_id}.pdf"
 
     # Create PDF in memory
     buffer = io.BytesIO()
@@ -653,10 +612,10 @@ def api_text_to_word():
     if not text:
         abort(Response("Text content is required.", status=400))
     
-    # Generate unique filename
+    # Generate unique filename with UUID
+    unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    random_str = str(uuid.uuid4())[:8]
-    output_name = f"text_converted_{timestamp}_{random_str}.docx"
+    output_name = f"text_converted_{timestamp}_{unique_id}.docx"
     
     doc = Document()
     lines = text.splitlines()
@@ -688,7 +647,7 @@ def api_images_to_pdf():
             abort(Response("Only image files (JPG, PNG, WEBP, BMP, TIFF) are allowed.", status=400))
 
     try:
-        # Generate output filename
+        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "images_to_pdf")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -747,4 +706,3 @@ def server_error(e):
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=False)
-
