@@ -18,7 +18,8 @@ from pdfminer.high_level import extract_text
 # -----------------------------------------------------------------------------
 # Flask app configuration
 # -----------------------------------------------------------------------------
-app = Flask(__name__, static_folder=None, template_folder='.')
+app = Flask(__name__)
+
 
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
