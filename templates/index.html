@@ -440,18 +440,24 @@
             margin-bottom: 10px;
         }
 
-        /* Blog */
+        /* Blog Section */
+        .blog-container {
+            margin-top: 30px;
+        }
+
         .blog-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 18px;
             margin-top: 20px;
         }
+        
         @media (max-width: 900px) {
             .blog-list {
                 grid-template-columns: 1fr;
             }
         }
+        
         .blog-card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -461,19 +467,49 @@
             cursor: pointer;
             transition: transform .15s ease, box-shadow .15s ease;
         }
+        
         .blog-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 12px 28px rgba(0,0,0,0.12);
         }
+        
         .blog-card h3 {
             margin: 0 0 6px;
             font-size: 18px;
+            color: var(--dark-color);
         }
+        
         .blog-card .meta {
             font-size: 12px;
             color: var(--muted);
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+        
+        .blog-card .excerpt {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        
+        .blog-card .read-more {
+            color: var(--primary-color);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .blog-card .read-more:hover {
+            text-decoration: underline;
+        }
+
+        /* Blog Article */
         .blog-article {
             background: var(--card);
             border: 1px solid var(--border);
@@ -482,19 +518,52 @@
             padding: 18px;
             margin-top: 24px;
         }
+        
         .blog-article h2 {
             margin: 0 0 8px;
             font-size: 24px;
+            color: var(--dark-color);
         }
+        
         .blog-article .meta {
             font-size: 12px;
             color: var(--muted);
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
         }
+        
         .blog-article p {
             line-height: 1.6;
-            color: #374151;
+            color: var(--text);
             margin-bottom: 15px;
+        }
+        
+        .blog-article h3 {
+            margin: 25px 0 15px;
+            color: var(--dark-color);
+            font-size: 20px;
+        }
+        
+        .blog-article ul, .blog-article ol {
+            margin: 15px 0 15px 20px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .blog-article li {
+            margin-bottom: 8px;
+        }
+        
+        .blog-article blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 15px;
+            margin: 20px 0;
+            color: var(--muted);
+            font-style: italic;
         }
 
         /* Contact */
@@ -503,16 +572,19 @@
             gap: 12px;
             margin-top: 12px;
         }
+        
         .contact-form .row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
+        
         @media (max-width: 600px) {
             .contact-form .row {
                 grid-template-columns: 1fr;
             }
         }
+        
         .input {
             width: 100%;
             padding: 10px;
@@ -520,6 +592,7 @@
             border-radius: var(--radius);
             font-size: 14px;
         }
+        
         textarea.input {
             min-height: 120px;
             resize: vertical;
@@ -532,15 +605,47 @@
             margin: 10px 0;
             display: none;
         }
+        
         .msg.success {
             background: #d1fae5;
             color: #065f46;
             display: block;
         }
+        
         .msg.error {
             background: #fee2e2;
             color: #991b1b;
             display: block;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding: 20px 0;
+        }
+        
+        .pagination button {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .pagination button:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .pagination button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
         }
 
         /* Footer */
@@ -549,34 +654,41 @@
             border-top: 1px solid var(--border);
             background: #fafafa;
         }
+        
         .footer-inner {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
             gap: 18px;
             padding: 18px 24px;
         }
+        
         @media (max-width: 800px) {
             .footer-inner {
                 grid-template-columns: 1fr;
             }
         }
+        
         .footer-inner h4 {
             margin: 0 0 8px;
             font-size: 14px;
         }
+        
         .footer-inner a {
             color: var(--muted);
             font-size: 13px;
             text-decoration: none;
         }
+        
         .footer-inner p {
             margin: 5px 0;
         }
+        
         .tagline {
             font-size: 13px;
             color: var(--muted);
             margin: 5px 0;
         }
+        
         .copyright {
             text-align: center;
             color: var(--muted);
@@ -847,8 +959,12 @@
 
         <!-- Blog List -->
         <section class="hidden-section" id="blog">
-            <h2 class="section-title">Articles & Guides</h2>
-            <div class="blog-list" id="blog-list"></div>
+            <h2 class="section-title">PDF Guides & Tutorials</h2>
+            <p style="text-align: center; margin-bottom: 20px; color: var(--muted);">Expert guides written by Mohammed Shahil</p>
+            <div class="blog-container">
+                <div class="blog-list" id="blog-list"></div>
+                <div class="pagination" id="pagination"></div>
+            </div>
         </section>
 
         <!-- Blog Article -->
@@ -947,57 +1063,109 @@
         <div class="copyright">© <span id="year"></span> iMasterPDF. All rights reserved.</div>
     </footer>
 
-    <!-- Blog data -->
+    <!-- Comprehensive Blog Data -->
     <script type="application/json" id="blog-data">
     {
         "articles": [
             {
                 "slug": "how-to-convert-pdf-to-word-online",
-                "title": "How to Convert PDF to Word Online: A Complete Guide",
-                "author": "iMasterPDF Editorial",
+                "title": "How to Convert PDF to Word Online: A Complete 2026 Guide",
+                "author": "Mohammed Shahil",
                 "date": "2026-01-14",
+                "read_time": "8 min",
+                "category": "PDF Conversion",
                 "summary": "Learn the easiest methods to convert PDF files to editable Word documents online with our step-by-step guide.",
-                "content": "<p>Converting PDF files to Word format is one of the most common document tasks for students, professionals, and businesses. With iMasterPDF, you can convert your PDFs to editable Word documents in just three simple steps: upload your PDF, click convert, and download your DOCX file.</p><p>Our tool preserves formatting, tables, and images as much as possible, making it perfect for resumes, contracts, reports, and academic papers. The conversion happens securely in the cloud, and files are automatically deleted after processing.</p>"
+                "content": "<p>Converting PDF files to Word format is one of the most common document tasks for students, professionals, and businesses. With iMasterPDF, you can convert your PDFs to editable Word documents in just three simple steps: upload your PDF, click convert, and download your DOCX file.</p><p>Our tool preserves formatting, tables, and images as much as possible, making it perfect for resumes, contracts, reports, and academic papers. The conversion happens securely in the cloud, and files are automatically deleted after processing.</p><h3>Why Convert PDF to Word?</h3><p>PDFs are great for sharing finalized documents, but they're not meant for editing. When you need to:</p><ul><li>Update an old resume or contract</li><li>Extract text for translation</li><li>Repurpose content for a new document</li><li>Fix typos or errors in a PDF</li><li>Convert scanned documents to editable text</li></ul><p>...you need a reliable PDF to Word converter.</p><h3>Step-by-Step Conversion Process</h3><ol><li>Upload your PDF file (up to 50MB)</li><li>Select conversion settings if needed</li><li>Click 'Convert' and wait a few seconds</li><li>Download your editable Word document</li></ol><blockquote>Tip: For best results, use PDFs created from digital sources rather than scanned documents, as OCR (Optical Character Recognition) works better on clean text.</blockquote>"
             },
             {
                 "slug": "how-to-merge-pdf-files-for-free",
                 "title": "How to Merge PDF Files for Free: Complete 2026 Guide",
-                "author": "iMasterPDF Editorial",
+                "author": "Mohammed Shahil",
                 "date": "2026-01-14",
+                "read_time": "10 min",
+                "category": "PDF Editing",
                 "summary": "Discover the best free methods to combine multiple PDF files into one document with perfect formatting.",
-                "content": "<p>Merging PDF files is an essential skill in today's digital workplace. Whether you're combining multiple reports, assembling a portfolio, or creating a single document from scanned pages, iMasterPDF makes it easy.</p><p>Our merge tool supports up to 20 files at once, lets you rearrange pages with drag-and-drop, and maintains the original quality of all documents. The process is completely free and requires no registration.</p>"
+                "content": "<p>Merging PDF files is an essential skill in today's digital workplace. Whether you're combining multiple reports, assembling a portfolio, or creating a single document from scanned pages, iMasterPDF makes it easy.</p><p>Our merge tool supports up to 20 files at once, lets you rearrange pages with drag-and-drop, and maintains the original quality of all documents. The process is completely free and requires no registration.</p><h3>When to Merge PDF Files</h3><ul><li><strong>Academic Projects:</strong> Combine research papers, assignments, and references</li><li><strong>Business Reports:</strong> Merge monthly reports, financial statements, and presentations</li><li><strong>Legal Documents:</strong> Assemble contracts, agreements, and supporting documents</li><li><strong>Personal Use:</strong> Create a single document from scanned family photos or recipes</li><li><strong>Job Applications:</strong> Combine resume, cover letter, and certificates</li></ul><h3>Best Practices for Merging PDFs</h3><ol><li>Organize files in the correct order before uploading</li><li>Check file sizes (our tool supports up to 50MB per file)</li><li>Use consistent page orientation (all portrait or all landscape)</li><li>Consider compressing files first if they're very large</li><li>Preview the merged document before downloading</li></ol><p>Our tool preserves all formatting, hyperlinks, and images, ensuring your merged document looks professional.</p>"
             },
             {
                 "slug": "how-to-compress-pdf-without-losing-quality",
                 "title": "How to Compress PDF Without Losing Quality: Expert Techniques",
-                "author": "iMasterPDF Editorial",
+                "author": "Mohammed Shahil",
                 "date": "2026-01-14",
+                "read_time": "12 min",
+                "category": "PDF Optimization",
                 "summary": "Learn professional methods to reduce PDF file size while maintaining readability and visual quality.",
-                "content": "<p>PDF file sizes can become unwieldy, especially when they contain high-resolution images or embedded fonts. With iMasterPDF's compression tool, you can reduce file size by up to 80% while keeping documents readable and professional.</p><p>We offer three compression levels: high quality (minimal compression), balanced (recommended), and maximum compression for sharing via email. All compression happens locally for maximum privacy.</p>"
+                "content": "<p>PDF file sizes can become unwieldy, especially when they contain high-resolution images or embedded fonts. With iMasterPDF's compression tool, you can reduce file size by up to 80% while keeping documents readable and professional.</p><p>We offer three compression levels: high quality (minimal compression), balanced (recommended), and maximum compression for sharing via email. All compression happens locally for maximum privacy.</p><h3>Why Compress PDF Files?</h3><p>Large PDF files cause several problems:</p><ul><li>Slow email delivery and bounce-backs</li><li>Difficulty sharing via messaging apps</li><li>Long upload/download times</li><li>Storage space issues</li><li>Poor performance on mobile devices</li></ul><h3>Compression Techniques Explained</h3><p>Our tool uses several advanced techniques:</p><ol><li><strong>Image Optimization:</strong> Reduces image resolution and uses efficient compression algorithms</li><li><strong>Font Subsetting:</strong> Includes only used characters from embedded fonts</li><li><strong>Data Deduplication:</strong> Removes redundant data streams</li><li><strong>Object Compression:</strong> Compresses internal PDF objects</li><li><strong>Metadata Removal:</strong> Optional removal of metadata and annotations</li></ol><h3>Step-by-Step Compression Guide</h3><p>Follow these simple steps:</p><ol><li>Upload your PDF file to iMasterPDF</li><li>Choose your compression level</li><li>Select additional options (remove metadata, downsample images)</li><li>Click 'Compress' and wait a few seconds</li><li>Download your optimized PDF</li></ol><blockquote>Pro Tip: For documents with many images, try the 'balanced' setting first. Check the quality, and if acceptable, you can try 'maximum' compression for even smaller file sizes.</blockquote>"
             },
             {
                 "slug": "best-free-pdf-tools-for-students",
                 "title": "Best Free PDF Tools for Students: Complete 2026 Guide",
-                "author": "iMasterPDF Editorial",
+                "author": "Mohammed Shahil",
                 "date": "2026-01-14",
+                "read_time": "15 min",
+                "category": "Educational",
                 "summary": "Discover essential free PDF tools that every student needs for academic success.",
-                "content": "<p>PDF documents are ubiquitous in academic life - from lecture notes and research papers to assignments and e-books. iMasterPDF offers students a complete suite of tools including PDF to Word conversion for editing assignments, PDF merging for combining research, and PDF compression for email submissions.</p><p>All tools are completely free, work on any device, and require no software installation - perfect for students on a budget.</p>"
+                "content": "<p>PDF documents are ubiquitous in academic life - from lecture notes and research papers to assignments and e-books. iMasterPDF offers students a complete suite of tools including PDF to Word conversion for editing assignments, PDF merging for combining research, and PDF compression for email submissions.</p><p>All tools are completely free, work on any device, and require no software installation - perfect for students on a budget.</p><h3>Essential PDF Tools for Students</h3><ul><li><strong>PDF to Word Converter:</strong> Edit lecture notes and assignments</li><li><strong>PDF Merger:</strong> Combine research papers and project documents</li><li><strong>PDF Compressor:</strong> Reduce file sizes for email submission</li><li><strong>PDF Rotator:</strong> Fix sideways scanned documents</li><li><strong>PDF to Text:</strong> Extract quotes and references</li><li><strong>PDF Protector:</strong> Secure sensitive documents with passwords</li></ul><h3>Academic Workflow Optimization</h3><p>Here's how students can optimize their workflow:</p><ol><li><strong>Research Phase:</strong> Convert downloaded PDFs to Word for easy note-taking</li><li><strong>Writing Phase:</strong> Merge multiple sources into a single reference document</li><li><strong>Editing Phase:</strong> Rotate any sideways pages from scanned books</li><li><strong>Submission Phase:</strong> Compress the final document for email</li><li><strong>Storage Phase:</strong> Protect sensitive documents with passwords</li></ol><h3>Time-Saving Tips</h3><ul><li>Use batch processing for multiple files</li><li>Save frequently used settings as presets</li><li>Take advantage of keyboard shortcuts</li><li>Use the mobile version for on-the-go editing</li><li>Bookmark frequently used tools</li></ul>"
             },
             {
                 "slug": "how-to-unlock-pdf-legally",
                 "title": "How to Unlock PDF Legally: Ethical Methods and Best Practices",
-                "author": "iMasterPDF Editorial",
+                "author": "Mohammed Shahil",
                 "date": "2026-01-14",
+                "read_time": "9 min",
+                "category": "Security",
                 "summary": "Learn legitimate ways to unlock password-protected PDFs when you have the right to access them.",
-                "content": "<p>Password-protected PDFs are common in business, education, and personal use. If you've forgotten a password or received a protected file you need to edit, iMasterPDF can help - legally and ethically.</p><p>Our unlock tool requires you to provide the original password, ensuring it's used only for legitimate purposes like accessing your own documents or files shared with you. We never store passwords and files are deleted immediately after processing.</p>"
+                "content": "<p>Password-protected PDFs are common in business, education, and personal use. If you've forgotten a password or received a protected file you need to edit, iMasterPDF can help - legally and ethically.</p><p>Our unlock tool requires you to provide the original password, ensuring it's used only for legitimate purposes like accessing your own documents or files shared with you. We never store passwords and files are deleted immediately after processing.</p><h3>Legitimate Reasons to Unlock PDFs</h3><ul><li>You forgot the password to your own document</li><li>You received a password-protected file from someone who forgot to give you the password</li><li>You need to edit a document you previously protected</li><li>You're accessing documents from a former employee or colleague</li><li>You need to extract content from an old protected file</li></ul><h3>How Our PDF Unlocker Works</h3><ol><li>Upload your password-protected PDF</li><li>Enter the correct password (we don't store or see it)</li><li>Click 'Unlock' - the process takes just seconds</li><li>Download your unlocked PDF</li></ol><h3>Security Best Practices</h3><ul><li>Always use strong, unique passwords</li><li>Store passwords in a secure password manager</li><li>Remove protection when sharing files if possible</li><li>Use different passwords for different documents</li><li>Regularly update passwords for sensitive documents</li></ul><blockquote>Important: Only unlock PDFs that you own or have explicit permission to access. Unauthorized access to protected documents may violate laws and ethical guidelines.</blockquote>"
             },
             {
                 "slug": "pdf-vs-word-which-is-better",
                 "title": "PDF vs Word: Which Is Better for Your Needs? Complete Comparison",
-                "author": "iMasterPDF Editorial",
+                "author": "Mohammed Shahil",
                 "date": "2026-01-14",
+                "read_time": "11 min",
+                "category": "Comparison",
                 "summary": "Detailed comparison of PDF and Word formats to help you choose the right format for every situation.",
-                "content": "<p>The PDF vs Word debate has been ongoing since both formats became mainstream. PDF is perfect for final documents, printing, and sharing - it preserves formatting across all devices. Word is ideal for editing, collaboration, and documents that need frequent changes.</p><p>With iMasterPDF, you can easily convert between both formats depending on your needs. Convert Word to PDF for sharing final versions, or PDF to Word when you need to make edits.</p>"
+                "content": "<p>The PDF vs Word debate has been ongoing since both formats became mainstream. PDF is perfect for final documents, printing, and sharing - it preserves formatting across all devices. Word is ideal for editing, collaboration, and documents that need frequent changes.</p><p>With iMasterPDF, you can easily convert between both formats depending on your needs. Convert Word to PDF for sharing final versions, or PDF to Word when you need to make edits.</p><h3>When to Use PDF Format</h3><ul><li><strong>Final Documents:</strong> Resumes, contracts, reports, certificates</li><li><strong>Printing:</strong> Documents that need precise layout control</li><li><strong>Sharing:</strong> When you want formatting to remain unchanged</li><li><strong>Archiving:</strong> Long-term storage of important documents</li><li><strong>Forms:</strong> Documents that need to be filled out but not edited</li></ul><h3>When to Use Word Format</h3><ul><li><strong>Collaboration:</strong> Documents that multiple people need to edit</li><li><strong>Drafting:</strong> Early versions of documents</li><li><strong>Editing:</strong> Documents that need frequent updates</li><li><strong>Templates:</strong> Reusable document formats</li><li><strong>Content Creation:</strong> Articles, essays, and manuscripts</li></ul><h3>Conversion Best Practices</h3><ol><li>Convert Word to PDF for final distribution</li><li>Convert PDF to Word when you need to make edits</li><li>Check formatting after conversion</li><li>Use high-quality source files for best results</li><li>Consider using both formats in your workflow</li></ol><p>Remember: iMasterPDF makes conversion between formats quick and easy, so you can use the right format for each situation.</p>"
+            },
+            {
+                "slug": "how-to-protect-pdf-with-password",
+                "title": "How to Protect PDF with Password: Ultimate Security Guide 2026",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-13",
+                "read_time": "10 min",
+                "category": "Security",
+                "summary": "Learn how to add password protection to your PDF files to keep sensitive information secure.",
+                "content": "<p>PDF password protection is essential for securing sensitive documents like contracts, financial reports, personal information, and confidential business data. iMasterPDF's Lock PDF tool makes it easy to add strong password protection to any PDF file.</p><h3>Why Password Protect PDFs?</h3><ul><li><strong>Confidentiality:</strong> Protect sensitive personal or business information</li><li><strong>Legal Compliance:</strong> Meet data protection regulations</li><li><strong>Access Control:</strong> Restrict who can view or edit documents</li><li><strong>Privacy:</strong> Keep personal documents private</li><li><strong>Security:</strong> Prevent unauthorized copying or printing</li></ul><h3>Types of PDF Password Protection</h3><ol><li><strong>Open Password:</strong> Required to open and view the document</li><li><strong>Permissions Password:</strong> Controls printing, editing, and copying</li><li><strong>Both:</strong> Maximum security with both types of passwords</li></ol><h3>Step-by-Step Protection Guide</h3><p>Follow these simple steps:</p><ol><li>Upload your PDF to iMasterPDF</li><li>Choose 'Lock PDF' tool</li><li>Set a strong password (minimum 4 characters)</li><li>Select permission restrictions if needed</li><li>Click 'Protect PDF'</li><li>Download your secured document</li></ol><h3>Password Best Practices</h3><ul><li>Use at least 8 characters (mix of letters, numbers, symbols)</li><li>Avoid common words or personal information</li><li>Use different passwords for different documents</li><li>Store passwords securely (use a password manager)</li><li>Change passwords periodically for sensitive documents</li></ul><blockquote>Security Tip: For maximum security, use both an open password and permissions password, and restrict printing and editing.</blockquote>"
+            },
+            {
+                "slug": "how-to-rotate-pdf-pages",
+                "title": "How to Rotate PDF Pages: Fix Sideways Documents Easily",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-13",
+                "read_time": "7 min",
+                "category": "PDF Editing",
+                "summary": "Learn how to fix sideways or upside-down pages in PDF documents quickly and easily.",
+                "content": "<p>Rotating PDF pages is a common need when working with scanned documents or documents created from multiple sources. iMasterPDF's Rotate PDF tool makes it easy to fix orientation issues with just a few clicks.</p><h3>Common Rotation Scenarios</h3><ul><li>Scanned documents with mixed orientation</li><li>Landscape pages that should be portrait (or vice versa)</li><li>Upside-down pages from scanning errors</li><li>Photos or images that need rotation</li><li>Mixed orientation in combined documents</li></ul><h3>Rotation Options Available</h3><ol><li><strong>90° Clockwise:</strong> Rotate right</li><li><strong>90° Counter-clockwise:</strong> Rotate left</li><li><strong>180°:</strong> Flip upside down</li><li><strong>Custom Selection:</strong> Rotate specific pages only</li></ol><h3>Step-by-Step Rotation Process</h3><p>Here's how to rotate PDF pages with iMasterPDF:</p><ol><li>Upload your PDF document</li><li>Select rotation angle (90°, 180°, or custom)</li><li>Choose which pages to rotate (all or specific pages)</li><li>Preview the changes</li><li>Click 'Rotate' and download your corrected PDF</li></ol><h3>Pro Tips for Perfect Rotation</h3><ul><li>Use 'Select Pages' option for mixed-orientation documents</li><li>Preview before finalizing to ensure correct rotation</li><li>Batch process multiple documents with same rotation needs</li><li>Combine with other tools (merge, compress) in your workflow</li><li>Save frequently used rotation settings as presets</li></ul><p>Our tool preserves all content quality and formatting while fixing orientation issues.</p>"
+            },
+            {
+                "slug": "how-to-delete-pages-from-pdf",
+                "title": "How to Delete Pages from PDF: Remove Unwanted Pages Easily",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-12",
+                "read_time": "8 min",
+                "category": "PDF Editing",
+                "summary": "Learn how to remove unwanted pages from PDF documents without affecting the rest of the document.",
+                "content": "<p>Deleting pages from PDF documents is often necessary when you need to remove confidential information, extract specific sections, or clean up scanned documents. iMasterPDF's Delete Pages tool makes this process simple and secure.</p><h3>When to Delete PDF Pages</h3><ul><li>Remove confidential or personal information</li><li>Extract specific sections for sharing</li><li>Clean up scanned documents with blank pages</li><li>Remove unnecessary cover pages or appendices</li><li>Create customized versions of documents</li></ul><h3>How Our Page Deletion Tool Works</h3><p>The process is straightforward:</p><ol><li>Upload your PDF document</li><li>Specify which pages to delete (individual pages or ranges)</li><li>Preview the remaining pages</li><li>Click 'Delete Pages'</li><li>Download your cleaned PDF</li></ol><h3>Page Selection Options</h3><ul><li><strong>Individual Pages:</strong> 1, 3, 5 (comma-separated)</li><li><strong>Page Ranges:</strong> 2-4, 10-15 (hyphen for ranges)</li><li><strong>Mixed Selection:</strong> 1, 3-5, 8, 10-12</li><li><strong>All Except:</strong> Delete all pages except specified ones</li></ul><h3>Best Practices</h3><ol><li>Always preview before deleting</li><li>Keep a backup of the original document</li><li>Check page numbers carefully</li><li>Use for legitimate purposes only</li><li>Combine with other tools for complete document editing</li></ol><blockquote>Tip: For sensitive documents, consider password protection after deleting pages for added security.</blockquote>"
+            },
+            {
+                "slug": "how-to-convert-word-to-pdf",
+                "title": "How to Convert Word to PDF: Preserve Formatting Perfectly",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-12",
+                "read_time": "9 min",
+                "category": "Conversion",
+                "summary": "Learn how to convert Word documents to PDF while preserving all formatting, fonts, and layout.",
+                "content": "<p>Converting Word documents to PDF is essential for sharing finalized documents that need to look exactly the same on all devices. iMasterPDF's Word to PDF converter preserves all formatting, fonts, images, and layout elements perfectly.</p><h3>Benefits of Converting Word to PDF</h3><ul><li><strong>Format Preservation:</strong> Documents look identical on all devices</li><li><strong>Universal Compatibility:</strong> PDFs open on any device without Word</li><li><strong>Security:</strong> Add password protection and restrictions</li><li><strong>Professional Appearance:</strong> Perfect for resumes, contracts, reports</li><li><strong>Print Ready:</strong> Maintains exact layout for printing</li></ul><h3>Conversion Process Explained</h3><ol><li>Upload your Word document (.doc or .docx)</li><li>Select conversion options if needed</li><li>Click 'Convert to PDF'</li><li>Wait a few seconds for processing</li><li>Download your professional PDF</li></ol><h3>Format Preservation Features</h3><ul><li>Font embedding (even uncommon fonts)</li><li>Image quality preservation</li><li>Table formatting maintained</li><li>Hyperlinks remain active</li><li>Page layout exactly as in Word</li><li>Header/footer preservation</li></ul><h3>Common Use Cases</h3><ol><li><strong>Resumes:</strong> Convert Word resumes to PDF for job applications</li><li><strong>Contracts:</strong> Create unchangeable PDF contracts</li><li><strong>Reports:</strong> Convert business reports for distribution</li><li><strong>Academic Papers:</strong> Submit papers in PDF format</li><li><strong>Manuals:</strong> Create professional PDF manuals from Word</li></ol><p>Our converter handles complex documents with multiple sections, headers, footers, and images with perfect accuracy.</p>"
             }
         ]
     }
@@ -1285,6 +1453,10 @@
         let currentTool = null;
         let uploadedFiles = [];
         const MAX_SIZE = 50 * 1024 * 1024;
+
+        // Blog pagination
+        let currentPage = 1;
+        const articlesPerPage = 6;
 
         // API Endpoints mapping
         const apiEndpoints = {
@@ -1670,7 +1842,7 @@
 
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0.8);
                 return v.toString(16);
             });
         }
@@ -1697,17 +1869,70 @@
         }
 
         // Blog functions
-        function renderBlogList() {
+        function renderBlogList(page = 1) {
             const blogList = document.getElementById('blog-list');
             const blogData = JSON.parse(document.getElementById('blog-data').textContent);
+            const articles = blogData.articles;
             
-            blogList.innerHTML = blogData.articles.map(article => `
+            // Calculate pagination
+            const totalPages = Math.ceil(articles.length / articlesPerPage);
+            currentPage = Math.max(1, Math.min(page, totalPages));
+            const startIndex = (currentPage - 1) * articlesPerPage;
+            const endIndex = startIndex + articlesPerPage;
+            const pageArticles = articles.slice(startIndex, endIndex);
+            
+            // Render articles
+            blogList.innerHTML = pageArticles.map(article => `
                 <div class="blog-card" onclick="showArticle('${article.slug}')">
                     <h3>${article.title}</h3>
-                    <div class="meta">By ${article.author} | ${article.date}</div>
-                    <p>${article.summary}</p>
+                    <div class="meta">
+                        <span><i class="fas fa-user"></i> ${article.author}</span>
+                        <span><i class="fas fa-calendar"></i> ${article.date}</span>
+                        <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
+                        <span><i class="fas fa-tag"></i> ${article.category}</span>
+                    </div>
+                    <p class="excerpt">${article.summary}</p>
+                    <a href="#" onclick="showArticle('${article.slug}'); return false;" class="read-more">
+                        Read Full Article <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             `).join('');
+            
+            // Render pagination
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let paginationHtml = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                paginationHtml += `<button onclick="renderBlogList(${currentPage - 1})"><i class="fas fa-chevron-left"></i> Previous</button>`;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    paginationHtml += `<button class="active">${i}</button>`;
+                } else if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    paginationHtml += `<button onclick="renderBlogList(${i})">${i}</button>`;
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    paginationHtml += `<span>...</span>`;
+                }
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                paginationHtml += `<button onclick="renderBlogList(${currentPage + 1})">Next <i class="fas fa-chevron-right"></i></button>`;
+            }
+            
+            pagination.innerHTML = paginationHtml;
         }
 
         function showArticle(slug) {
@@ -1716,7 +1941,12 @@
             
             if (article) {
                 document.getElementById('article-title').textContent = article.title;
-                document.getElementById('article-meta').textContent = `By ${article.author} | ${article.date}`;
+                document.getElementById('article-meta').innerHTML = `
+                    <span><i class="fas fa-user"></i> ${article.author}</span>
+                    <span><i class="fas fa-calendar"></i> ${article.date}</span>
+                    <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
+                    <span><i class="fas fa-tag"></i> ${article.category}</span>
+                `;
                 document.getElementById('article-content').innerHTML = article.content;
                 showSection('article');
                 window.history.pushState({}, '', `/blog/${slug}`);
@@ -1776,6 +2006,9 @@
             const path = window.location.pathname;
             if (routes[path]) {
                 routes[path]();
+            } else if (path.startsWith('/blog/')) {
+                const slug = path.split('/blog/')[1];
+                showArticle(slug);
             } else {
                 goHome();
             }
@@ -1787,6 +2020,9 @@
             const path = window.location.pathname;
             if (routes[path]) {
                 routes[path]();
+            } else if (path.startsWith('/blog/')) {
+                const slug = path.split('/blog/')[1];
+                showArticle(slug);
             } else {
                 goHome();
             }
