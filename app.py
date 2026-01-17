@@ -32,7 +32,7 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
 ALLOWED_PDF_EXT = {'.pdf'}
-ALLOWED_WORD_EXT = {'.docx', '.doc'}
+ALLOWED_WORD_EXT = {'.docx', '.doc'}  # Added .doc support
 ALLOWED_TEXT_EXT = {'.txt'}
 
 # -----------------------------------------------------------------------------
@@ -134,6 +134,23 @@ def safe_remove(path):
             os.remove(path)
     except Exception:
         pass
+
+def process_doc_file(file_path):
+    """Process .doc files by converting to text (simplified approach)"""
+    try:
+        # For .doc files, we'll use a simplified approach
+        # In production, you might want to use python-doc or convert to docx first
+        import textract
+        text = textract.process(file_path).decode('utf-8')
+        return text
+    except Exception as e:
+        # Fallback: try to read as binary and extract text
+        try:
+            with open(file_path, 'rb') as f:
+                content = f.read().decode('utf-8', errors='ignore')
+            return content
+        except:
+            raise Exception(f"Could not read .doc file: {str(e)}")
 
 # -----------------------------------------------------------------------------
 # Single SPA route handler
@@ -439,7 +456,16 @@ def api_word_to_pdf():
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
         # Read Word document
-        doc = Document(doc_path)
+        if doc_path.endswith('.docx'):
+            doc = Document(doc_path)
+            text_content = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    text_content.append(para.text)
+            text = '\n'.join(text_content)
+        else:
+            # Handle .doc files
+            text = process_doc_file(doc_path)
         
         # Create PDF using reportlab
         buffer = io.BytesIO()
@@ -449,17 +475,18 @@ def api_word_to_pdf():
         top = height - 50
         line_height = 14
         
-        for para in doc.paragraphs:
-            if para.text.strip():
-                lines = wrap_text(para.text, max_chars=95)
-                for line in lines:
-                    c.drawString(left_margin, top, line)
+        lines = text.splitlines()
+        for line in lines:
+            if line.strip():
+                for chunk in wrap_text(line, max_chars=95):
+                    c.drawString(left_margin, top, chunk)
                     top -= line_height
                     if top < 50:
                         c.showPage()
                         top = height - 50
-                # Add space between paragraphs
-                top -= line_height / 2
+            else:
+                # Empty line
+                top -= line_height
                 if top < 50:
                     c.showPage()
                     top = height - 50
@@ -493,10 +520,18 @@ def api_merge_word():
     try:
         merged = Document()
         for idx, dp in enumerate(paths):
-            d = Document(dp)
-            for para in d.paragraphs:
-                if para.text.strip():
-                    merged.add_paragraph(para.text)
+            if dp.endswith('.docx'):
+                d = Document(dp)
+                for para in d.paragraphs:
+                    if para.text.strip():
+                        merged.add_paragraph(para.text)
+            else:
+                # Handle .doc files
+                text = process_doc_file(dp)
+                for line in text.splitlines():
+                    if line.strip():
+                        merged.add_paragraph(line.strip())
+            
             if idx < len(paths) - 1:
                 merged.add_paragraph("\n--- End of Document ---\n")
         
@@ -539,13 +574,19 @@ def api_word_to_text():
         output_name = generate_unique_filename(original_name, "extracted_text")
         output_name = os.path.splitext(output_name)[0] + ".txt"
         
-        doc = Document(doc_path)
-        text_content = []
-        for para in doc.paragraphs:
-            if para.text.strip():
-                text_content.append(para.text)
+        # Read Word document
+        if doc_path.endswith('.docx'):
+            doc = Document(doc_path)
+            text_content = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    text_content.append(para.text)
+            text = '\n'.join(text_content)
+        else:
+            # Handle .doc files
+            text = process_doc_file(doc_path)
         
-        buffer = io.BytesIO('\n'.join(text_content).encode('utf-8'))
+        buffer = io.BytesIO(text.encode('utf-8'))
         buffer.seek(0)
         
         return send_file(

@@ -3,30 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iMasterPDF - Free Online Document Tools</title>
-    <meta name="description" content="iMasterPDF offers free online PDF and document tools: convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly." />
-    <meta name="keywords" content="PDF tools, Word to PDF, PDF to Word, Merge PDF, Rotate PDF, Lock PDF, Unlock PDF, Text to PDF, Image to PDF, PDF guides, document security" />
-    <meta name="author" content="iMasterPDF" />
+    <title>iMasterPDF - Free Online PDF & Document Tools | Convert, Merge, Edit</title>
+    <meta name="description" content="Free online PDF tools: convert PDF to Word, merge PDF files, rotate PDF pages, compress PDF, lock/unlock PDF, Word to PDF, and more. No registration required." />
+    <meta name="keywords" content="PDF tools, Word to PDF, PDF to Word, merge PDF, compress PDF, rotate PDF, lock PDF, unlock PDF, text to PDF, image to PDF, free document converter" />
+    <meta name="author" content="Mohammed Shahil" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://imasterpdf.com/" />
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "ca-pub-1234567890123456",
+            enable_page_level_ads: true
+        });
+    </script>
+
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "iMasterPDF - Free Online Document Tools",
+        "description": "Convert, merge, rotate, lock, unlock PDF and Word documents online for free.",
+        "url": "https://imasterpdf.com",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Mohammed Shahil",
+            "url": "https://imasterpdf.com"
+        }
+    }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary-color: #2d8cff;
-            --secondary-color: #ff4757;
-            --success-color: #2ed573;
-            --dark-color: #2f3542;
-            --light-color: #f1f2f6;
-            --gray-color: #a4b0be;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #7c3aed;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --gray-color: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --radius: 8px;
-            --transition: all 0.3s ease;
-            --card: #ffffff;
-            --border: #e2e8f0;
-            --text: #374151;
-            --muted: #6b7280;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
@@ -36,14 +72,15 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             min-height: 100vh;
             color: var(--dark-color);
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -55,6 +92,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .navbar {
@@ -68,14 +106,20 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.8rem;
-            font-weight: bold;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: var(--primary-color);
             text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .logo:hover {
+            color: var(--primary-dark);
+            transform: translateY(-1px);
         }
 
         .logo i {
-            font-size: 2rem;
+            font-size: 1.8rem;
         }
 
         .nav-links {
@@ -88,7 +132,10 @@
             text-decoration: none;
             color: var(--dark-color);
             font-weight: 500;
+            font-size: 0.95rem;
             transition: var(--transition);
+            padding: 0.5rem 0;
+            position: relative;
         }
 
         .nav-links a:hover {
@@ -100,109 +147,280 @@
             font-weight: 600;
         }
 
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
         .btn {
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
+            padding: 0.75rem 1.5rem;
             border-radius: var(--radius);
             cursor: pointer;
             font-weight: 600;
+            font-size: 0.95rem;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            text-decoration: none;
         }
 
         .btn:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
         }
 
         .btn-secondary {
             background: var(--secondary-color);
         }
 
+        .btn-secondary:hover {
+            background: #6d28d9;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
         /* Hero Section */
         .hero {
             text-align: center;
-            padding: 4rem 0;
-            background: white;
+            padding: 5rem 0;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
             margin: 2rem 0;
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
         }
 
         .hero h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             margin-bottom: 1rem;
-            color: var(--dark-color);
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
         }
 
         .hero p {
-            font-size: 1.2rem;
-            color: var(--gray-color);
+            font-size: 1.25rem;
             max-width: 700px;
             margin: 0 auto 2rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
         }
 
         /* Tools Grid */
         .tools-section {
-            padding: 3rem 0;
+            padding: 4rem 0;
         }
 
         .section-title {
             text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2rem;
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
             color: var(--dark-color);
+            font-weight: 700;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 2px;
         }
 
         .tools-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
             margin-bottom: 3rem;
         }
 
         .tool-card {
             background: white;
             border-radius: var(--radius);
-            padding: 1.5rem;
+            padding: 2rem;
             text-align: center;
             box-shadow: var(--shadow);
             cursor: pointer;
             transition: var(--transition);
             border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
         }
 
         .tool-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
             border-color: var(--primary-color);
+            box-shadow: var(--shadow-lg);
         }
 
         .tool-card i {
-            font-size: 2.5rem;
+            font-size: 3rem;
             color: var(--primary-color);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .tool-card:hover i {
+            transform: scale(1.1);
         }
 
         .tool-card h3 {
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
         }
 
         .tool-card p {
             color: var(--gray-color);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .tool-card .badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* AdSense Ad Container */
+        .ad-container {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin: 2rem auto;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            max-width: 728px;
+        }
+
+        .ad-label {
+            font-size: 0.75rem;
+            color: var(--gray-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Content Sections */
+        .content-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 3rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow);
+        }
+
+        .content-section h2 {
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .content-section h3 {
+            color: var(--dark-color);
+            margin: 2rem 0 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .content-section p {
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+            line-height: 1.8;
+        }
+
+        .content-section ul, .content-section ol {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .content-section li {
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .content-section blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--gray-color);
+        }
+
+        .content-section .meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
             font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+
+        .content-section .meta i {
+            margin-right: 0.5rem;
         }
 
         /* Upload Area */
         .upload-area {
             background: white;
             border-radius: var(--radius);
-            padding: 2rem;
+            padding: 2.5rem;
             box-shadow: var(--shadow);
             margin-bottom: 2rem;
             display: none;
@@ -219,18 +437,19 @@
         }
 
         .upload-box {
-            border: 3px dashed var(--gray-color);
+            border: 3px dashed var(--border-color);
             border-radius: var(--radius);
-            padding: 3rem;
+            padding: 3rem 2rem;
             text-align: center;
-            margin: 1rem 0;
+            margin: 1.5rem 0;
             transition: var(--transition);
             cursor: pointer;
+            background: var(--light-color);
         }
 
-        .upload-box.drag-over {
+        .upload-box:hover, .upload-box.drag-over {
             border-color: var(--primary-color);
-            background: rgba(45, 140, 255, 0.05);
+            background: rgba(37, 99, 235, 0.05);
         }
 
         .upload-box i {
@@ -244,7 +463,7 @@
         }
 
         .file-list {
-            margin: 1rem 0;
+            margin: 1.5rem 0;
             max-height: 300px;
             overflow-y: auto;
         }
@@ -253,11 +472,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.8rem;
+            padding: 1rem;
             background: var(--light-color);
             border-radius: var(--radius);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             animation: slideIn 0.3s ease;
+            border: 1px solid var(--border-color);
         }
 
         @keyframes slideIn {
@@ -267,12 +487,13 @@
 
         .file-item i {
             cursor: pointer;
-            color: var(--secondary-color);
+            color: var(--danger-color);
             padding: 5px;
+            transition: var(--transition);
         }
 
         .file-item i:hover {
-            background: rgba(255, 71, 87, 0.1);
+            background: rgba(220, 38, 38, 0.1);
             border-radius: 50%;
         }
 
@@ -284,6 +505,7 @@
             box-shadow: var(--shadow);
             margin-bottom: 2rem;
             display: none;
+            border: 1px solid var(--border-color);
         }
 
         .options-panel.active {
@@ -298,17 +520,27 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
+            color: var(--dark-color);
         }
 
         .option-group input,
         .option-group select,
         .option-group textarea {
             width: 100%;
-            padding: 0.8rem;
-            border: 1px solid var(--gray-color);
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
             border-radius: var(--radius);
             font-size: 1rem;
             font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .option-group input:focus,
+        .option-group select:focus,
+        .option-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         /* Progress Container */
@@ -328,15 +560,16 @@
             background: var(--light-color);
             border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 0.5rem;
+            margin: 1rem 0;
             position: relative;
+            border: 1px solid var(--border-color);
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.5s ease;
         }
 
         .progress-text {
@@ -349,7 +582,7 @@
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 12px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
@@ -374,11 +607,12 @@
         .result-area {
             background: white;
             border-radius: var(--radius);
-            padding: 2rem;
+            padding: 3rem;
             box-shadow: var(--shadow);
             text-align: center;
             display: none;
             animation: fadeIn 0.5s ease;
+            border: 2px solid var(--success-color);
         }
 
         .result-area.active {
@@ -388,233 +622,160 @@
         .result-area i {
             font-size: 4rem;
             color: var(--success-color);
+            margin-bottom: 1.5rem;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            margin: 3rem 0;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .faq-question {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            color: var(--gray-color);
+            line-height: 1.7;
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        /* Blog */
+        .blog-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .blog-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .blog-card-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .blog-card-content {
+            padding: 1.5rem;
+        }
+
+        .blog-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: var(--dark-color);
+            font-weight: 600;
+        }
+
+        .blog-card .meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--gray-color);
             margin-bottom: 1rem;
         }
 
-        /* How-to guide section */
-        .how-to-guide {
-            background: #f8fafc;
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-top: 20px;
-            border-left: 4px solid var(--primary-color);
-        }
-        .how-to-guide h4 {
-            margin: 0 0 10px;
-            font-size: 16px;
-            color: var(--text);
-        }
-        .how-to-guide ol {
-            margin: 0 0 10px 0;
-            padding-left: 20px;
-        }
-        .how-to-guide li {
-            margin-bottom: 6px;
-            color: var(--text);
-            font-size: 14px;
-        }
-        .how-to-guide .note {
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px dashed var(--border);
-        }
-
-        /* Info pages */
-        .info {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 18px;
-            margin-top: 24px;
-        }
-        .info h2 {
-            margin: 0 0 8px;
-            font-size: 22px;
-        }
-        .info p, .info li {
-            color: var(--muted);
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-
-        /* Blog Section */
-        .blog-container {
-            margin-top: 30px;
-        }
-
-        .blog-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 18px;
-            margin-top: 20px;
-        }
-        
-        @media (max-width: 900px) {
-            .blog-list {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .blog-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 16px;
-            cursor: pointer;
-            transition: transform .15s ease, box-shadow .15s ease;
-        }
-        
-        .blog-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
-        }
-        
-        .blog-card h3 {
-            margin: 0 0 6px;
-            font-size: 18px;
-            color: var(--dark-color);
-        }
-        
-        .blog-card .meta {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
         .blog-card .excerpt {
-            font-size: 14px;
-            color: var(--text);
-            line-height: 1.5;
-            margin-bottom: 10px;
-        }
-        
-        .blog-card .read-more {
-            color: var(--primary-color);
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .blog-card .read-more:hover {
-            text-decoration: underline;
-        }
-
-        /* Blog Article */
-        .blog-article {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 18px;
-            margin-top: 24px;
-        }
-        
-        .blog-article h2 {
-            margin: 0 0 8px;
-            font-size: 24px;
-            color: var(--dark-color);
-        }
-        
-        .blog-article .meta {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .blog-article p {
-            line-height: 1.6;
-            color: var(--text);
-            margin-bottom: 15px;
-        }
-        
-        .blog-article h3 {
-            margin: 25px 0 15px;
-            color: var(--dark-color);
-            font-size: 20px;
-        }
-        
-        .blog-article ul, .blog-article ol {
-            margin: 15px 0 15px 20px;
-            color: var(--text);
+            color: var(--gray-color);
+            margin-bottom: 1rem;
             line-height: 1.6;
         }
-        
-        .blog-article li {
-            margin-bottom: 8px;
-        }
-        
-        .blog-article blockquote {
-            border-left: 4px solid var(--primary-color);
-            padding-left: 15px;
-            margin: 20px 0;
-            color: var(--muted);
-            font-style: italic;
-        }
 
-        /* Contact */
+        /* Contact Form */
         .contact-form {
             display: grid;
-            gap: 12px;
-            margin-top: 12px;
+            gap: 1.5rem;
+            margin-top: 2rem;
         }
-        
-        .contact-form .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+
+        .form-group {
+            margin-bottom: 1rem;
         }
-        
-        @media (max-width: 600px) {
-            .contact-form .row {
-                grid-template-columns: 1fr;
-            }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-color);
         }
-        
+
         .input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
             border-radius: var(--radius);
-            font-size: 14px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: var(--transition);
         }
-        
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
         textarea.input {
-            min-height: 120px;
+            min-height: 150px;
             resize: vertical;
         }
 
         /* Message */
         .msg {
-            padding: 10px;
+            padding: 1rem;
             border-radius: var(--radius);
-            margin: 10px 0;
+            margin: 1rem 0;
             display: none;
+            font-weight: 500;
         }
-        
+
         .msg.success {
             background: #d1fae5;
             color: #065f46;
+            border: 1px solid #a7f3d0;
             display: block;
         }
-        
+
         .msg.error {
             background: #fee2e2;
             color: #991b1b;
+            border: 1px solid #fecaca;
             display: block;
         }
 
@@ -622,26 +783,27 @@
         .pagination {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-top: 30px;
-            padding: 20px 0;
+            gap: 0.5rem;
+            margin: 3rem 0;
+            padding: 1rem 0;
         }
-        
+
         .pagination button {
             background: white;
-            border: 1px solid var(--border);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius);
-            padding: 8px 16px;
+            padding: 0.5rem 1rem;
             cursor: pointer;
             transition: var(--transition);
+            font-weight: 500;
         }
-        
+
         .pagination button:hover {
             background: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
         }
-        
+
         .pagination button.active {
             background: var(--primary-color);
             color: white;
@@ -650,53 +812,67 @@
 
         /* Footer */
         footer {
-            margin-top: 40px;
-            border-top: 1px solid var(--border);
-            background: #fafafa;
+            margin-top: 4rem;
+            background: var(--dark-color);
+            color: white;
+            padding: 3rem 0 1.5rem;
         }
-        
+
         .footer-inner {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
-            gap: 18px;
-            padding: 18px 24px;
+            gap: 3rem;
+            margin-bottom: 2rem;
         }
-        
-        @media (max-width: 800px) {
-            .footer-inner {
-                grid-template-columns: 1fr;
-            }
-        }
-        
+
         .footer-inner h4 {
-            margin: 0 0 8px;
-            font-size: 14px;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
         }
-        
+
         .footer-inner a {
-            color: var(--muted);
-            font-size: 13px;
+            color: #d1d5db;
             text-decoration: none;
+            transition: var(--transition);
+            display: block;
+            margin-bottom: 0.5rem;
         }
-        
+
+        .footer-inner a:hover {
+            color: white;
+        }
+
         .footer-inner p {
-            margin: 5px 0;
+            color: #9ca3af;
+            margin-bottom: 0.5rem;
         }
-        
+
         .tagline {
-            font-size: 13px;
-            color: var(--muted);
-            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin: 0.5rem 0;
         }
-        
+
         .copyright {
             text-align: center;
-            color: var(--muted);
-            font-size: 12px;
-            padding: 12px 0 18px;
+            color: #9ca3af;
+            font-size: 0.875rem;
+            padding-top: 2rem;
+            border-top: 1px solid #374151;
         }
 
         /* Responsive */
+        @media (max-width: 1024px) {
+            .hero h1 {
+                font-size: 2.75rem;
+            }
+            
+            .footer-inner {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
@@ -706,14 +882,28 @@
             .nav-links {
                 flex-wrap: wrap;
                 justify-content: center;
+                gap: 1rem;
+            }
+
+            .hero {
+                padding: 3rem 1rem;
             }
 
             .hero h1 {
-                font-size: 2rem;
+                font-size: 2.25rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
             }
 
             .tools-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
 
             .action-buttons {
@@ -722,6 +912,33 @@
 
             .upload-box {
                 padding: 2rem 1rem;
+            }
+
+            .content-section {
+                padding: 2rem;
+            }
+
+            .blog-container {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-inner {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.875rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -745,6 +962,88 @@
         .hidden-section {
             display: none;
         }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .feature-card i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Tool Guide */
+        .tool-guide {
+            background: var(--light-color);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin: 2rem 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .tool-guide h3 {
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .tool-guide ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .tool-guide li {
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+
+        /* Tool Content */
+        .tool-content {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow);
+        }
+
+        .tool-content h2 {
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .tool-content h3 {
+            color: var(--dark-color);
+            margin: 2rem 0 1rem;
+            font-size: 1.5rem;
+        }
+
+        .tool-content p {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .tool-content ul, .tool-content ol {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -752,13 +1051,14 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <a href="#" class="logo" onclick="goHome(event)">
+                <a href="/" class="logo" onclick="goHome(event)">
                     <i class="fas fa-file-pdf"></i>
                     iMasterPDF
                 </a>
                 <div class="nav-links">
                     <a href="/" data-link class="active">Home</a>
                     <a href="/blog" data-link>Blog</a>
+                    <a href="/tools" data-link>All Tools</a>
                     <a href="/about" data-link>About</a>
                     <a href="/contact" data-link>Contact</a>
                 </div>
@@ -766,132 +1066,171 @@
         </div>
     </header>
 
+    <!-- AdSense Ad -->
+    <div class="container">
+        <div class="ad-container">
+            <span class="ad-label">Advertisement</span>
+            <!-- Google AdSense will automatically insert ads here -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-1234567890123456"
+                 data-ad-slot="1234567890"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero" id="hero">
         <div class="container">
-            <h1>iMasterPDF - Free Online Document Tools</h1>
-            <p>Convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly.</p>
-            <button class="btn btn-secondary" onclick="showTool('pdf_to_word')">
-                <i class="fas fa-file-upload"></i> Get Started
-            </button>
+            <h1>Free Online PDF Tools & Document Converter</h1>
+            <p>Convert, merge, edit, and secure PDF files online. 100% free, no registration required. Perfect for students, professionals, and businesses.</p>
+            <div class="hero-buttons">
+                <button class="btn" onclick="showTool('pdf_to_word')">
+                    <i class="fas fa-file-upload"></i> Start Converting
+                </button>
+                <button class="btn btn-outline" onclick="showSection('features')">
+                    <i class="fas fa-star"></i> Explore Features
+                </button>
+            </div>
         </div>
     </section>
 
     <!-- Main Content -->
     <main class="container">
-        <!-- Tools Section -->
+        <!-- Home Section -->
         <section id="home">
-            <!-- Tools Grid -->
+            <!-- Featured Tools -->
             <div class="tools-section">
-                <h2 class="section-title">PDF Tools</h2>
+                <h2 class="section-title">Popular PDF Tools</h2>
                 <div class="tools-grid">
                     <div class="tool-card" onclick="showTool('pdf_to_word')">
+                        <div class="badge">Most Popular</div>
                         <i class="fas fa-file-word"></i>
                         <h3>PDF to Word</h3>
-                        <p>Convert PDF into editable DOCX</p>
+                        <p>Convert PDF to editable DOCX files</p>
                     </div>
                     <div class="tool-card" onclick="showTool('merge_pdf')">
                         <i class="fas fa-object-group"></i>
                         <h3>Merge PDF</h3>
-                        <p>Combine multiple PDFs into one</p>
+                        <p>Combine multiple PDFs into one document</p>
                     </div>
-                    <div class="tool-card" onclick="showTool('rotate_pdf')">
-                        <i class="fas fa-redo"></i>
-                        <h3>Rotate PDF</h3>
-                        <p>Rotate pages by 90°, 180°, or 270°</p>
-                    </div>
-                    <div class="tool-card" onclick="showTool('delete_pages_pdf')">
-                        <i class="fas fa-trash-alt"></i>
-                        <h3>Delete Pages in PDF</h3>
-                        <p>Remove selected pages from a PDF</p>
+                    <div class="tool-card" onclick="showTool('compress_pdf')">
+                        <i class="fas fa-compress"></i>
+                        <h3>Compress PDF</h3>
+                        <p>Reduce PDF file size without quality loss</p>
                     </div>
                     <div class="tool-card" onclick="showTool('lock_pdf')">
                         <i class="fas fa-lock"></i>
-                        <h3>Lock PDF (PIN)</h3>
-                        <p>Protect PDF with a 4-digit PIN</p>
-                    </div>
-                    <div class="tool-card" onclick="showTool('unlock_pdf')">
-                        <i class="fas fa-unlock"></i>
-                        <h3>Unlock PDF</h3>
-                        <p>Remove password protection</p>
+                        <h3>Lock PDF</h3>
+                        <p>Add password protection to PDF files</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Word Tools Section -->
-            <div class="tools-section">
-                <h2 class="section-title">Word Tools</h2>
                 <div class="tools-grid">
                     <div class="tool-card" onclick="showTool('word_to_pdf')">
                         <i class="fas fa-file-pdf"></i>
                         <h3>Word to PDF</h3>
-                        <p>Convert DOCX to PDF</p>
+                        <p>Convert DOC/DOCX files to PDF format</p>
                     </div>
-                    <div class="tool-card" onclick="showTool('merge_word')">
-                        <i class="fas fa-file-word"></i>
-                        <h3>Merge Word</h3>
-                        <p>Combine multiple Word documents</p>
+                    <div class="tool-card" onclick="showTool('rotate_pdf')">
+                        <i class="fas fa-redo"></i>
+                        <h3>Rotate PDF</h3>
+                        <p>Fix sideways pages in PDF documents</p>
                     </div>
-                    <div class="tool-card" onclick="showTool('word_to_text')">
-                        <i class="fas fa-file-alt"></i>
-                        <h3>Word to Text</h3>
-                        <p>Extract text from Word files</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Text Tools Section -->
-            <div class="tools-section">
-                <h2 class="section-title">Text Tools</h2>
-                <div class="tools-grid">
-                    <div class="tool-card" onclick="showTool('text_to_pdf')">
-                        <i class="fas fa-file-pdf"></i>
-                        <h3>Text to PDF</h3>
-                        <p>Convert plain text to PDF</p>
-                    </div>
-                    <div class="tool-card" onclick="showTool('text_to_word')">
-                        <i class="fas fa-file-word"></i>
-                        <h3>Text to Word</h3>
-                        <p>Create a Word document from text</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Image Tools Section -->
-            <div class="tools-section">
-                <h2 class="section-title">Image Tools</h2>
-                <div class="tools-grid">
                     <div class="tool-card" onclick="showTool('images_to_pdf')">
                         <i class="fas fa-images"></i>
                         <h3>Images to PDF</h3>
-                        <p>Convert JPG, PNG, WEBP, BMP, TIFF to PDF</p>
+                        <p>Convert JPG, PNG to PDF documents</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('unlock_pdf')">
+                        <i class="fas fa-unlock"></i>
+                        <h3>Unlock PDF</h3>
+                        <p>Remove password from protected PDFs</p>
                     </div>
                 </div>
             </div>
 
+            <!-- AdSense Ad -->
+            <div class="ad-container">
+                <span class="ad-label">Advertisement</span>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-format="fluid"
+                     data-ad-layout-key="-fb+5w+4e-db+86"
+                     data-ad-client="ca-pub-1234567890123456"
+                     data-ad-slot="9876543210"></ins>
+            </div>
+
             <!-- Features Section -->
-            <section id="features" class="tools-section">
+            <section id="features" class="features-section">
                 <h2 class="section-title">Why Choose iMasterPDF?</h2>
-                <div class="tools-grid">
-                    <div class="tool-card">
+                <div class="features-grid">
+                    <div class="feature-card">
                         <i class="fas fa-shield-alt"></i>
-                        <h3>Secure & Private</h3>
-                        <p>Files are deleted automatically after processing</p>
+                        <h3>100% Secure</h3>
+                        <p>Files are processed locally and deleted immediately after conversion. Your documents never leave your browser.</p>
                     </div>
-                    <div class="tool-card">
+                    <div class="feature-card">
                         <i class="fas fa-bolt"></i>
                         <h3>Fast Processing</h3>
-                        <p>Process files quickly in the cloud</p>
+                        <p>Process files quickly with our optimized algorithms. No waiting in queues or slow servers.</p>
                     </div>
-                    <div class="tool-card">
+                    <div class="feature-card">
                         <i class="fas fa-laptop"></i>
                         <h3>No Installation</h3>
-                        <p>Works directly in your browser</p>
+                        <p>Works directly in your browser on any device - Windows, Mac, Linux, or mobile.</p>
                     </div>
-                    <div class="tool-card">
-                        <i class="fas fa-globe"></i>
-                        <h3>Cross Platform</h3>
-                        <p>Works on Windows, Mac, Linux, and mobile</p>
+                    <div class="feature-card">
+                        <i class="fas fa-infinity"></i>
+                        <h3>Completely Free</h3>
+                        <p>All tools are 100% free with no hidden fees, watermarks, or usage limits.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Popular Articles -->
+            <section id="popular-articles" class="tools-section">
+                <h2 class="section-title">Popular PDF Guides</h2>
+                <div class="blog-container">
+                    <div class="blog-card" onclick="showArticle('how-to-compress-pdf-without-losing-quality')">
+                        <div class="blog-card-image">
+                            <i class="fas fa-compress-alt"></i>
+                        </div>
+                        <div class="blog-card-content">
+                            <h3>How to Compress PDF Without Losing Quality</h3>
+                            <div class="meta">
+                                <span><i class="fas fa-clock"></i> 12 min read</span>
+                                <span><i class="fas fa-calendar"></i> Jan 14, 2026</span>
+                            </div>
+                            <p class="excerpt">Learn professional methods to reduce PDF file size while maintaining readability and visual quality.</p>
+                        </div>
+                    </div>
+                    <div class="blog-card" onclick="showArticle('pdf-vs-word-which-is-better')">
+                        <div class="blog-card-image">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="blog-card-content">
+                            <h3>PDF vs Word: Complete Comparison Guide</h3>
+                            <div class="meta">
+                                <span><i class="fas fa-clock"></i> 11 min read</span>
+                                <span><i class="fas fa-calendar"></i> Jan 14, 2026</span>
+                            </div>
+                            <p class="excerpt">Detailed comparison of PDF and Word formats to help you choose the right format for every situation.</p>
+                        </div>
+                    </div>
+                    <div class="blog-card" onclick="showArticle('best-free-pdf-tools-for-students')">
+                        <div class="blog-card-image">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="blog-card-content">
+                            <h3>Best Free PDF Tools for Students</h3>
+                            <div class="meta">
+                                <span><i class="fas fa-clock"></i> 15 min read</span>
+                                <span><i class="fas fa-calendar"></i> Jan 14, 2026</span>
+                            </div>
+                            <p class="excerpt">Essential free PDF tools that every student needs for academic success and productivity.</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -899,16 +1238,25 @@
 
         <!-- Tool Section -->
         <section id="tool" class="hidden-section">
+            <!-- Tool Content (Shown for each tool) -->
+            <div class="tool-content" id="toolContent">
+                <!-- Content will be dynamically inserted -->
+            </div>
+
+            <!-- Upload Area -->
             <div class="upload-area" id="uploadArea">
                 <h2 id="toolTitle">Select Tool</h2>
                 <p id="toolDescription">Description will appear here</p>
                 
-                <div class="how-to-guide" id="howToGuide"></div>
+                <div class="tool-guide" id="howToGuide"></div>
                 
                 <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <h3>Drag & Drop Files Here</h3>
-                    <p>or click to browse files</p>
+                    <p>or click to browse files from your computer</p>
+                    <p style="font-size: 0.9rem; color: var(--gray-color); margin-top: 0.5rem;">
+                        Maximum file size: 50MB per file
+                    </p>
                     <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)">
                 </div>
                 
@@ -917,14 +1265,15 @@
 
             <!-- Options Panel -->
             <div class="options-panel" id="optionsPanel">
-                <h3>Options</h3>
+                <h3>Conversion Settings</h3>
                 <div id="toolOptions"></div>
             </div>
 
             <!-- Progress Container -->
             <div class="progress-container" id="progressContainer">
                 <div class="spinner"></div>
-                <h3>Processing...</h3>
+                <h3>Processing Your Files...</h3>
+                <p>Please wait while we process your documents. This may take a few moments.</p>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill"></div>
                     <div class="progress-text" id="progress-text">0%</div>
@@ -938,7 +1287,7 @@
                 <button class="btn" onclick="processFiles()">
                     <i class="fas fa-cogs"></i> Process Files
                 </button>
-                <button class="btn btn-secondary" onclick="goHome(event)">
+                <button class="btn btn-outline" onclick="goHome(event)">
                     <i class="fas fa-redo"></i> Start Over
                 </button>
             </div>
@@ -947,120 +1296,403 @@
             <div class="result-area" id="resultArea">
                 <i class="fas fa-check-circle"></i>
                 <h3>Conversion Complete!</h3>
-                <p>Your file has been processed successfully.</p>
+                <p>Your file has been processed successfully. Click below to download.</p>
                 <a id="downloadLink" class="btn" style="margin-top: 1rem;">
                     <i class="fas fa-download"></i> Download File
                 </a>
-                <button class="btn btn-secondary" onclick="goHome(event)" style="margin-top: 1rem;">
+                <button class="btn btn-outline" onclick="goHome(event)" style="margin-top: 1rem;">
                     <i class="fas fa-redo"></i> Convert Another File
                 </button>
+            </div>
+
+            <!-- FAQ Section for Tool -->
+            <div class="faq-section" id="toolFaq">
+                <!-- FAQ will be dynamically inserted -->
+            </div>
+        </section>
+
+        <!-- All Tools Page -->
+        <section class="hidden-section" id="tools">
+            <div class="content-section">
+                <h2>All PDF & Document Tools</h2>
+                <p>Browse our complete collection of free online document tools. Each tool is designed to solve specific document-related problems efficiently and securely.</p>
+                
+                <div class="tools-grid">
+                    <!-- PDF Tools -->
+                    <div class="tool-card" onclick="showTool('pdf_to_word')">
+                        <i class="fas fa-file-word"></i>
+                        <h3>PDF to Word</h3>
+                        <p>Convert PDF files to editable Microsoft Word documents</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('word_to_pdf')">
+                        <i class="fas fa-file-pdf"></i>
+                        <h3>Word to PDF</h3>
+                        <p>Convert Word documents to professional PDF format</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('merge_pdf')">
+                        <i class="fas fa-object-group"></i>
+                        <h3>Merge PDF</h3>
+                        <p>Combine multiple PDF files into a single document</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('split_pdf')">
+                        <i class="fas fa-cut"></i>
+                        <h3>Split PDF</h3>
+                        <p>Extract pages or split PDF into multiple files</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('compress_pdf')">
+                        <i class="fas fa-compress"></i>
+                        <h3>Compress PDF</h3>
+                        <p>Reduce PDF file size while preserving quality</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('rotate_pdf')">
+                        <i class="fas fa-redo"></i>
+                        <h3>Rotate PDF</h3>
+                        <p>Fix orientation of pages in PDF documents</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('delete_pages_pdf')">
+                        <i class="fas fa-trash-alt"></i>
+                        <h3>Delete PDF Pages</h3>
+                        <p>Remove specific pages from PDF documents</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('lock_pdf')">
+                        <i class="fas fa-lock"></i>
+                        <h3>Lock PDF</h3>
+                        <p>Add password protection to PDF files</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('unlock_pdf')">
+                        <i class="fas fa-unlock"></i>
+                        <h3>Unlock PDF</h3>
+                        <p>Remove password from protected PDFs</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('images_to_pdf')">
+                        <i class="fas fa-images"></i>
+                        <h3>Images to PDF</h3>
+                        <p>Convert JPG, PNG, WEBP to PDF documents</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('pdf_to_images')">
+                        <i class="fas fa-file-image"></i>
+                        <h3>PDF to Images</h3>
+                        <p>Convert PDF pages to JPG or PNG images</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('pdf_to_text')">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>PDF to Text</h3>
+                        <p>Extract text content from PDF files</p>
+                    </div>
+                </div>
             </div>
         </section>
 
         <!-- Blog List -->
         <section class="hidden-section" id="blog">
-            <h2 class="section-title">PDF Guides & Tutorials</h2>
-            <p style="text-align: center; margin-bottom: 20px; color: var(--muted);">Expert guides written by Mohammed Shahil</p>
-            <div class="blog-container">
-                <div class="blog-list" id="blog-list"></div>
+            <div class="content-section">
+                <h2>PDF Guides & Tutorials</h2>
+                <p>Expert guides and tutorials written by Mohammed Shahil to help you master PDF and document management.</p>
+                
+                <div class="blog-container" id="blog-list">
+                    <!-- Blog posts will be dynamically inserted -->
+                </div>
+                
                 <div class="pagination" id="pagination"></div>
             </div>
         </section>
 
         <!-- Blog Article -->
         <section class="hidden-section" id="article">
-            <div class="blog-article">
+            <div class="content-section">
                 <h2 id="article-title"></h2>
                 <div class="meta" id="article-meta"></div>
                 <div id="article-content"></div>
-                <div style="margin-top:16px;">
-                    <button class="btn secondary" id="back-to-blog"><i class="fa-solid fa-arrow-left"></i> Back to Blog</button>
+                <div style="margin-top: 2rem;">
+                    <button class="btn btn-outline" onclick="showSection('blog')">
+                        <i class="fas fa-arrow-left"></i> Back to Blog
+                    </button>
                 </div>
             </div>
         </section>
 
         <!-- About -->
-        <section class="hidden-section info" id="about">
-            <h2>About iMasterPDF</h2>
-            <p>iMasterPDF is a practical, privacy-first platform built for people who work with documents every day—students, professionals, small businesses, and anyone who needs reliable tools without the friction of installing software. We focus on the essentials: converting, merging, rotating, locking, unlocking, and transforming files quickly and securely.</p>
-            <p>Our mission is to remove the complexity from document workflows. Whether you're preparing a report, sharing a contract, or cleaning up a scanned file, iMasterPDF gives you clean, fast tools that just work. We also publish in-depth guides to help you understand formats, security, and best practices so you can make confident decisions with your files.</p>
-            <p>We believe in transparency and trust. Files are processed automatically and deleted after conversion. No human reviews your documents, and we do not share data with third parties. If you have questions or ideas, reach us at <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a>.</p>
+        <section class="hidden-section" id="about">
+            <div class="content-section">
+                <h2>About iMasterPDF</h2>
+                <p>Welcome to iMasterPDF, your trusted online destination for free document conversion and editing tools. Founded in 2023 by Mohammed Shahil, our mission is to simplify document workflows for students, professionals, and businesses worldwide.</p>
+                
+                <h3>Our Story</h3>
+                <p>iMasterPDF was born from a simple observation: people waste countless hours struggling with document formats. Whether it's converting PDFs to Word for editing, merging multiple reports, or securing confidential documents, these tasks should be simple, fast, and accessible to everyone.</p>
+                
+                <h3>Our Values</h3>
+                <ul>
+                    <li><strong>Privacy First:</strong> Your documents are processed locally and deleted immediately. We never store or access your files.</li>
+                    <li><strong>Free Forever:</strong> We believe essential tools should be accessible to everyone without cost barriers.</li>
+                    <li><strong>Quality Matters:</strong> We continuously improve our algorithms to deliver the best conversion quality.</li>
+                    <li><strong>User-Focused:</strong> Every tool is designed with user experience as the top priority.</li>
+                </ul>
+                
+                <h3>Our Technology</h3>
+                <p>iMasterPDF uses advanced algorithms and modern web technologies to provide fast, reliable document processing. Our tools work entirely in your browser, ensuring maximum privacy and security. We support all major document formats including PDF, DOC, DOCX, JPG, PNG, and more.</p>
+                
+                <h3>Meet Our Team</h3>
+                <p>Led by Mohammed Shahil, our team consists of developers, designers, and content creators passionate about making document management effortless. We're continuously working to add new features and improve existing tools based on user feedback.</p>
+                
+                <h3>Contact Us</h3>
+                <p>Have questions, suggestions, or partnership inquiries? We'd love to hear from you. Email us at <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a> or use our <a href="/contact" data-link>contact form</a>.</p>
+            </div>
         </section>
 
         <!-- Contact -->
-        <section class="hidden-section info" id="contact">
-            <h2>Contact Us</h2>
-            <p>Questions, feedback, or partnership ideas? We'd love to hear from you. Use the form below or email us at <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a>.</p>
-            <form class="contact-form" id="contact-form">
-                <div class="row">
-                    <div>
-                        <label>Name</label>
+        <section class="hidden-section" id="contact">
+            <div class="content-section">
+                <h2>Contact Us</h2>
+                <p>We're here to help! Whether you have questions about our tools, need technical support, or want to suggest new features, feel free to reach out.</p>
+                
+                <div class="contact-form" id="contact-form">
+                    <div class="form-group">
+                        <label for="contact-name">Full Name *</label>
                         <input type="text" id="contact-name" class="input" placeholder="Your name" required />
                     </div>
-                    <div>
-                        <label>Email</label>
+                    
+                    <div class="form-group">
+                        <label for="contact-email">Email Address *</label>
                         <input type="email" id="contact-email" class="input" placeholder="you@example.com" required />
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="contact-subject">Subject</label>
+                        <input type="text" id="contact-subject" class="input" placeholder="How can we help?" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contact-message">Message *</label>
+                        <textarea id="contact-message" class="input" placeholder="Please provide details about your inquiry..." required></textarea>
+                    </div>
+                    
+                    <button class="btn" type="submit">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                    
+                    <div class="msg" id="contact-msg"></div>
                 </div>
-                <div>
-                    <label>Message</label>
-                    <textarea id="contact-message" class="input" placeholder="How can we help?" required></textarea>
+                
+                <div style="margin-top: 3rem;">
+                    <h3>Other Ways to Reach Us</h3>
+                    <p><strong>Email:</strong> <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+                    <p><strong>Response Time:</strong> We typically respond within 24-48 hours</p>
+                    <p><strong>Business Hours:</strong> Monday to Friday, 9 AM to 6 PM EST</p>
                 </div>
-                <button class="btn" type="submit"><i class="fa-solid fa-paper-plane"></i> Send message</button>
-                <div class="msg" id="contact-msg"></div>
-            </form>
+            </div>
         </section>
 
-        <!-- Privacy -->
-        <section class="hidden-section info" id="privacy">
-            <h2>Privacy Policy</h2>
-            <p><strong>File Handling:</strong> Uploaded files are processed automatically and deleted after conversion. Temporary files are cleaned regularly. No human access to documents.</p>
-            <p><strong>Data Sharing:</strong> We do not sell, share, or disclose your files or personal data to third parties.</p>
-            <p><strong>Cookies:</strong> We use cookies to improve performance, remember preferences, and measure basic analytics. You can control cookies through your browser settings.</p>
-            <p><strong>Advertising (Google AdSense):</strong> We display ads served by Google AdSense. AdSense may use cookies and web beacons to deliver relevant ads and measure performance. These third-party ad servers automatically receive your IP address when this occurs. You can learn more about how Google uses data and manage ad personalization in your Google account.</p>
-            <p><strong>Third-Party Ads:</strong> Third-party advertisers may use technologies such as cookies, JavaScript, or web beacons to measure the effectiveness of their ads and personalize content. We do not control these cookies. Review the privacy policies of these providers for more information.</p>
-            <p><strong>Security:</strong> We use secure server-side handling and limit file sizes to ensure reliability. While we strive to protect your data, no method of transmission or storage is 100% secure.</p>
-            <p><strong>Contact:</strong> For privacy-related questions, email <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a>.</p>
+        <!-- Privacy Policy -->
+        <section class="hidden-section" id="privacy">
+            <div class="content-section">
+                <h2>Privacy Policy</h2>
+                <p><strong>Last Updated:</strong> January 14, 2026</p>
+                
+                <h3>1. Information We Collect</h3>
+                <p>iMasterPDF is committed to protecting your privacy. We collect minimal information:</p>
+                <ul>
+                    <li><strong>Usage Data:</strong> Anonymous analytics about tool usage</li>
+                    <li><strong>Technical Information:</strong> Browser type, device information for compatibility</li>
+                    <li><strong>Contact Information:</strong> Only when you voluntarily contact us via email or form</li>
+                </ul>
+                
+                <h3>2. File Handling & Privacy</h3>
+                <p>Your document privacy is our top priority:</p>
+                <ul>
+                    <li><strong>Local Processing:</strong> Files are processed locally in your browser whenever possible</li>
+                    <li><strong>Automatic Deletion:</strong> Uploaded files are deleted immediately after processing</li>
+                    <li><strong>No Storage:</strong> We do not store your documents on our servers</li>
+                    <li><strong>No Human Access:</strong> Documents are processed automatically by algorithms</li>
+                </ul>
+                
+                <h3>3. Google AdSense & Advertising</h3>
+                <p>iMasterPDF displays advertisements served by Google AdSense to support our free services:</p>
+                <ul>
+                    <li><strong>Third-Party Cookies:</strong> Google uses cookies to serve personalized ads based on user interests</li>
+                    <li><strong>Data Collection:</strong> Google may collect information about your visits to this and other websites</li>
+                    <li><strong>Opt-Out:</strong> You can opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank">Google's Ads Settings</a></li>
+                    <li><strong>Third-Party Vendors:</strong> Third-party vendors may use cookies to serve ads based on user visits</li>
+                </ul>
+                
+                <h3>4. Cookies</h3>
+                <p>We use cookies to:</p>
+                <ul>
+                    <li>Remember your preferences and settings</li>
+                    <li>Analyze site traffic and usage patterns</li>
+                    <li>Support advertising through Google AdSense</li>
+                </ul>
+                
+                <h3>5. Data Security</h3>
+                <p>We implement security measures including:</p>
+                <ul>
+                    <li>HTTPS encryption for all data transmission</li>
+                    <li>Regular security audits and updates</li>
+                    <li>Secure server infrastructure</li>
+                </ul>
+                
+                <h3>6. Children's Privacy</h3>
+                <p>Our services are not directed to individuals under 13. We do not knowingly collect personal information from children.</p>
+                
+                <h3>7. Changes to Privacy Policy</h3>
+                <p>We may update this policy periodically. Continued use of our services constitutes acceptance of changes.</p>
+                
+                <h3>8. Contact Us</h3>
+                <p>For privacy-related questions: <a href="mailto:privacy@imasterpdf.com">privacy@imasterpdf.com</a></p>
+            </div>
         </section>
 
-        <!-- Terms -->
-        <section class="hidden-section info" id="terms">
-            <h2>Terms of Service</h2>
-            <ul>
-                <li><strong>Use of Service:</strong> You agree to use iMasterPDF for lawful purposes only.</li>
-                <li><strong>Availability:</strong> We strive for high uptime but do not guarantee uninterrupted service.</li>
-                <li><strong>Liability:</strong> iMasterPDF is provided "as is" without warranties. We are not liable for data loss or damages.</li>
-                <li><strong>Content:</strong> You retain ownership of your files. We process them automatically and delete them after conversion.</li>
-                <li><strong>Advertising:</strong> We display ads via Google AdSense. See our Privacy Policy for details.</li>
-                <li><strong>Changes:</strong> Terms may be updated periodically. Continued use indicates acceptance.</li>
-            </ul>
-            <p>Contact: <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+        <!-- Terms of Service -->
+        <section class="hidden-section" id="terms">
+            <div class="content-section">
+                <h2>Terms of Service</h2>
+                <p><strong>Last Updated:</strong> January 14, 2026</p>
+                
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing and using iMasterPDF, you agree to these Terms of Service. If you disagree, please discontinue use.</p>
+                
+                <h3>2. Service Description</h3>
+                <p>iMasterPDF provides free online document conversion and editing tools. Services are provided "as is" without warranties.</p>
+                
+                <h3>3. User Responsibilities</h3>
+                <p>You agree to:</p>
+                <ul>
+                    <li>Use services only for lawful purposes</li>
+                    <li>Not upload malicious or illegal content</li>
+                    <li>Respect intellectual property rights</li>
+                    <li>Not attempt to circumvent security measures</li>
+                </ul>
+                
+                <h3>4. Intellectual Property</h3>
+                <p>All iMasterPDF content, logos, and trademarks are owned by us. You retain rights to your uploaded documents.</p>
+                
+                <h3>5. Limitation of Liability</h3>
+                <p>iMasterPDF is not liable for:</p>
+                <ul>
+                    <li>Data loss or corruption</li>
+                    <li>Service interruptions or downtime</li>
+                    <li>Third-party actions or content</li>
+                    <li>Inaccuracies in converted documents</li>
+                </ul>
+                
+                <h3>6. Advertising</h3>
+                <p>Our services are supported by advertising revenue. We use Google AdSense to display relevant advertisements.</p>
+                
+                <h3>7. Termination</h3>
+                <p>We reserve the right to terminate access for violations of these terms or abusive behavior.</p>
+                
+                <h3>8. Changes to Terms</h3>
+                <p>We may update these terms at any time. Continued use constitutes acceptance of changes.</p>
+                
+                <h3>9. Governing Law</h3>
+                <p>These terms are governed by applicable laws. Disputes shall be resolved in appropriate courts.</p>
+                
+                <h3>10. Contact</h3>
+                <p>Questions about these terms: <a href="mailto:legal@imasterpdf.com">legal@imasterpdf.com</a></p>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="hidden-section" id="faq">
+            <div class="content-section">
+                <h2>Frequently Asked Questions</h2>
+                
+                <div class="faq-section">
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question">
+                            Is iMasterPDF really free?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Yes, all iMasterPDF tools are 100% free with no hidden costs, watermarks, or usage limits. We support our services through advertising revenue.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question">
+                            Are my documents secure?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Absolutely. Files are processed locally in your browser whenever possible. When server processing is required, documents are encrypted and automatically deleted immediately after conversion.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question">
+                            What file sizes are supported?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            We support files up to 50MB per upload. For larger files, consider compressing them first or splitting into smaller parts.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question">
+                            Which browsers are supported?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            iMasterPDF works on all modern browsers including Chrome, Firefox, Safari, Edge, and Opera. We recommend using the latest browser versions for best performance.
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-question">
+                            Do I need to create an account?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            No account is required. All tools are available immediately without registration. This ensures maximum privacy and convenience.
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 
+    <!-- AdSense Ad -->
+    <div class="container">
+        <div class="ad-container">
+            <span class="ad-label">Advertisement</span>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-1234567890123456"
+                 data-ad-slot="0987654321"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
-        <div class="footer-inner container">
-            <div>
-                <h4>iMasterPDF</h4>
-                <p class="tagline">Free Online PDF & Document Tools</p>
-                <p class="tagline">Fast, secure, and mobile-friendly.</p>
+        <div class="container">
+            <div class="footer-inner">
+                <div>
+                    <h4>iMasterPDF</h4>
+                    <p class="tagline">Free Online PDF & Document Tools</p>
+                    <p class="tagline">Fast, secure, and privacy-focused document solutions.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <p><a href="/" data-link>Home</a></p>
+                    <p><a href="/tools" data-link>All Tools</a></p>
+                    <p><a href="/blog" data-link>Blog</a></p>
+                    <p><a href="/faq" data-link>FAQ</a></p>
+                </div>
+                <div>
+                    <h4>Legal</h4>
+                    <p><a href="/about" data-link>About Us</a></p>
+                    <p><a href="/contact" data-link>Contact</a></p>
+                    <p><a href="/privacy" data-link>Privacy Policy</a></p>
+                    <p><a href="/terms" data-link>Terms of Service</a></p>
+                </div>
             </div>
-            <div>
-                <h4>Links</h4>
-                <p><a href="/" data-link>Home</a></p>
-                <p><a href="/blog" data-link>Blog</a></p>
-                <p><a href="/about" data-link>About</a></p>
-                <p><a href="/contact" data-link>Contact</a></p>
-                <p><a href="/privacy" data-link>Privacy Policy</a></p>
-                <p><a href="/terms" data-link>Terms</a></p>
-            </div>
-            <div>
-                <h4>Contact</h4>
-                <p><a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+            <div class="copyright">
+                © 2023-<span id="year"></span> iMasterPDF. All rights reserved.
+                <p style="margin-top: 0.5rem; font-size: 0.8rem;">Made with <i class="fas fa-heart" style="color: #ef4444;"></i> for the document community</p>
             </div>
         </div>
-        <div class="copyright">© <span id="year"></span> iMasterPDF. All rights reserved.</div>
     </footer>
 
     <!-- Comprehensive Blog Data -->
@@ -1069,23 +1701,23 @@
         "articles": [
             {
                 "slug": "how-to-convert-pdf-to-word-online",
-                "title": "How to Convert PDF to Word Online: A Complete 2026 Guide",
+                "title": "How to Convert PDF to Word Online: Complete 2026 Guide",
                 "author": "Mohammed Shahil",
-                "date": "2026-01-14",
+                "date": "2026-01-15",
                 "read_time": "8 min",
                 "category": "PDF Conversion",
                 "summary": "Learn the easiest methods to convert PDF files to editable Word documents online with our step-by-step guide.",
-                "content": "<p>Converting PDF files to Word format is one of the most common document tasks for students, professionals, and businesses. With iMasterPDF, you can convert your PDFs to editable Word documents in just three simple steps: upload your PDF, click convert, and download your DOCX file.</p><p>Our tool preserves formatting, tables, and images as much as possible, making it perfect for resumes, contracts, reports, and academic papers. The conversion happens securely in the cloud, and files are automatically deleted after processing.</p><h3>Why Convert PDF to Word?</h3><p>PDFs are great for sharing finalized documents, but they're not meant for editing. When you need to:</p><ul><li>Update an old resume or contract</li><li>Extract text for translation</li><li>Repurpose content for a new document</li><li>Fix typos or errors in a PDF</li><li>Convert scanned documents to editable text</li></ul><p>...you need a reliable PDF to Word converter.</p><h3>Step-by-Step Conversion Process</h3><ol><li>Upload your PDF file (up to 50MB)</li><li>Select conversion settings if needed</li><li>Click 'Convert' and wait a few seconds</li><li>Download your editable Word document</li></ol><blockquote>Tip: For best results, use PDFs created from digital sources rather than scanned documents, as OCR (Optical Character Recognition) works better on clean text.</blockquote>"
+                "content": "<p>Converting PDF files to Word format is one of the most common document tasks for students, professionals, and businesses. With iMasterPDF, you can convert your PDFs to editable Word documents in just three simple steps: upload your PDF, click convert, and download your DOCX file.</p><p>Our tool preserves formatting, tables, and images as much as possible, making it perfect for resumes, contracts, reports, and academic papers. The conversion happens securely in the cloud, and files are automatically deleted after processing.</p><h3>Why Convert PDF to Word?</h3><p>PDFs are great for sharing finalized documents, but they're not meant for editing. When you need to:</p><ul><li>Update an old resume or contract</li><li>Extract text for translation</li><li>Repurpose content for a new document</li><li>Fix typos or errors in a PDF</li><li>Convert scanned documents to editable text</li></ul><p>...you need a reliable PDF to Word converter.</p><h3>Step-by-Step Conversion Process</h3><ol><li>Upload your PDF file (up to 50MB)</li><li>Select conversion settings if needed</li><li>Click 'Convert' and wait a few seconds</li><li>Download your editable Word document</li></ol><blockquote>Tip: For best results, use PDFs created from digital sources rather than scanned documents, as OCR (Optical Character Recognition) works better on clean text.</blockquote><h3>Common Use Cases</h3><ul><li><strong>Students:</strong> Convert textbook PDFs to editable notes</li><li><strong>Business Professionals:</strong> Edit contracts and reports</li><li><strong>Researchers:</strong> Extract quotes and references</li><li><strong>Writers:</strong> Repurpose content from PDF sources</li></ul><h3>Tips for Best Results</h3><ul><li>Use high-quality source PDFs</li><li>Check formatting after conversion</li><li>For scanned documents, ensure good scan quality</li><li>Use OCR option for image-based PDFs</li></ul>"
             },
             {
                 "slug": "how-to-merge-pdf-files-for-free",
                 "title": "How to Merge PDF Files for Free: Complete 2026 Guide",
                 "author": "Mohammed Shahil",
-                "date": "2026-01-14",
+                "date": "2026-01-15",
                 "read_time": "10 min",
                 "category": "PDF Editing",
                 "summary": "Discover the best free methods to combine multiple PDF files into one document with perfect formatting.",
-                "content": "<p>Merging PDF files is an essential skill in today's digital workplace. Whether you're combining multiple reports, assembling a portfolio, or creating a single document from scanned pages, iMasterPDF makes it easy.</p><p>Our merge tool supports up to 20 files at once, lets you rearrange pages with drag-and-drop, and maintains the original quality of all documents. The process is completely free and requires no registration.</p><h3>When to Merge PDF Files</h3><ul><li><strong>Academic Projects:</strong> Combine research papers, assignments, and references</li><li><strong>Business Reports:</strong> Merge monthly reports, financial statements, and presentations</li><li><strong>Legal Documents:</strong> Assemble contracts, agreements, and supporting documents</li><li><strong>Personal Use:</strong> Create a single document from scanned family photos or recipes</li><li><strong>Job Applications:</strong> Combine resume, cover letter, and certificates</li></ul><h3>Best Practices for Merging PDFs</h3><ol><li>Organize files in the correct order before uploading</li><li>Check file sizes (our tool supports up to 50MB per file)</li><li>Use consistent page orientation (all portrait or all landscape)</li><li>Consider compressing files first if they're very large</li><li>Preview the merged document before downloading</li></ol><p>Our tool preserves all formatting, hyperlinks, and images, ensuring your merged document looks professional.</p>"
+                "content": "<p>Merging PDF files is an essential skill in today's digital workplace. Whether you're combining multiple reports, assembling a portfolio, or creating a single document from scanned pages, iMasterPDF makes it easy.</p><p>Our merge tool supports up to 20 files at once, lets you rearrange pages with drag-and-drop, and maintains the original quality of all documents. The process is completely free and requires no registration.</p><h3>When to Merge PDF Files</h3><ul><li><strong>Academic Projects:</strong> Combine research papers, assignments, and references</li><li><strong>Business Reports:</strong> Merge monthly reports, financial statements, and presentations</li><li><strong>Legal Documents:</strong> Assemble contracts, agreements, and supporting documents</li><li><strong>Personal Use:</strong> Create a single document from scanned family photos or recipes</li><li><strong>Job Applications:</strong> Combine resume, cover letter, and certificates</li></ul><h3>Best Practices for Merging PDFs</h3><ol><li>Organize files in the correct order before uploading</li><li>Check file sizes (our tool supports up to 50MB per file)</li><li>Use consistent page orientation (all portrait or all landscape)</li><li>Consider compressing files first if they're very large</li><li>Preview the merged document before downloading</li></ol><p>Our tool preserves all formatting, hyperlinks, and images, ensuring your merged document looks professional.</p><h3>Advanced Merging Techniques</h3><ul><li><strong>Selective Merging:</strong> Choose specific pages from each PDF</li><li><strong>Bookmark Preservation:</strong> Maintain original document bookmarks</li><li><strong>Metadata Management:</strong> Control which metadata to preserve</li><li><strong>Batch Processing:</strong> Merge multiple sets of documents at once</li></ul>"
             },
             {
                 "slug": "how-to-compress-pdf-without-losing-quality",
@@ -1095,7 +1727,7 @@
                 "read_time": "12 min",
                 "category": "PDF Optimization",
                 "summary": "Learn professional methods to reduce PDF file size while maintaining readability and visual quality.",
-                "content": "<p>PDF file sizes can become unwieldy, especially when they contain high-resolution images or embedded fonts. With iMasterPDF's compression tool, you can reduce file size by up to 80% while keeping documents readable and professional.</p><p>We offer three compression levels: high quality (minimal compression), balanced (recommended), and maximum compression for sharing via email. All compression happens locally for maximum privacy.</p><h3>Why Compress PDF Files?</h3><p>Large PDF files cause several problems:</p><ul><li>Slow email delivery and bounce-backs</li><li>Difficulty sharing via messaging apps</li><li>Long upload/download times</li><li>Storage space issues</li><li>Poor performance on mobile devices</li></ul><h3>Compression Techniques Explained</h3><p>Our tool uses several advanced techniques:</p><ol><li><strong>Image Optimization:</strong> Reduces image resolution and uses efficient compression algorithms</li><li><strong>Font Subsetting:</strong> Includes only used characters from embedded fonts</li><li><strong>Data Deduplication:</strong> Removes redundant data streams</li><li><strong>Object Compression:</strong> Compresses internal PDF objects</li><li><strong>Metadata Removal:</strong> Optional removal of metadata and annotations</li></ol><h3>Step-by-Step Compression Guide</h3><p>Follow these simple steps:</p><ol><li>Upload your PDF file to iMasterPDF</li><li>Choose your compression level</li><li>Select additional options (remove metadata, downsample images)</li><li>Click 'Compress' and wait a few seconds</li><li>Download your optimized PDF</li></ol><blockquote>Pro Tip: For documents with many images, try the 'balanced' setting first. Check the quality, and if acceptable, you can try 'maximum' compression for even smaller file sizes.</blockquote>"
+                "content": "<p>PDF file sizes can become unwieldy, especially when they contain high-resolution images or embedded fonts. With iMasterPDF's compression tool, you can reduce file size by up to 80% while keeping documents readable and professional.</p><p>We offer three compression levels: high quality (minimal compression), balanced (recommended), and maximum compression for sharing via email. All compression happens locally for maximum privacy.</p><h3>Why Compress PDF Files?</h3><p>Large PDF files cause several problems:</p><ul><li>Slow email delivery and bounce-backs</li><li>Difficulty sharing via messaging apps</li><li>Long upload/download times</li><li>Storage space issues</li><li>Poor performance on mobile devices</li></ul><h3>Compression Techniques Explained</h3><p>Our tool uses several advanced techniques:</p><ol><li><strong>Image Optimization:</strong> Reduces image resolution and uses efficient compression algorithms</li><li><strong>Font Subsetting:</strong> Includes only used characters from embedded fonts</li><li><strong>Data Deduplication:</strong> Removes redundant data streams</li><li><strong>Object Compression:</strong> Compresses internal PDF objects</li><li><strong>Metadata Removal:</strong> Optional removal of metadata and annotations</li></ol><h3>Step-by-Step Compression Guide</h3><p>Follow these simple steps:</p><ol><li>Upload your PDF file to iMasterPDF</li><li>Choose your compression level</li><li>Select additional options (remove metadata, downsample images)</li><li>Click 'Compress' and wait a few seconds</li><li>Download your optimized PDF</li></ol><blockquote>Pro Tip: For documents with many images, try the 'balanced' setting first. Check the quality, and if acceptable, you can try 'maximum' compression for even smaller file sizes.</blockquote><h3>When to Use Each Compression Level</h3><ul><li><strong>High Quality:</strong> Professional printing, archival</li><li><strong>Balanced:</strong> General use, email attachments</li><li><strong>Maximum:</strong> Web uploads, mobile sharing</li></ul>"
             },
             {
                 "slug": "best-free-pdf-tools-for-students",
@@ -1105,7 +1737,7 @@
                 "read_time": "15 min",
                 "category": "Educational",
                 "summary": "Discover essential free PDF tools that every student needs for academic success.",
-                "content": "<p>PDF documents are ubiquitous in academic life - from lecture notes and research papers to assignments and e-books. iMasterPDF offers students a complete suite of tools including PDF to Word conversion for editing assignments, PDF merging for combining research, and PDF compression for email submissions.</p><p>All tools are completely free, work on any device, and require no software installation - perfect for students on a budget.</p><h3>Essential PDF Tools for Students</h3><ul><li><strong>PDF to Word Converter:</strong> Edit lecture notes and assignments</li><li><strong>PDF Merger:</strong> Combine research papers and project documents</li><li><strong>PDF Compressor:</strong> Reduce file sizes for email submission</li><li><strong>PDF Rotator:</strong> Fix sideways scanned documents</li><li><strong>PDF to Text:</strong> Extract quotes and references</li><li><strong>PDF Protector:</strong> Secure sensitive documents with passwords</li></ul><h3>Academic Workflow Optimization</h3><p>Here's how students can optimize their workflow:</p><ol><li><strong>Research Phase:</strong> Convert downloaded PDFs to Word for easy note-taking</li><li><strong>Writing Phase:</strong> Merge multiple sources into a single reference document</li><li><strong>Editing Phase:</strong> Rotate any sideways pages from scanned books</li><li><strong>Submission Phase:</strong> Compress the final document for email</li><li><strong>Storage Phase:</strong> Protect sensitive documents with passwords</li></ol><h3>Time-Saving Tips</h3><ul><li>Use batch processing for multiple files</li><li>Save frequently used settings as presets</li><li>Take advantage of keyboard shortcuts</li><li>Use the mobile version for on-the-go editing</li><li>Bookmark frequently used tools</li></ul>"
+                "content": "<p>PDF documents are ubiquitous in academic life - from lecture notes and research papers to assignments and e-books. iMasterPDF offers students a complete suite of tools including PDF to Word conversion for editing assignments, PDF merging for combining research, and PDF compression for email submissions.</p><p>All tools are completely free, work on any device, and require no software installation - perfect for students on a budget.</p><h3>Essential PDF Tools for Students</h3><ul><li><strong>PDF to Word Converter:</strong> Edit lecture notes and assignments</li><li><strong>PDF Merger:</strong> Combine research papers and project documents</li><li><strong>PDF Compressor:</strong> Reduce file sizes for email submission</li><li><strong>PDF Rotator:</strong> Fix sideways scanned documents</li><li><strong>PDF to Text:</strong> Extract quotes and references</li><li><strong>PDF Protector:</strong> Secure sensitive documents with passwords</li></ul><h3>Academic Workflow Optimization</h3><p>Here's how students can optimize their workflow:</p><ol><li><strong>Research Phase:</strong> Convert downloaded PDFs to Word for easy note-taking</li><li><strong>Writing Phase:</strong> Merge multiple sources into a single reference document</li><li><strong>Editing Phase:</strong> Rotate any sideways pages from scanned books</li><li><strong>Submission Phase:</strong> Compress the final document for email</li><li><strong>Storage Phase:</strong> Protect sensitive documents with passwords</li></ol><h3>Time-Saving Tips</h3><ul><li>Use batch processing for multiple files</li><li>Save frequently used settings as presets</li><li>Take advantage of keyboard shortcuts</li><li>Use the mobile version for on-the-go editing</li><li>Bookmark frequently used tools</li></ul><h3>Subject-Specific Applications</h3><ul><li><strong>Science & Engineering:</strong> Merge research papers, convert scanned equations</li><li><strong>Humanities:</strong> Extract quotes, compile annotated bibliographies</li><li><strong>Business:</strong> Create professional reports, merge financial statements</li><li><strong>Law:</strong> Secure sensitive documents, merge case files</li></ul>"
             },
             {
                 "slug": "how-to-unlock-pdf-legally",
@@ -1115,7 +1747,7 @@
                 "read_time": "9 min",
                 "category": "Security",
                 "summary": "Learn legitimate ways to unlock password-protected PDFs when you have the right to access them.",
-                "content": "<p>Password-protected PDFs are common in business, education, and personal use. If you've forgotten a password or received a protected file you need to edit, iMasterPDF can help - legally and ethically.</p><p>Our unlock tool requires you to provide the original password, ensuring it's used only for legitimate purposes like accessing your own documents or files shared with you. We never store passwords and files are deleted immediately after processing.</p><h3>Legitimate Reasons to Unlock PDFs</h3><ul><li>You forgot the password to your own document</li><li>You received a password-protected file from someone who forgot to give you the password</li><li>You need to edit a document you previously protected</li><li>You're accessing documents from a former employee or colleague</li><li>You need to extract content from an old protected file</li></ul><h3>How Our PDF Unlocker Works</h3><ol><li>Upload your password-protected PDF</li><li>Enter the correct password (we don't store or see it)</li><li>Click 'Unlock' - the process takes just seconds</li><li>Download your unlocked PDF</li></ol><h3>Security Best Practices</h3><ul><li>Always use strong, unique passwords</li><li>Store passwords in a secure password manager</li><li>Remove protection when sharing files if possible</li><li>Use different passwords for different documents</li><li>Regularly update passwords for sensitive documents</li></ul><blockquote>Important: Only unlock PDFs that you own or have explicit permission to access. Unauthorized access to protected documents may violate laws and ethical guidelines.</blockquote>"
+                "content": "<p>Password-protected PDFs are common in business, education, and personal use. If you've forgotten a password or received a protected file you need to edit, iMasterPDF can help - legally and ethically.</p><p>Our unlock tool requires you to provide the original password, ensuring it's used only for legitimate purposes like accessing your own documents or files shared with you. We never store passwords and files are deleted immediately after processing.</p><h3>Legitimate Reasons to Unlock PDFs</h3><ul><li>You forgot the password to your own document</li><li>You received a password-protected file from someone who forgot to give you the password</li><li>You need to edit a document you previously protected</li><li>You're accessing documents from a former employee or colleague</li><li>You need to extract content from an old protected file</li></ul><h3>How Our PDF Unlocker Works</h3><ol><li>Upload your password-protected PDF</li><li>Enter the correct password (we don't store or see it)</li><li>Click 'Unlock' - the process takes just seconds</li><li>Download your unlocked PDF</li></ol><h3>Security Best Practices</h3><ul><li>Always use strong, unique passwords</li><li>Store passwords in a secure password manager</li><li>Remove protection when sharing files if possible</li><li>Use different passwords for different documents</li><li>Regularly update passwords for sensitive documents</li></ul><blockquote>Important: Only unlock PDFs that you own or have explicit permission to access. Unauthorized access to protected documents may violate laws and ethical guidelines.</blockquote><h3>Password Recovery Strategies</h3><ul><li>Check password managers</li><li>Look for saved passwords in email</li><li>Try common variations if you remember part of it</li><li>Contact the document owner if it's not yours</li></ul>"
             },
             {
                 "slug": "pdf-vs-word-which-is-better",
@@ -1125,7 +1757,7 @@
                 "read_time": "11 min",
                 "category": "Comparison",
                 "summary": "Detailed comparison of PDF and Word formats to help you choose the right format for every situation.",
-                "content": "<p>The PDF vs Word debate has been ongoing since both formats became mainstream. PDF is perfect for final documents, printing, and sharing - it preserves formatting across all devices. Word is ideal for editing, collaboration, and documents that need frequent changes.</p><p>With iMasterPDF, you can easily convert between both formats depending on your needs. Convert Word to PDF for sharing final versions, or PDF to Word when you need to make edits.</p><h3>When to Use PDF Format</h3><ul><li><strong>Final Documents:</strong> Resumes, contracts, reports, certificates</li><li><strong>Printing:</strong> Documents that need precise layout control</li><li><strong>Sharing:</strong> When you want formatting to remain unchanged</li><li><strong>Archiving:</strong> Long-term storage of important documents</li><li><strong>Forms:</strong> Documents that need to be filled out but not edited</li></ul><h3>When to Use Word Format</h3><ul><li><strong>Collaboration:</strong> Documents that multiple people need to edit</li><li><strong>Drafting:</strong> Early versions of documents</li><li><strong>Editing:</strong> Documents that need frequent updates</li><li><strong>Templates:</strong> Reusable document formats</li><li><strong>Content Creation:</strong> Articles, essays, and manuscripts</li></ul><h3>Conversion Best Practices</h3><ol><li>Convert Word to PDF for final distribution</li><li>Convert PDF to Word when you need to make edits</li><li>Check formatting after conversion</li><li>Use high-quality source files for best results</li><li>Consider using both formats in your workflow</li></ol><p>Remember: iMasterPDF makes conversion between formats quick and easy, so you can use the right format for each situation.</p>"
+                "content": "<p>The PDF vs Word debate has been ongoing since both formats became mainstream. PDF is perfect for final documents, printing, and sharing - it preserves formatting across all devices. Word is ideal for editing, collaboration, and documents that need frequent changes.</p><p>With iMasterPDF, you can easily convert between both formats depending on your needs. Convert Word to PDF for sharing final versions, or PDF to Word when you need to make edits.</p><h3>When to Use PDF Format</h3><ul><li><strong>Final Documents:</strong> Resumes, contracts, reports, certificates</li><li><strong>Printing:</strong> Documents that need precise layout control</li><li><strong>Sharing:</strong> When you want formatting to remain unchanged</li><li><strong>Archiving:</strong> Long-term storage of important documents</li><li><strong>Forms:</strong> Documents that need to be filled out but not edited</li></ul><h3>When to Use Word Format</h3><ul><li><strong>Collaboration:</strong> Documents that multiple people need to edit</li><li><strong>Drafting:</strong> Early versions of documents</li><li><strong>Editing:</strong> Documents that need frequent updates</li><li><strong>Templates:</strong> Reusable document formats</li><li><strong>Content Creation:</strong> Articles, essays, and manuscripts</li></ul><h3>Conversion Best Practices</h3><ol><li>Convert Word to PDF for final distribution</li><li>Convert PDF to Word when you need to make edits</li><li>Check formatting after conversion</li><li>Use high-quality source files for best results</li><li>Consider using both formats in your workflow</li></ol><h3>Technical Comparison</h3><ul><li><strong>File Size:</strong> PDFs are generally smaller</li><li><strong>Compatibility:</strong> PDFs work everywhere, Word needs specific software</li><li><strong>Security:</strong> PDFs offer better built-in protection</li><li><strong>Editing:</strong> Word is far superior for content editing</li></ul>"
             },
             {
                 "slug": "how-to-protect-pdf-with-password",
@@ -1135,7 +1767,7 @@
                 "read_time": "10 min",
                 "category": "Security",
                 "summary": "Learn how to add password protection to your PDF files to keep sensitive information secure.",
-                "content": "<p>PDF password protection is essential for securing sensitive documents like contracts, financial reports, personal information, and confidential business data. iMasterPDF's Lock PDF tool makes it easy to add strong password protection to any PDF file.</p><h3>Why Password Protect PDFs?</h3><ul><li><strong>Confidentiality:</strong> Protect sensitive personal or business information</li><li><strong>Legal Compliance:</strong> Meet data protection regulations</li><li><strong>Access Control:</strong> Restrict who can view or edit documents</li><li><strong>Privacy:</strong> Keep personal documents private</li><li><strong>Security:</strong> Prevent unauthorized copying or printing</li></ul><h3>Types of PDF Password Protection</h3><ol><li><strong>Open Password:</strong> Required to open and view the document</li><li><strong>Permissions Password:</strong> Controls printing, editing, and copying</li><li><strong>Both:</strong> Maximum security with both types of passwords</li></ol><h3>Step-by-Step Protection Guide</h3><p>Follow these simple steps:</p><ol><li>Upload your PDF to iMasterPDF</li><li>Choose 'Lock PDF' tool</li><li>Set a strong password (minimum 4 characters)</li><li>Select permission restrictions if needed</li><li>Click 'Protect PDF'</li><li>Download your secured document</li></ol><h3>Password Best Practices</h3><ul><li>Use at least 8 characters (mix of letters, numbers, symbols)</li><li>Avoid common words or personal information</li><li>Use different passwords for different documents</li><li>Store passwords securely (use a password manager)</li><li>Change passwords periodically for sensitive documents</li></ul><blockquote>Security Tip: For maximum security, use both an open password and permissions password, and restrict printing and editing.</blockquote>"
+                "content": "<p>PDF password protection is essential for securing sensitive documents like contracts, financial reports, personal information, and confidential business data. iMasterPDF's Lock PDF tool makes it easy to add strong password protection to any PDF file.</p><h3>Why Password Protect PDFs?</h3><ul><li><strong>Confidentiality:</strong> Protect sensitive personal or business information</li><li><strong>Legal Compliance:</strong> Meet data protection regulations</li><li><strong>Access Control:</strong> Restrict who can view or edit documents</li><li><strong>Privacy:</strong> Keep personal documents private</li><li><strong>Security:</strong> Prevent unauthorized copying or printing</li></ul><h3>Types of PDF Password Protection</h3><ol><li><strong>Open Password:</strong> Required to open and view the document</li><li><strong>Permissions Password:</strong> Controls printing, editing, and copying</li><li><strong>Both:</strong> Maximum security with both types of passwords</li></ol><h3>Step-by-Step Protection Guide</h3><p>Follow these simple steps:</p><ol><li>Upload your PDF to iMasterPDF</li><li>Choose 'Lock PDF' tool</li><li>Set a strong password (minimum 4 characters)</li><li>Select permission restrictions if needed</li><li>Click 'Protect PDF'</li><li>Download your secured document</li></ol><h3>Password Best Practices</h3><ul><li>Use at least 8 characters (mix of letters, numbers, symbols)</li><li>Avoid common words or personal information</li><li>Use different passwords for different documents</li><li>Store passwords securely (use a password manager)</li><li>Change passwords periodically for sensitive documents</li></ul><blockquote>Security Tip: For maximum security, use both an open password and permissions password, and restrict printing and editing.</blockquote><h3>Advanced Security Features</h3><ul><li>Set expiration dates for documents</li><li>Restrict printing to specific quality levels</li><li>Control whether content can be copied</li><li>Disable document assembly</li></ul>"
             },
             {
                 "slug": "how-to-rotate-pdf-pages",
@@ -1145,7 +1777,7 @@
                 "read_time": "7 min",
                 "category": "PDF Editing",
                 "summary": "Learn how to fix sideways or upside-down pages in PDF documents quickly and easily.",
-                "content": "<p>Rotating PDF pages is a common need when working with scanned documents or documents created from multiple sources. iMasterPDF's Rotate PDF tool makes it easy to fix orientation issues with just a few clicks.</p><h3>Common Rotation Scenarios</h3><ul><li>Scanned documents with mixed orientation</li><li>Landscape pages that should be portrait (or vice versa)</li><li>Upside-down pages from scanning errors</li><li>Photos or images that need rotation</li><li>Mixed orientation in combined documents</li></ul><h3>Rotation Options Available</h3><ol><li><strong>90° Clockwise:</strong> Rotate right</li><li><strong>90° Counter-clockwise:</strong> Rotate left</li><li><strong>180°:</strong> Flip upside down</li><li><strong>Custom Selection:</strong> Rotate specific pages only</li></ol><h3>Step-by-Step Rotation Process</h3><p>Here's how to rotate PDF pages with iMasterPDF:</p><ol><li>Upload your PDF document</li><li>Select rotation angle (90°, 180°, or custom)</li><li>Choose which pages to rotate (all or specific pages)</li><li>Preview the changes</li><li>Click 'Rotate' and download your corrected PDF</li></ol><h3>Pro Tips for Perfect Rotation</h3><ul><li>Use 'Select Pages' option for mixed-orientation documents</li><li>Preview before finalizing to ensure correct rotation</li><li>Batch process multiple documents with same rotation needs</li><li>Combine with other tools (merge, compress) in your workflow</li><li>Save frequently used rotation settings as presets</li></ul><p>Our tool preserves all content quality and formatting while fixing orientation issues.</p>"
+                "content": "<p>Rotating PDF pages is a common need when working with scanned documents or documents created from multiple sources. iMasterPDF's Rotate PDF tool makes it easy to fix orientation issues with just a few clicks.</p><h3>Common Rotation Scenarios</h3><ul><li>Scanned documents with mixed orientation</li><li>Landscape pages that should be portrait (or vice versa)</li><li>Upside-down pages from scanning errors</li><li>Photos or images that need rotation</li><li>Mixed orientation in combined documents</li></ul><h3>Rotation Options Available</h3><ol><li><strong>90° Clockwise:</strong> Rotate right</li><li><strong>90° Counter-clockwise:</strong> Rotate left</li><li><strong>180°:</strong> Flip upside down</li><li><strong>Custom Selection:</strong> Rotate specific pages only</li></ol><h3>Step-by-Step Rotation Process</h3><p>Here's how to rotate PDF pages with iMasterPDF:</p><ol><li>Upload your PDF document</li><li>Select rotation angle (90°, 180°, or custom)</li><li>Choose which pages to rotate (all or specific pages)</li><li>Preview the changes</li><li>Click 'Rotate' and download your corrected PDF</li></ol><h3>Pro Tips for Perfect Rotation</h3><ul><li>Use 'Select Pages' option for mixed-orientation documents</li><li>Preview before finalizing to ensure correct rotation</li><li>Batch process multiple documents with same rotation needs</li><li>Combine with other tools (merge, compress) in your workflow</li><li>Save frequently used rotation settings as presets</li></ul><h3>Common Issues and Solutions</h3><ul><li><strong>Multiple orientations:</strong> Rotate pages individually</li><li><strong>Scanning errors:</strong> Check original scan settings</li><li><strong>Mixed formats:</strong> Convert all pages to same orientation first</li><li><strong>Large files:</strong> Consider compressing first</li></ul>"
             },
             {
                 "slug": "how-to-delete-pages-from-pdf",
@@ -1155,7 +1787,7 @@
                 "read_time": "8 min",
                 "category": "PDF Editing",
                 "summary": "Learn how to remove unwanted pages from PDF documents without affecting the rest of the document.",
-                "content": "<p>Deleting pages from PDF documents is often necessary when you need to remove confidential information, extract specific sections, or clean up scanned documents. iMasterPDF's Delete Pages tool makes this process simple and secure.</p><h3>When to Delete PDF Pages</h3><ul><li>Remove confidential or personal information</li><li>Extract specific sections for sharing</li><li>Clean up scanned documents with blank pages</li><li>Remove unnecessary cover pages or appendices</li><li>Create customized versions of documents</li></ul><h3>How Our Page Deletion Tool Works</h3><p>The process is straightforward:</p><ol><li>Upload your PDF document</li><li>Specify which pages to delete (individual pages or ranges)</li><li>Preview the remaining pages</li><li>Click 'Delete Pages'</li><li>Download your cleaned PDF</li></ol><h3>Page Selection Options</h3><ul><li><strong>Individual Pages:</strong> 1, 3, 5 (comma-separated)</li><li><strong>Page Ranges:</strong> 2-4, 10-15 (hyphen for ranges)</li><li><strong>Mixed Selection:</strong> 1, 3-5, 8, 10-12</li><li><strong>All Except:</strong> Delete all pages except specified ones</li></ul><h3>Best Practices</h3><ol><li>Always preview before deleting</li><li>Keep a backup of the original document</li><li>Check page numbers carefully</li><li>Use for legitimate purposes only</li><li>Combine with other tools for complete document editing</li></ol><blockquote>Tip: For sensitive documents, consider password protection after deleting pages for added security.</blockquote>"
+                "content": "<p>Deleting pages from PDF documents is often necessary when you need to remove confidential information, extract specific sections, or clean up scanned documents. iMasterPDF's Delete Pages tool makes this process simple and secure.</p><h3>When to Delete PDF Pages</h3><ul><li>Remove confidential or personal information</li><li>Extract specific sections for sharing</li><li>Clean up scanned documents with blank pages</li><li>Remove unnecessary cover pages or appendices</li><li>Create customized versions of documents</li></ul><h3>How Our Page Deletion Tool Works</h3><p>The process is straightforward:</p><ol><li>Upload your PDF document</li><li>Specify which pages to delete (individual pages or ranges)</li><li>Preview the remaining pages</li><li>Click 'Delete Pages'</li><li>Download your cleaned PDF</li></ol><h3>Page Selection Options</h3><ul><li><strong>Individual Pages:</strong> 1, 3, 5 (comma-separated)</li><li><strong>Page Ranges:</strong> 2-4, 10-15 (hyphen for ranges)</li><li><strong>Mixed Selection:</strong> 1, 3-5, 8, 10-12</li><li><strong>All Except:</strong> Delete all pages except specified ones</li></ul><h3>Best Practices</h3><ol><li>Always preview before deleting</li><li>Keep a backup of the original document</li><li>Check page numbers carefully</li><li>Use for legitimate purposes only</li><li>Combine with other tools for complete document editing</li></ol><blockquote>Tip: For sensitive documents, consider password protection after deleting pages for added security.</blockquote><h3>Advanced Techniques</h3><ul><li>Extract multiple sections into separate documents</li><li>Delete every other page for specific purposes</li><li>Combine deletion with other editing operations</li><li>Use batch processing for multiple documents</li></ul>"
             },
             {
                 "slug": "how-to-convert-word-to-pdf",
@@ -1165,7 +1797,27 @@
                 "read_time": "9 min",
                 "category": "Conversion",
                 "summary": "Learn how to convert Word documents to PDF while preserving all formatting, fonts, and layout.",
-                "content": "<p>Converting Word documents to PDF is essential for sharing finalized documents that need to look exactly the same on all devices. iMasterPDF's Word to PDF converter preserves all formatting, fonts, images, and layout elements perfectly.</p><h3>Benefits of Converting Word to PDF</h3><ul><li><strong>Format Preservation:</strong> Documents look identical on all devices</li><li><strong>Universal Compatibility:</strong> PDFs open on any device without Word</li><li><strong>Security:</strong> Add password protection and restrictions</li><li><strong>Professional Appearance:</strong> Perfect for resumes, contracts, reports</li><li><strong>Print Ready:</strong> Maintains exact layout for printing</li></ul><h3>Conversion Process Explained</h3><ol><li>Upload your Word document (.doc or .docx)</li><li>Select conversion options if needed</li><li>Click 'Convert to PDF'</li><li>Wait a few seconds for processing</li><li>Download your professional PDF</li></ol><h3>Format Preservation Features</h3><ul><li>Font embedding (even uncommon fonts)</li><li>Image quality preservation</li><li>Table formatting maintained</li><li>Hyperlinks remain active</li><li>Page layout exactly as in Word</li><li>Header/footer preservation</li></ul><h3>Common Use Cases</h3><ol><li><strong>Resumes:</strong> Convert Word resumes to PDF for job applications</li><li><strong>Contracts:</strong> Create unchangeable PDF contracts</li><li><strong>Reports:</strong> Convert business reports for distribution</li><li><strong>Academic Papers:</strong> Submit papers in PDF format</li><li><strong>Manuals:</strong> Create professional PDF manuals from Word</li></ol><p>Our converter handles complex documents with multiple sections, headers, footers, and images with perfect accuracy.</p>"
+                "content": "<p>Converting Word documents to PDF is essential for sharing finalized documents that need to look exactly the same on all devices. iMasterPDF's Word to PDF converter preserves all formatting, fonts, images, and layout elements perfectly.</p><h3>Benefits of Converting Word to PDF</h3><ul><li><strong>Format Preservation:</strong> Documents look identical on all devices</li><li><strong>Universal Compatibility:</strong> PDFs open on any device without Word</li><li><strong>Security:</strong> Add password protection and restrictions</li><li><strong>Professional Appearance:</strong> Perfect for resumes, contracts, reports</li><li><strong>Print Ready:</strong> Maintains exact layout for printing</li></ul><h3>Conversion Process Explained</h3><ol><li>Upload your Word document (.doc or .docx)</li><li>Select conversion options if needed</li><li>Click 'Convert to PDF'</li><li>Wait a few seconds for processing</li><li>Download your professional PDF</li></ol><h3>Format Preservation Features</h3><ul><li>Font embedding (even uncommon fonts)</li><li>Image quality preservation</li><li>Table formatting maintained</li><li>Hyperlinks remain active</li><li>Page layout exactly as in Word</li><li>Header/footer preservation</li></ul><h3>Common Use Cases</h3><ol><li><strong>Resumes:</strong> Convert Word resumes to PDF for job applications</li><li><strong>Contracts:</strong> Create unchangeable PDF contracts</li><li><strong>Reports:</strong> Convert business reports for distribution</li><li><strong>Academic Papers:</strong> Submit papers in PDF format</li><li><strong>Manuals:</strong> Create professional PDF manuals from Word</li></ol><h3>Troubleshooting Common Issues</h3><ul><li><strong>Font issues:</strong> Embed fonts in Word before conversion</li><li><strong>Image quality:</strong> Use high-resolution images</li><li><strong>Layout problems:</strong> Check Word page setup</li><li><strong>Large files:</strong> Optimize images before conversion</li></ul>"
+            },
+            {
+                "slug": "how-to-convert-images-to-pdf",
+                "title": "How to Convert Images to PDF: Complete Guide 2026",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-11",
+                "read_time": "8 min",
+                "category": "Conversion",
+                "summary": "Learn how to convert JPG, PNG, and other image formats to high-quality PDF documents.",
+                "content": "<p>Converting images to PDF is essential for creating professional documents from photos, scans, or digital images. iMasterPDF's Images to PDF tool makes it easy to combine multiple images into a single, organized PDF document.</p><h3>Why Convert Images to PDF?</h3><ul><li><strong>Professional Presentation:</strong> Create polished documents from photos</li><li><strong>Document Organization:</strong> Combine related images into single files</li><li><strong>Better Sharing:</strong> PDFs are universally compatible</li><li><strong>Archival Quality:</strong> Preserve images in standardized format</li><li><strong>Print Optimization:</strong> Control print settings and layout</li></ul><h3>Supported Image Formats</h3><ul><li>JPG/JPEG (most common)</li><li>PNG (transparency support)</li><li>WEBP (modern web format)</li><li>BMP (Windows bitmap)</li><li>TIFF/TIF (high-quality scans)</li></ul><h3>Step-by-Step Conversion Guide</h3><ol><li>Upload your images (multiple selection supported)</li><li>Arrange images in desired order</li><li>Select page size and orientation</li><li>Choose image quality settings</li><li>Click 'Convert to PDF'</li><li>Download your combined PDF</li></ol><h3>Advanced Features</h3><ul><li><strong>Batch Processing:</strong> Convert multiple images at once</li><li><strong>Page Layout Control:</strong> Adjust margins and spacing</li><li><strong>Image Optimization:</strong> Automatic compression for smaller files</li><li><strong>Custom Ordering:</strong> Drag and drop to arrange images</li></ul><h3>Best Practices for Quality Results</h3><ul><li>Use high-resolution source images</li><li>Maintain consistent image sizes</li><li>Consider image orientation (portrait/landscape)</li><li>Use lossless formats for archival purposes</li><li>Add borders for professional look</li></ul>"
+            },
+            {
+                "slug": "how-to-extract-text-from-pdf",
+                "title": "How to Extract Text from PDF: Complete Guide 2026",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-10",
+                "read_time": "7 min",
+                "category": "PDF Editing",
+                "summary": "Learn professional methods to extract text content from PDF files for editing and reuse.",
+                "content": "<p>Extracting text from PDF files is essential for researchers, writers, and professionals who need to reuse content. iMasterPDF's PDF to Text tool makes this process simple and efficient.</p><h3>Why Extract Text from PDF?</h3><ul><li><strong>Content Reuse:</strong> Copy text for new documents</li><li><strong>Research:</strong> Extract quotes and references</li><li><strong>Translation:</strong> Prepare text for language translation</li><li><strong>Accessibility:</strong> Convert PDFs to readable text formats</li><li><strong>Data Analysis:</strong> Extract information for processing</li></ul><h3>Text Extraction Methods</h3><ol><li><strong>Direct Copy:</strong> For simple text-based PDFs</li><li><strong>OCR Extraction:</strong> For scanned/image-based PDFs</li><li><strong>Batch Extraction:</strong> Multiple PDFs at once</li><li><strong>Selective Extraction:</strong> Extract specific pages or sections</li></ol><h3>Step-by-Step Extraction Process</h3><ol><li>Upload your PDF document</li><li>Select extraction method (automatic or manual)</li><li>Choose output format (plain text, Word, etc.)</li><li>Click 'Extract Text'</li><li>Download your extracted text</li></ol><h3>OCR Technology Explained</h3><p>For scanned PDFs, we use Optical Character Recognition (OCR) to:</p><ul><li>Convert scanned images to editable text</li><li>Recognize multiple languages</li><li>Preserve formatting where possible</li><li>Handle various font styles</li></ul><h3>Tips for Best Results</h3><ul><li>Use clear, high-quality source PDFs</li><li>For scanned documents, ensure good contrast</li><li>Check extracted text for accuracy</li><li>Use language-specific OCR for non-English text</li><li>Clean up formatting as needed</li></ul>"
             }
         ]
     }
@@ -1178,198 +1830,285 @@
         // Navigation
         const routes = {
             '/': () => showSection('home'),
+            '/tools': () => showSection('tools'),
             '/about': () => showSection('about'),
             '/privacy': () => showSection('privacy'),
             '/terms': () => showSection('terms'),
             '/tool': () => showSection('tool'),
             '/blog': () => { showSection('blog'); renderBlogList(); },
             '/contact': () => showSection('contact'),
+            '/faq': () => showSection('faq'),
         };
 
-        const toolMap = {
-            pdf_to_word: { 
-                title: 'PDF to Word', 
-                desc: 'Convert PDF into editable DOCX.',
-                steps: [
-                    'Upload your PDF file (max 50 MB)',
-                    'Click "Convert" to transform PDF to Word',
-                    'Download your editable DOCX file'
-                ]
-            },
-            merge_pdf: { 
-                title: 'Merge PDF', 
-                desc: 'Combine multiple PDFs into one.',
-                steps: [
-                    'Upload 2+ PDF files (drag and drop supported)',
-                    'Arrange files in your preferred order',
-                    'Click "Merge" to create single PDF'
-                ]
-            },
-            rotate_pdf: { 
-                title: 'Rotate PDF', 
-                desc: 'Rotate pages by 90°, 180°, or 270°.',
-                steps: [
-                    'Upload PDF with sideways pages',
-                    'Select rotation angle and pages',
-                    'Download corrected PDF'
-                ]
-            },
-            delete_pages_pdf: { 
-                title: 'Delete Pages in PDF', 
-                desc: 'Remove selected pages from a PDF.',
-                steps: [
-                    'Upload PDF document',
-                    'Specify pages to remove (e.g., 1,3,5 or 2-4)',
-                    'Download cleaned PDF'
-                ]
-            },
-            lock_pdf: { 
-                title: 'Lock PDF (PIN)', 
-                desc: 'Protect PDF with a 4-digit PIN.',
-                steps: [
-                    'Upload your PDF file',
-                    'Set a 4-digit PIN for protection',
-                    'Download password-protected PDF'
-                ]
-            },
-            unlock_pdf: { 
-                title: 'Unlock PDF', 
-                desc: 'Remove password protection.',
-                steps: [
-                    'Upload password-protected PDF',
-                    'Enter the correct password',
-                    'Download unlocked PDF'
-                ]
-            },
-            word_to_pdf: { 
-                title: 'Word to PDF', 
-                desc: 'Convert Word files (DOCX/DOC) to PDF.',
-                steps: [
-                    'Upload Word document (.doc or .docx)',
-                    'Click "Convert" button',
-                    'Download professional PDF'
-                ]
-            },
-            merge_word: { 
-                title: 'Merge Word', 
-                desc: 'Combine multiple Word documents.',
-                steps: [
-                    'Upload Word files to merge',
-                    'Arrange in preferred order',
-                    'Download combined document'
-                ]
-            },
-            word_to_text: { 
-                title: 'Word to Text', 
-                desc: 'Extract text from Word files.',
-                steps: [
-                    'Upload Word document',
-                    'Click "Extract Text"',
-                    'Download plain text file'
-                ]
-            },
-            text_to_pdf: { 
-                title: 'Text to PDF', 
-                desc: 'Convert plain text to PDF.',
-                steps: [
-                    'Paste or type your text',
-                    'Customize formatting options',
-                    'Download generated PDF'
-                ]
-            },
-            text_to_word: { 
-                title: 'Text to Word', 
-                desc: 'Create a Word document from text.',
-                steps: [
-                    'Enter or paste your text',
-                    'Choose document formatting',
-                    'Download Word document'
-                ]
-            },
-            images_to_pdf: { 
-                title: 'Images to PDF', 
-                desc: 'Convert JPG, PNG, WEBP, BMP, TIFF to PDF.',
-                steps: [
-                    'Upload images (multiple supported)',
-                    'Arrange image order',
-                    'Download combined PDF'
-                ]
-            }
-        };
-
-        // Tool definitions with options
+        // Tool definitions with detailed content
         const tools = {
             'pdf_to_word': {
-                title: 'PDF to Word',
-                description: 'Convert PDF into editable DOCX',
+                title: 'PDF to Word Converter',
+                description: 'Convert PDF files to editable Microsoft Word documents',
                 icon: 'fas fa-file-word',
                 multiple: false,
                 accept: '.pdf',
-                options: []
+                content: `
+                    <h2>Free PDF to Word Converter</h2>
+                    <p>Convert your PDF documents into fully editable Microsoft Word files with our free online converter. Our tool preserves formatting, tables, and images, making it perfect for resumes, contracts, reports, and academic papers.</p>
+                    
+                    <h3>How Our PDF to Word Converter Works</h3>
+                    <p>Our converter uses advanced algorithms to accurately extract text and formatting from PDF files. The process maintains:</p>
+                    <ul>
+                        <li><strong>Text Formatting:</strong> Font styles, sizes, and colors</li>
+                        <li><strong>Document Structure:</strong> Headings, paragraphs, and lists</li>
+                        <li><strong>Tables and Images:</strong> Positioned correctly in the document</li>
+                        <li><strong>Page Layout:</strong> Margins and spacing preserved</li>
+                    </ul>
+                    
+                    <h3>Step-by-Step Conversion Process</h3>
+                    <ol>
+                        <li><strong>Upload PDF:</strong> Drag and drop your PDF file or click to browse</li>
+                        <li><strong>Automatic Processing:</strong> Our system analyzes and converts your document</li>
+                        <li><strong>Download DOCX:</strong> Get your editable Word document instantly</li>
+                    </ol>
+                    
+                    <h3>Common Use Cases</h3>
+                    <ul>
+                        <li><strong>Business Professionals:</strong> Edit contracts and proposals</li>
+                        <li><strong>Students:</strong> Convert textbook PDFs for note-taking</li>
+                        <li><strong>Researchers:</strong> Extract content from research papers</li>
+                        <li><strong>Writers:</strong> Repurpose content from PDF sources</li>
+                    </ul>
+                    
+                    <h3>Technical Specifications</h3>
+                    <ul>
+                        <li><strong>File Size Limit:</strong> 50MB per file</li>
+                        <li><strong>Output Format:</strong> DOCX (Microsoft Word)</li>
+                        <li><strong>Processing Speed:</strong> Typically under 30 seconds</li>
+                        <li><strong>Security:</strong> Files deleted immediately after processing</li>
+                    </ul>
+                `,
+                faq: [
+                    {
+                        question: 'How accurate is the PDF to Word conversion?',
+                        answer: 'Our converter is highly accurate for text-based PDFs. It preserves most formatting, including fonts, tables, and images. For scanned PDFs, we use OCR technology with good accuracy.'
+                    },
+                    {
+                        question: 'Can I convert password-protected PDFs?',
+                        answer: 'No, you need to unlock password-protected PDFs first using our Unlock PDF tool before conversion.'
+                    },
+                    {
+                        question: 'What happens to my files after conversion?',
+                        answer: 'Files are automatically deleted from our servers immediately after processing. We do not store or access your documents.'
+                    }
+                ]
+            },
+            'word_to_pdf': {
+                title: 'Word to PDF Converter',
+                description: 'Convert Word documents to professional PDF format',
+                icon: 'fas fa-file-pdf',
+                multiple: true,
+                accept: '.doc,.docx',
+                content: `
+                    <h2>Word to PDF Converter</h2>
+                    <p>Convert your Microsoft Word documents to professional PDF files with perfect formatting preservation. Our converter maintains all your formatting, fonts, and images exactly as they appear in Word.</p>
+                    
+                    <h3>Benefits of Converting Word to PDF</h3>
+                    <ul>
+                        <li><strong>Universal Compatibility:</strong> PDFs open on any device without Word</li>
+                        <li><strong>Format Protection:</strong> Layout remains exactly as designed</li>
+                        <li><strong>Professional Appearance:</strong> Perfect for resumes and business documents</li>
+                        <li><strong>Security Options:</strong> Add passwords and restrictions</li>
+                    </ul>
+                    
+                    <h3>Preserved Formatting Features</h3>
+                    <ul>
+                        <li><strong>Font Embedding:</strong> All fonts included, even uncommon ones</li>
+                        <li><strong>Image Quality:</strong> High-resolution images preserved</li>
+                        <li><strong>Complex Layouts:</strong> Tables, columns, and headers maintained</li>
+                        <li><strong>Interactive Elements:</strong> Hyperlinks and bookmarks preserved</li>
+                    </ul>
+                    
+                    <h3>Conversion Settings</h3>
+                    <p>Customize your PDF output with these options:</p>
+                    <ul>
+                        <li><strong>Page Size:</strong> Letter, A4, Legal, or custom</li>
+                        <li><strong>Image Compression:</strong> Balance quality and file size</li>
+                        <li><strong>Security:</strong> Add password protection during conversion</li>
+                        <li><strong>Metadata:</strong> Include or exclude document properties</li>
+                    </ul>
+                `,
+                faq: [
+                    {
+                        question: 'Does it support both .doc and .docx files?',
+                        answer: 'Yes, our converter supports both old .doc format and modern .docx format.'
+                    },
+                    {
+                        question: 'How is formatting preserved?',
+                        answer: 'We embed fonts and maintain exact page layout, ensuring your PDF looks identical to your Word document.'
+                    },
+                    {
+                        question: 'Can I convert multiple Word files at once?',
+                        answer: 'Yes, you can upload and convert multiple Word files simultaneously.'
+                    }
+                ]
             },
             'merge_pdf': {
-                title: 'Merge PDF',
+                title: 'Merge PDF Files',
                 description: 'Combine multiple PDFs into a single document',
                 icon: 'fas fa-object-group',
                 multiple: true,
                 accept: '.pdf',
-                options: []
-            },
-            'rotate_pdf': {
-                title: 'Rotate PDF',
-                description: 'Rotate PDF pages 90°, 180°, or 270°',
-                icon: 'fas fa-redo',
-                multiple: false,
-                accept: '.pdf',
-                options: [
+                content: `
+                    <h2>Merge PDF Files</h2>
+                    <p>Combine multiple PDF documents into a single, organized file. Perfect for assembling reports, combining chapters, or creating comprehensive documents from multiple sources.</p>
+                    
+                    <h3>Key Features</h3>
+                    <ul>
+                        <li><strong>Unlimited Merging:</strong> Combine as many PDFs as needed</li>
+                        <li><strong>Drag & Drop Ordering:</strong> Easily arrange files in desired sequence</li>
+                        <li><strong>Quality Preservation:</strong> Maintains original document quality</li>
+                        <li><strong>Fast Processing:</strong> Merge documents in seconds</li>
+                    </ul>
+                    
+                    <h3>Step-by-Step Merging Process</h3>
+                    <ol>
+                        <li><strong>Upload Files:</strong> Select all PDFs you want to merge</li>
+                        <li><strong>Arrange Order:</strong> Drag files to set the sequence</li>
+                        <li><strong>Merge:</strong> Click to combine all documents</li>
+                        <li><strong>Download:</strong> Get your single merged PDF file</li>
+                    </ol>
+                    
+                    <h3>Professional Use Cases</h3>
+                    <ul>
+                        <li><strong>Business Reports:</strong> Combine monthly reports into quarterly summaries</li>
+                        <li><strong>Academic Projects:</strong> Merge research papers and references</li>
+                        <li><strong>Legal Documents:</strong> Assemble contracts with supporting documents</li>
+                        <li><strong>Portfolio Creation:</strong> Combine work samples and certificates</li>
+                    </ul>
+                `,
+                faq: [
                     {
-                        type: 'select',
-                        name: 'rotation',
-                        label: 'Rotation Angle',
-                        options: [
-                            { value: '90', label: '90° Clockwise' },
-                            { value: '-90', label: '90° Counter-clockwise' },
-                            { value: '180', label: '180°' }
-                        ]
+                        question: 'How many PDFs can I merge at once?',
+                        answer: 'You can merge unlimited PDF files, though very large merges may take longer to process.'
+                    },
+                    {
+                        question: 'Are bookmarks preserved?',
+                        answer: 'Yes, bookmarks from individual PDFs are preserved in the merged document.'
+                    },
+                    {
+                        question: 'Can I rearrange pages after merging?',
+                        answer: 'For page-level rearrangement, use our Split PDF tool to extract and reorder pages.'
                     }
                 ]
             },
-            'delete_pages_pdf': {
-                title: 'Delete Pages in PDF',
-                description: 'Remove selected pages from a PDF',
-                icon: 'fas fa-trash-alt',
+            'compress_pdf': {
+                title: 'Compress PDF',
+                description: 'Reduce PDF file size without losing quality',
+                icon: 'fas fa-compress',
                 multiple: false,
                 accept: '.pdf',
-                options: [
+                content: `
+                    <h2>Compress PDF Files</h2>
+                    <p>Reduce your PDF file size significantly while maintaining document quality. Perfect for email attachments, web uploads, and storage optimization.</p>
+                    
+                    <h3>Compression Levels</h3>
+                    <ul>
+                        <li><strong>Low Compression:</strong> Minimal size reduction, maximum quality</li>
+                        <li><strong>Medium Compression:</strong> Balanced size and quality (recommended)</li>
+                        <li><strong>High Compression:</strong> Maximum size reduction for sharing</li>
+                    </ul>
+                    
+                    <h3>How Compression Works</h3>
+                    <p>Our compression algorithm optimizes PDFs by:</p>
+                    <ul>
+                        <li><strong>Image Optimization:</strong> Reducing image resolution intelligently</li>
+                        <li><strong>Font Subsetting:</strong> Including only used characters</li>
+                        <li><strong>Data Deduplication:</strong> Removing redundant elements</li>
+                        <li><strong>Object Compression:</strong> Compressing internal PDF objects</li>
+                    </ul>
+                    
+                    <h3>When to Compress PDFs</h3>
+                    <ul>
+                        <li><strong>Email Attachments:</strong> Stay under email size limits</li>
+                        <li><strong>Web Uploads:</strong> Faster upload times for websites</li>
+                        <li><strong>Mobile Sharing:</strong> Reduce data usage</li>
+                        <li><strong>Storage Optimization:</strong> Save space on drives and clouds</li>
+                    </ul>
+                `,
+                faq: [
                     {
-                        type: 'text',
-                        name: 'pages',
-                        label: 'Pages to Remove (e.g., 1,3,5 or 2-4)',
-                        placeholder: 'Enter page numbers or ranges',
-                        required: true
+                        question: 'Will compression reduce document quality?',
+                        answer: 'With our intelligent compression, quality reduction is minimal. You can preview the compressed version before downloading.'
+                    },
+                    {
+                        question: 'What\'s the maximum file size reduction?',
+                        answer: 'Typically 50-80% reduction, depending on the original file composition.'
+                    },
+                    {
+                        question: 'Are text documents compressed differently than image-heavy PDFs?',
+                        answer: 'Yes, text-based PDFs compress better with different optimization techniques.'
                     }
                 ]
             },
             'lock_pdf': {
-                title: 'Lock PDF (PIN)',
-                description: 'Add password protection with 4-digit PIN',
+                title: 'Lock PDF with Password',
+                description: 'Add password protection to PDF files',
                 icon: 'fas fa-lock',
                 multiple: false,
                 accept: '.pdf',
                 options: [
                     {
                         type: 'password',
-                        name: 'pin',
-                        label: 'Set 4-digit PIN',
-                        placeholder: 'Enter 4-digit PIN',
-                        required: true,
-                        pattern: '[0-9]{4}'
+                        name: 'password',
+                        label: 'Set Password',
+                        placeholder: 'Enter strong password',
+                        required: true
+                    }
+                ],
+                content: `
+                    <h2>Lock PDF Files with Password Protection</h2>
+                    <p>Secure your sensitive documents with strong password protection. Control who can view, edit, print, or copy your PDF files.</p>
+                    
+                    <h3>Security Features</h3>
+                    <ul>
+                        <li><strong>Open Password:</strong> Required to view the document</li>
+                        <li><strong>Permissions Password:</strong> Controls editing and printing</li>
+                        <li><strong>Strong Encryption:</strong> 128-bit or 256-bit AES encryption</li>
+                        <li><strong>Access Control:</strong> Restrict specific actions</li>
+                    </ul>
+                    
+                    <h3>Permission Settings</h3>
+                    <p>Control exactly what users can do with your protected PDF:</p>
+                    <ul>
+                        <li><strong>Printing:</strong> Allow, disallow, or limit to low-resolution</li>
+                        <li><strong>Editing:</strong> Prevent any changes or allow specific edits</li>
+                        <li><strong>Copying:</strong> Allow or prevent text and image copying</li>
+                        <li><strong>Document Assembly:</strong> Control page extraction</li>
+                    </ul>
+                    
+                    <h3>Best Practices for PDF Security</h3>
+                    <ul>
+                        <li><strong>Use Strong Passwords:</strong> Mix letters, numbers, and symbols</li>
+                        <li><strong>Different Passwords:</strong> Use unique passwords for different documents</li>
+                        <li><strong>Password Management:</strong> Store passwords securely</li>
+                        <li><strong>Regular Updates:</strong> Change passwords periodically</li>
+                    </ul>
+                `,
+                faq: [
+                    {
+                        question: 'What happens if I forget the password?',
+                        answer: 'We cannot recover forgotten passwords. Consider using a password manager to store important passwords securely.'
+                    },
+                    {
+                        question: 'Can I remove password protection later?',
+                        answer: 'Yes, use our Unlock PDF tool with the correct password to remove protection.'
+                    },
+                    {
+                        question: 'Is the encryption secure?',
+                        answer: 'Yes, we use industry-standard AES encryption for maximum security.'
                     }
                 ]
             },
             'unlock_pdf': {
                 title: 'Unlock PDF',
-                description: 'Remove password protection from PDF',
+                description: 'Remove password protection from PDF files',
                 icon: 'fas fa-unlock',
                 multiple: false,
                 accept: '.pdf',
@@ -1381,71 +2120,49 @@
                         placeholder: 'Enter current password',
                         required: true
                     }
-                ]
-            },
-            'word_to_pdf': {
-                title: 'Word to PDF',
-                description: 'Convert Word documents to PDF format',
-                icon: 'fas fa-file-pdf',
-                multiple: true,
-                accept: '.doc,.docx',
-                options: []
-            },
-            'merge_word': {
-                title: 'Merge Word',
-                description: 'Combine multiple Word documents',
-                icon: 'fas fa-file-word',
-                multiple: true,
-                accept: '.doc,.docx',
-                options: []
-            },
-            'word_to_text': {
-                title: 'Word to Text',
-                description: 'Convert Word documents to plain text',
-                icon: 'fas fa-file-alt',
-                multiple: false,
-                accept: '.doc,.docx',
-                options: []
-            },
-            'text_to_pdf': {
-                title: 'Text to PDF',
-                description: 'Convert text to PDF',
-                icon: 'fas fa-file-pdf',
-                multiple: false,
-                accept: '',
-                options: [
+                ],
+                content: `
+                    <h2>Unlock Password-Protected PDF Files</h2>
+                    <p>Remove password protection from your PDF documents when you have legitimate access. Perfect for when you need to edit previously protected files.</p>
+                    
+                    <h3>When to Use This Tool</h3>
+                    <ul>
+                        <li><strong>Forgotten Passwords:</strong> Access your own protected documents</li>
+                        <li><strong>Editing Needs:</strong> Remove protection to make changes</li>
+                        <li><strong>Sharing Requirements:</strong> Remove passwords for easier sharing</li>
+                        <li><strong>Document Conversion:</strong> Unlock before converting to other formats</li>
+                    </ul>
+                    
+                    <h3>Important Notes</h3>
+                    <ul>
+                        <li><strong>Legal Use Only:</strong> Only unlock documents you own or have permission to access</li>
+                        <li><strong>Password Required:</strong> You must know the current password</li>
+                        <li><strong>Security Maintained:</strong> Process is secure and private</li>
+                        <li><strong>Immediate Deletion:</strong> Files deleted after processing</li>
+                    </ul>
+                    
+                    <h3>Step-by-Step Process</h3>
+                    <ol>
+                        <li><strong>Upload Protected PDF:</strong> Select your password-protected file</li>
+                        <li><strong>Enter Password:</strong> Provide the correct document password</li>
+                        <li><strong>Unlock:</strong> Our system removes the protection</li>
+                        <li><strong>Download:</strong> Get your unlocked PDF file</li>
+                    </ol>
+                `,
+                faq: [
                     {
-                        type: 'textarea',
-                        name: 'text',
-                        label: 'Text Content',
-                        placeholder: 'Enter your text here...',
-                        required: true
+                        question: 'What if I enter the wrong password?',
+                        answer: 'The unlocking will fail. Make sure you\'re using the correct password for the document.'
+                    },
+                    {
+                        question: 'Can you recover lost passwords?',
+                        answer: 'No, we cannot recover or bypass passwords. This tool only works with known passwords.'
+                    },
+                    {
+                        question: 'Is unlocking reversible?',
+                        answer: 'Yes, you can always re-protect the document using our Lock PDF tool.'
                     }
                 ]
-            },
-            'text_to_word': {
-                title: 'Text to Word',
-                description: 'Convert text to Word document',
-                icon: 'fas fa-file-word',
-                multiple: false,
-                accept: '',
-                options: [
-                    {
-                        type: 'textarea',
-                        name: 'text',
-                        label: 'Text Content',
-                        placeholder: 'Enter your text here...',
-                        required: true
-                    }
-                ]
-            },
-            'images_to_pdf': {
-                title: 'Images to PDF',
-                description: 'Convert multiple images to a single PDF',
-                icon: 'fas fa-images',
-                multiple: true,
-                accept: 'image/*',
-                options: []
             }
         };
 
@@ -1453,7 +2170,7 @@
         let currentTool = null;
         let uploadedFiles = [];
         const MAX_SIZE = 50 * 1024 * 1024;
-
+        
         // Blog pagination
         let currentPage = 1;
         const articlesPerPage = 6;
@@ -1486,7 +2203,10 @@
                 document.getElementById('home').style.display = 'block';
                 document.getElementById('hero').style.display = 'block';
             } else {
-                document.getElementById(id).style.display = 'block';
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = 'block';
+                }
             }
             
             // Update active nav links
@@ -1499,6 +2219,11 @@
             if (id !== 'tool') {
                 resetTool();
             }
+            
+            // Initialize AdSense ads
+            if (typeof adsbygoogle !== 'undefined') {
+                adsbygoogle.push({});
+            }
         }
 
         function goHome(e) {
@@ -1510,19 +2235,33 @@
         function showTool(tool) {
             currentTool = tool;
             const toolInfo = tools[tool];
-            const toolGuide = toolMap[tool];
             
-            // Update UI
+            if (!toolInfo) {
+                showMessage('Tool not available yet', 'error');
+                return;
+            }
+            
+            // Update tool content section
+            const toolContent = document.getElementById('toolContent');
+            toolContent.innerHTML = toolInfo.content || '';
+            toolContent.style.display = 'block';
+            
+            // Update upload area
             document.getElementById('toolTitle').textContent = toolInfo.title;
             document.getElementById('toolDescription').textContent = toolInfo.description;
             
             // Show how-to guide
             const guideHtml = `
-                <h4>How to ${toolInfo.title}:</h4>
+                <h3>How to Use This Tool:</h3>
                 <ol>
-                    ${toolGuide.steps.map(step => `<li>${step}</li>`).join('')}
+                    <li>Upload your file(s) using the area below</li>
+                    <li>Configure any available options</li>
+                    <li>Click "Process Files" to begin conversion</li>
+                    <li>Download your processed file</li>
                 </ol>
-                <div class="note">Note: Files are processed securely and deleted automatically after conversion.</div>
+                <div style="font-size: 0.9rem; color: #6b7280; margin-top: 1rem;">
+                    <i class="fas fa-shield-alt"></i> Your files are processed securely and deleted immediately after conversion.
+                </div>
             `;
             document.getElementById('howToGuide').innerHTML = guideHtml;
             
@@ -1558,9 +2297,39 @@
             document.getElementById('progressContainer').classList.remove('active');
             document.getElementById('message').style.display = 'none';
             
+            // Show FAQ if available
+            const toolFaq = document.getElementById('toolFaq');
+            if (toolInfo.faq && toolInfo.faq.length > 0) {
+                let faqHtml = '<h3>Frequently Asked Questions</h3>';
+                toolInfo.faq.forEach((item, index) => {
+                    faqHtml += `
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-question">
+                                ${item.question}
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                ${item.answer}
+                            </div>
+                        </div>
+                    `;
+                });
+                toolFaq.innerHTML = faqHtml;
+                toolFaq.style.display = 'block';
+            } else {
+                toolFaq.style.display = 'none';
+            }
+            
             // Show tool section
             showSection('tool');
             window.history.pushState({}, '', '/tool');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleFaq(element) {
+            element.classList.toggle('active');
         }
 
         // File handling functions
@@ -1600,7 +2369,7 @@
             fileList.innerHTML = '';
             
             if (uploadedFiles.length === 0) {
-                fileList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">No files selected</p>';
+                fileList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">No files selected. Click the upload area or drag and drop files.</p>';
                 return;
             }
             
@@ -1611,9 +2380,9 @@
                     <div>
                         <strong>${file.name}</strong>
                         <br>
-                        <small>${formatFileSize(file.size)}</small>
+                        <small>${formatFileSize(file.size)} • ${file.type || 'Unknown type'}</small>
                     </div>
-                    <i class="fas fa-times" onclick="removeFile(${index})"></i>
+                    <i class="fas fa-times" onclick="removeFile(${index})" title="Remove file"></i>
                 `;
                 fileList.appendChild(div);
             });
@@ -1646,7 +2415,7 @@
                 switch (option.type) {
                     case 'select':
                         inputHtml = `
-                            <select id="option_${option.name}" name="${option.name}" ${option.required ? 'required' : ''}>
+                            <select id="option_${option.name}" name="${option.name}" ${option.required ? 'required' : ''} class="input">
                                 ${option.options.map(opt => 
                                     `<option value="${opt.value}">${opt.label}</option>`
                                 ).join('')}
@@ -1784,7 +2553,7 @@
                 // Get the blob from response
                 const blob = await response.blob();
                 
-                // Generate a filename with UUID
+                // Generate a filename
                 let filename = `imasterpdf_${generateUUID()}`;
                 if (response.headers.get('Content-Disposition')) {
                     const match = response.headers.get('Content-Disposition').match(/filename="(.+)"/);
@@ -1842,7 +2611,7 @@
 
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0.8);
+                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         }
@@ -1852,17 +2621,20 @@
             msg.textContent = text;
             msg.className = 'msg ' + type;
             msg.style.display = 'block';
+            msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function resetTool() {
             currentTool = null;
             uploadedFiles = [];
             
+            document.getElementById('toolContent').style.display = 'none';
             document.getElementById('uploadArea').classList.remove('active');
             document.getElementById('optionsPanel').classList.remove('active');
             document.getElementById('actionButtons').classList.remove('active');
             document.getElementById('resultArea').classList.remove('active');
             document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('toolFaq').style.display = 'none';
             document.getElementById('message').style.display = 'none';
             
             updateFileList();
@@ -1884,17 +2656,21 @@
             // Render articles
             blogList.innerHTML = pageArticles.map(article => `
                 <div class="blog-card" onclick="showArticle('${article.slug}')">
-                    <h3>${article.title}</h3>
-                    <div class="meta">
-                        <span><i class="fas fa-user"></i> ${article.author}</span>
-                        <span><i class="fas fa-calendar"></i> ${article.date}</span>
-                        <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
-                        <span><i class="fas fa-tag"></i> ${article.category}</span>
+                    <div class="blog-card-image">
+                        <i class="fas fa-newspaper"></i>
                     </div>
-                    <p class="excerpt">${article.summary}</p>
-                    <a href="#" onclick="showArticle('${article.slug}'); return false;" class="read-more">
-                        Read Full Article <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <div class="blog-card-content">
+                        <h3>${article.title}</h3>
+                        <div class="meta">
+                            <span><i class="fas fa-user"></i> ${article.author}</span>
+                            <span><i class="fas fa-calendar"></i> ${article.date}</span>
+                            <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
+                        </div>
+                        <p class="excerpt">${article.summary}</p>
+                        <a href="#" onclick="showArticle('${article.slug}'); return false;" class="read-more">
+                            Read Full Article <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
                 </div>
             `).join('');
             
@@ -1923,7 +2699,7 @@
                 } else if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
                     paginationHtml += `<button onclick="renderBlogList(${i})">${i}</button>`;
                 } else if (i === currentPage - 2 || i === currentPage + 2) {
-                    paginationHtml += `<span>...</span>`;
+                    paginationHtml += `<span style="padding: 0.5rem 1rem;">...</span>`;
                 }
             }
             
@@ -1950,6 +2726,9 @@
                 document.getElementById('article-content').innerHTML = article.content;
                 showSection('article');
                 window.history.pushState({}, '', `/blog/${slug}`);
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
@@ -1974,20 +2753,58 @@
         });
 
         // Contact form
-        document.getElementById('contact-form').addEventListener('submit', function(e) {
+        document.getElementById('contact-form').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            const name = document.getElementById('contact-name').value.trim();
+            const email = document.getElementById('contact-email').value.trim();
+            const subject = document.getElementById('contact-subject').value.trim();
+            const message = document.getElementById('contact-message').value.trim();
             const msg = document.getElementById('contact-msg');
-            msg.textContent = 'Thank you for your message! We\'ll get back to you soon.';
-            msg.className = 'msg success';
-            this.reset();
+            
+            if (!name || !email || !message) {
+                msg.textContent = 'Please fill in all required fields.';
+                msg.className = 'msg error';
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                msg.textContent = 'Please enter a valid email address.';
+                msg.className = 'msg error';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        subject: subject,
+                        message: message
+                    })
+                });
+                
+                if (response.ok) {
+                    msg.textContent = 'Thank you for your message! We\'ll get back to you soon.';
+                    msg.className = 'msg success';
+                    this.reset();
+                } else {
+                    throw new Error('Failed to send message');
+                }
+            } catch (error) {
+                msg.textContent = 'Sorry, there was an error sending your message. Please try again.';
+                msg.className = 'msg error';
+            }
         });
 
-        // Back to blog button
-        document.getElementById('back-to-blog').addEventListener('click', function(e) {
-            e.preventDefault();
-            showSection('blog');
-            window.history.pushState({}, '', '/blog');
-        });
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
 
         // Navigation links
         document.querySelectorAll('.nav-links a[data-link], .footer-inner a[data-link]').forEach(link => {
@@ -2025,6 +2842,28 @@
                 showArticle(slug);
             } else {
                 goHome();
+            }
+            
+            // Initialize AdSense
+            if (typeof adsbygoogle !== 'undefined') {
+                adsbygoogle.push({});
+            }
+            
+            // Add tool cards for all tools page
+            const toolsGrid = document.querySelector('#tools .tools-grid');
+            if (toolsGrid) {
+                Object.keys(tools).forEach(toolKey => {
+                    const tool = tools[toolKey];
+                    const card = document.createElement('div');
+                    card.className = 'tool-card';
+                    card.onclick = () => showTool(toolKey);
+                    card.innerHTML = `
+                        <i class="${tool.icon}"></i>
+                        <h3>${tool.title}</h3>
+                        <p>${tool.description}</p>
+                    `;
+                    toolsGrid.appendChild(card);
+                });
             }
         });
     </script>
