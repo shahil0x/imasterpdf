@@ -5,7 +5,7 @@ import tempfile
 import uuid
 from datetime import datetime, timedelta
 
-from flask import Flask, render_template, send_file, request, abort, Response, jsonify
+from flask import Flask, render_template, send_file, request, abort, Response, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
@@ -19,9 +19,6 @@ from pdfminer.high_level import extract_text
 # Flask app configuration
 # -----------------------------------------------------------------------------
 app = Flask(__name__, static_folder=None, template_folder='.')
-@app.route('/')
-def index():
-    return render_template('index.html')
 
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
@@ -138,38 +135,12 @@ def safe_remove(path):
         pass
 
 # -----------------------------------------------------------------------------
-# SPA routes (render_template single index.html)
+# Single SPA route handler
 # -----------------------------------------------------------------------------
-@app.route('/', methods=['GET'])
-def index():
-    return render_template('index.html')
-
-@app.route('/about', methods=['GET'])
-def about():
-    return render_template('index.html')
-
-@app.route('/privacy', methods=['GET'])
-def privacy():
-    return render_template('index.html')
-
-@app.route('/terms', methods=['GET'])
-def terms():
-    return render_template('index.html')
-
-@app.route('/tool', methods=['GET'])
-def tool():
-    return render_template('index.html')
-
-@app.route('/blog', methods=['GET'])
-def blog():
-    return render_template('index.html')
-
-@app.route('/blog/<slug>', methods=['GET'])
-def blog_article(slug):
-    return render_template('index.html')
-
-@app.route('/contact', methods=['GET'])
-def contact():
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def index(path):
+    """Handle all routes for SPA"""
     return render_template('index.html')
 
 # -----------------------------------------------------------------------------
@@ -188,7 +159,7 @@ def api_contact():
     return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
 
 # -----------------------------------------------------------------------------
-# Tool APIs - CORRECTED VERSION
+# Tool APIs
 # -----------------------------------------------------------------------------
 @app.route('/api/pdf-to-word', methods=['POST'])
 def api_pdf_to_word():
@@ -749,6 +720,13 @@ def api_images_to_pdf():
             safe_remove(p)
 
 # -----------------------------------------------------------------------------
+# Health check endpoint for Render
+# -----------------------------------------------------------------------------
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()}), 200
+
+# -----------------------------------------------------------------------------
 # Error handlers
 # -----------------------------------------------------------------------------
 @app.errorhandler(413)
@@ -768,3 +746,4 @@ def server_error(e):
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=False)
+
