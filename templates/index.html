@@ -2379,7 +2379,6 @@
             updateFileList();
         }
 
-        // Blog functions
         function renderBlogList(page = 1) {
             const blogList = document.getElementById('blog-list');
             try {
@@ -2415,7 +2414,7 @@
                             <span><i class="fas fa-tag"></i> ${article.category}</span>
                         </div>
                         <p class="excerpt">${article.summary}</p>
-                        <a href="#" onclick="showArticle('${article.slug}'); return false;" class="read-more">
+                        <a href="#" onclick="event.stopPropagation(); showArticle('${article.slug}'); return false;" class="read-more">
                             Read Full Article <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
@@ -2425,7 +2424,8 @@
                 renderPagination(totalPages);
             } catch (error) {
                 console.error('Error rendering blog:', error);
-                blogList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">Error loading blog articles</p>';
+                blogList.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 20px;">Error loading blog articles. Please try again later.</p>';
+                document.getElementById('pagination').innerHTML = '';
             }
         }
 
