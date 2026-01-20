@@ -1879,6 +1879,9 @@
             document.getElementById('toolTitle').textContent = toolInfo.title;
             document.getElementById('toolDescription').textContent = toolInfo.description;
             
+            // Clear any previous messages
+            document.getElementById('message').style.display = 'none';
+            
             // Show how-to guide
             const guideHtml = `
                 <h4>How to ${toolInfo.title}:</h4>
@@ -1892,8 +1895,9 @@
             // Show detailed tool content
             renderToolDetailContent(tool);
             
-            // Reset file input
+            // Reset file input - IMPORTANT: Clear the value too!
             const fileInput = document.getElementById('fileInput');
+            fileInput.value = ''; // This clears any previously selected files
             fileInput.accept = toolInfo.accept;
             if (toolInfo.multiple) {
                 fileInput.setAttribute('multiple', '');
@@ -2011,28 +2015,79 @@
 
         function addFiles(files) {
             const toolInfo = tools[currentTool];
+            let validFilesAdded = 0;
+            let hasError = false;
+            
+            // Clear previous error messages
+            const errorMsg = document.getElementById('message');
+            errorMsg.style.display = 'none';
             
             files.forEach(file => {
                 // Check file type
-                if (toolInfo.accept && toolInfo.accept !== '' && !file.name.match(new RegExp(toolInfo.accept.replace('*', '.*') + '$', 'i'))) {
-                    showMessage(`Invalid file type. Please select ${toolInfo.accept} files.`, 'error');
-                    return;
+                if (toolInfo.accept && toolInfo.accept !== '') {
+                    // Convert accept string to array of extensions
+                    const acceptedExtensions = toolInfo.accept.split(',').map(ext => ext.trim().toLowerCase());
+                    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                    
+                    // Check if file matches any accepted extension
+                    let isValidType = false;
+                    
+                    if (acceptedExtensions.includes('image/*')) {
+                        // For image tools, check MIME type
+                        if (file.type.startsWith('image/')) {
+                            isValidType = true;
+                        }
+                    } else {
+                        // For specific extensions
+                        isValidType = acceptedExtensions.some(ext => {
+                            if (ext.startsWith('.')) {
+                                return fileExtension === ext;
+                            }
+                            return false;
+                        });
+                    }
+                    
+                    if (!isValidType) {
+                        showMessage(`"${file.name}" is not a supported file type. Please select ${toolInfo.accept} files.`, 'error');
+                        hasError = true;
+                        return; // Skip this file
+                    }
                 }
                 
                 // Check file size
                 if (file.size > MAX_SIZE) {
-                    showMessage('File size must be less than 50MB', 'error');
-                    return;
+                    showMessage(`"${file.name}" exceeds 50MB limit. Please choose a smaller file.`, 'error');
+                    hasError = true;
+                    return; // Skip this file
                 }
                 
                 // Check if file already exists
                 const existingFile = uploadedFiles.find(f => f.name === file.name && f.size === file.size);
                 if (!existingFile) {
                     uploadedFiles.push(file);
+                    validFilesAdded++;
+                } else {
+                    showMessage(`"${file.name}" is already in the list.`, 'warning');
                 }
             });
             
-            updateFileList();
+            // Only update file list if we added valid files
+            if (validFilesAdded > 0) {
+                updateFileList();
+                
+                // Show success message if we added files without errors
+                if (!hasError && validFilesAdded === files.length) {
+                    // Don't show success message for single file
+                    if (validFilesAdded > 1) {
+                        showMessage(`Successfully added ${validFilesAdded} file(s).`, 'success');
+                    }
+                }
+            }
+            
+            // If no valid files were added and we had errors, ensure message is visible
+            if (validFilesAdded === 0 && hasError) {
+                // Error message already shown in the loop
+            }
         }
 
         function updateFileList() {
@@ -2053,15 +2108,19 @@
                         <br>
                         <small>${formatFileSize(file.size)}</small>
                     </div>
-                    <i class="fas fa-times" onclick="removeFile(${index})"></i>
+                    <i class="fas fa-times" onclick="removeFile(${index})" title="Remove file"></i>
                 `;
                 fileList.appendChild(div);
             });
         }
 
         function removeFile(index) {
+            const removedFile = uploadedFiles[index];
             uploadedFiles.splice(index, 1);
             updateFileList();
+            
+            // Show removal confirmation
+            showMessage(`Removed "${removedFile.name}" from the list.`, 'info');
         }
 
         function formatFileSize(bytes) {
@@ -2292,11 +2351,22 @@
             msg.textContent = text;
             msg.className = 'msg ' + type;
             msg.style.display = 'block';
+            
+            // Auto-hide messages after some time
+            setTimeout(() => {
+                if (msg.textContent === text) {
+                    msg.style.display = 'none';
+                }
+            }, type === 'error' ? 8000 : 5000);
         }
 
         function resetTool() {
             currentTool = null;
             uploadedFiles = [];
+            
+            // Clear file input
+            const fileInput = document.getElementById('fileInput');
+            fileInput.value = '';
             
             document.getElementById('uploadArea').classList.remove('active');
             document.getElementById('optionsPanel').classList.remove('active');
@@ -2312,35 +2382,51 @@
         // Blog functions
         function renderBlogList(page = 1) {
             const blogList = document.getElementById('blog-list');
-            const blogData = JSON.parse(document.getElementById('blog-data').textContent);
-            const articles = blogData.articles;
-            
-            // Calculate pagination
-            const totalPages = Math.ceil(articles.length / articlesPerPage);
-            currentPage = Math.max(1, Math.min(page, totalPages));
-            const startIndex = (currentPage - 1) * articlesPerPage;
-            const endIndex = startIndex + articlesPerPage;
-            const pageArticles = articles.slice(startIndex, endIndex);
-            
-            // Render articles
-            blogList.innerHTML = pageArticles.map(article => `
-                <div class="blog-card" onclick="showArticle('${article.slug}')">
-                    <h3>${article.title}</h3>
-                    <div class="meta">
-                        <span><i class="fas fa-user"></i> ${article.author}</span>
-                        <span><i class="fas fa-calendar"></i> ${article.date}</span>
-                        <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
-                        <span><i class="fas fa-tag"></i> ${article.category}</span>
+            try {
+                const blogDataScript = document.getElementById('blog-data');
+                if (!blogDataScript) {
+                    blogList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">Blog data not found</p>';
+                    return;
+                }
+                
+                const blogData = JSON.parse(blogDataScript.textContent);
+                const articles = blogData.articles;
+                
+                // Calculate pagination
+                const totalPages = Math.ceil(articles.length / articlesPerPage);
+                currentPage = Math.max(1, Math.min(page, totalPages));
+                const startIndex = (currentPage - 1) * articlesPerPage;
+                const endIndex = startIndex + articlesPerPage;
+                const pageArticles = articles.slice(startIndex, endIndex);
+                
+                if (pageArticles.length === 0) {
+                    blogList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">No blog articles found</p>';
+                    return;
+                }
+                
+                // Render articles
+                blogList.innerHTML = pageArticles.map(article => `
+                    <div class="blog-card" onclick="showArticle('${article.slug}')">
+                        <h3>${article.title}</h3>
+                        <div class="meta">
+                            <span><i class="fas fa-user"></i> ${article.author}</span>
+                            <span><i class="fas fa-calendar"></i> ${article.date}</span>
+                            <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
+                            <span><i class="fas fa-tag"></i> ${article.category}</span>
+                        </div>
+                        <p class="excerpt">${article.summary}</p>
+                        <a href="#" onclick="showArticle('${article.slug}'); return false;" class="read-more">
+                            Read Full Article <i class="fas fa-arrow-right"></i>
+                        </a>
                     </div>
-                    <p class="excerpt">${article.summary}</p>
-                    <a href="#" onclick="showArticle('${article.slug}'); return false;" class="read-more">
-                        Read Full Article <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            `).join('');
-            
-            // Render pagination
-            renderPagination(totalPages);
+                `).join('');
+                
+                // Render pagination
+                renderPagination(totalPages);
+            } catch (error) {
+                console.error('Error rendering blog:', error);
+                blogList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">Error loading blog articles</p>';
+            }
         }
 
         function renderPagination(totalPages) {
@@ -2377,20 +2463,35 @@
         }
 
         function showArticle(slug) {
-            const blogData = JSON.parse(document.getElementById('blog-data').textContent);
-            const article = blogData.articles.find(a => a.slug === slug);
-            
-            if (article) {
-                document.getElementById('article-title').textContent = article.title;
-                document.getElementById('article-meta').innerHTML = `
-                    <span><i class="fas fa-user"></i> ${article.author}</span>
-                    <span><i class="fas fa-calendar"></i> ${article.date}</span>
-                    <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
-                    <span><i class="fas fa-tag"></i> ${article.category}</span>
-                `;
-                document.getElementById('article-content').innerHTML = article.content;
-                showSection('article');
-                window.history.pushState({}, '', `/blog/${slug}`);
+            try {
+                const blogDataScript = document.getElementById('blog-data');
+                if (!blogDataScript) {
+                    showMessage('Blog data not found', 'error');
+                    return;
+                }
+                
+                const blogData = JSON.parse(blogDataScript.textContent);
+                const article = blogData.articles.find(a => a.slug === slug);
+                
+                if (article) {
+                    document.getElementById('article-title').textContent = article.title;
+                    document.getElementById('article-meta').innerHTML = `
+                        <span><i class="fas fa-user"></i> ${article.author}</span>
+                        <span><i class="fas fa-calendar"></i> ${article.date}</span>
+                        <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
+                        <span><i class="fas fa-tag"></i> ${article.category}</span>
+                    `;
+                    document.getElementById('article-content').innerHTML = article.content;
+                    showSection('article');
+                    window.history.pushState({}, '', `/blog/${slug}`);
+                } else {
+                    showMessage('Article not found', 'error');
+                    showSection('blog');
+                }
+            } catch (error) {
+                console.error('Error showing article:', error);
+                showMessage('Error loading article', 'error');
+                showSection('blog');
             }
         }
 
