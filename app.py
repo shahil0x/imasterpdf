@@ -14,6 +14,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
 from PIL import Image
 from pdfminer.high_level import extract_text
+import zipfile
 
 # -----------------------------------------------------------------------------
 # Flask app configuration
@@ -137,6 +138,8 @@ def safe_remove(path):
 # -----------------------------------------------------------------------------
 
 @app.route('/')
+@app.route('/index')
+@app.route('/index.html')
 def index():
     """Main landing page"""
     return render_template('index.html')
@@ -218,6 +221,17 @@ def text_to_word():
 def images_to_pdf():
     """Images to PDF converter page"""
     return render_template('imagestopdf.html')
+
+# -----------------------------------------------------------------------------
+# Catch-all route for other .html files (NEW ADDITION)
+# -----------------------------------------------------------------------------
+@app.route('/<path:filename>.html')
+def serve_html(filename):
+    """Catch-all route for any .html file requests"""
+    try:
+        return render_template(f'{filename}.html')
+    except:
+        abort(404)
 
 # -----------------------------------------------------------------------------
 # Contact API
@@ -320,7 +334,6 @@ def api_split_pdf():
         
         # Create ZIP file with all split PDFs
         zip_buffer = io.BytesIO()
-        import zipfile
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for i, (start_idx, end_page) in enumerate(ranges):
                 writer = PdfWriter()
@@ -831,6 +844,10 @@ def health_check():
 # -----------------------------------------------------------------------------
 # Error handlers
 # -----------------------------------------------------------------------------
+@app.errorhandler(404)
+def page_not_found(e):
+    return jsonify({"error": "Page not found. Please check the URL."}), 404
+
 @app.errorhandler(413)
 def too_large(e):
     return jsonify({"error": "File too large (max 50 MB)."}), 413
