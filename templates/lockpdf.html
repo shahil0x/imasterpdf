@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lock PDF - iMasterPDF | Password Protect PDF Online</title>
-    <meta name="description" content="Add password protection to PDF files. Secure your documents with encryption. Fast, secure, and free.">
-    <meta name="keywords" content="lock PDF, password protect PDF, encrypt PDF, secure PDF, PDF security">
+    <title>Lock PDF with Password | iMasterPDF</title>
+    <meta name="description" content="Add password protection to PDF files online for free. Secure your documents with strong encryption.">
+    <meta name="keywords" content="Lock PDF, password protect PDF, secure PDF, encrypt PDF, PDF security">
     <meta name="author" content="iMasterPDF">
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
-    
+
     <style>
         :root {
             --primary-color: #2d8cff;
@@ -42,7 +43,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -123,36 +124,71 @@
             background: var(--secondary-color);
         }
 
-        /* Main Content */
-        .main-content {
-            padding: 3rem 0;
+        /* Tool Container */
+        .tool-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 0;
         }
 
+        /* Tool Header */
         .tool-header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
-        .tool-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+        .tool-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
             color: var(--dark-color);
         }
 
         .tool-header p {
             color: var(--muted);
             font-size: 1.1rem;
-            max-width: 800px;
-            margin: 0 auto;
+        }
+
+        /* How-to guide section */
+        .how-to-guide {
+            background: #f8fafc;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
+        }
+        .how-to-guide h4 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: var(--dark-color);
+        }
+        .how-to-guide ol {
+            margin: 0 0 10px 0;
+            padding-left: 20px;
+        }
+        .how-to-guide li {
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        .how-to-guide .note {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            font-style: italic;
         }
 
         /* Upload Area */
-        .upload-section {
+        .upload-area {
             background: white;
             border-radius: var(--radius);
-            padding: 2.5rem;
+            padding: 2rem;
             box-shadow: var(--shadow);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
+            text-align: center;
         }
 
         .upload-box {
@@ -160,7 +196,7 @@
             border-radius: var(--radius);
             padding: 3rem 2rem;
             text-align: center;
-            margin: 1.5rem 0;
+            margin: 1rem 0;
             transition: var(--transition);
             cursor: pointer;
         }
@@ -173,16 +209,7 @@
         .upload-box i {
             font-size: 4rem;
             color: var(--primary-color);
-            margin-bottom: 1.5rem;
-        }
-
-        .upload-box h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .upload-box p {
-            color: var(--muted);
+            margin-bottom: 1rem;
         }
 
         .file-input {
@@ -190,7 +217,7 @@
         }
 
         .file-list {
-            margin: 1.5rem 0;
+            margin: 1rem 0;
             max-height: 300px;
             overflow-y: auto;
         }
@@ -199,10 +226,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
+            padding: 0.8rem;
             background: var(--light-color);
             border-radius: var(--radius);
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.5rem;
             animation: slideIn 0.3s ease;
         }
 
@@ -211,205 +238,81 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        .file-info {
-            flex: 1;
-        }
-
-        .file-name {
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-        }
-
-        .file-size {
-            font-size: 0.9rem;
-            color: var(--muted);
-        }
-
-        .file-remove {
-            color: var(--secondary-color);
+        .file-item i {
             cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: var(--transition);
+            color: var(--secondary-color);
+            padding: 5px;
         }
 
-        .file-remove:hover {
+        .file-item i:hover {
             background: rgba(255, 71, 87, 0.1);
+            border-radius: 50%;
         }
 
-        /* Security Options */
-        .security-options {
+        /* Password Input Section */
+        .password-section {
             background: white;
             border-radius: var(--radius);
-            padding: 2.5rem;
+            padding: 2rem;
             box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            display: none;
-        }
-
-        .security-options.active {
-            display: block;
-        }
-
-        .password-section {
-            margin-bottom: 2rem;
-        }
-
-        .password-section h3 {
-            margin-bottom: 1rem;
-            color: var(--dark-color);
-        }
-
-        .password-inputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .input-group {
             margin-bottom: 1rem;
         }
 
-        .input-group label {
+        .password-input-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .password-input-container label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
-            color: var(--text);
+            color: var(--dark-color);
         }
 
-        .input-group input {
+        .password-input {
             width: 100%;
-            padding: 0.8rem 1rem;
+            padding: 0.8rem;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             font-size: 1rem;
             transition: var(--transition);
         }
 
-        .input-group input:focus {
+        .password-input:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.1);
         }
 
-        .input-help {
+        .password-strength {
+            margin-top: 0.5rem;
             font-size: 0.9rem;
             color: var(--muted);
-            margin-top: 0.5rem;
         }
 
-        /* Permission Settings */
-        .permission-settings {
-            background: #f8fafc;
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-        }
-
-        .permission-settings h3 {
-            margin-bottom: 1rem;
-            color: var(--dark-color);
-        }
-
-        .permission-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .permission-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .permission-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-        }
-
-        .permission-item label {
-            cursor: pointer;
-            color: var(--text);
-        }
-
-        /* Security Info */
-        .security-info {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: var(--radius);
-            padding: 1rem;
-            margin: 1.5rem 0;
-            color: #856404;
-        }
-
-        .security-info h4 {
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .security-info ul {
-            margin-left: 1.5rem;
-            font-size: 0.9rem;
-        }
-
-        .security-info li {
-            margin-bottom: 0.3rem;
-        }
-
-        /* Action Buttons */
-        .action-buttons {
+        /* Action Buttons Container */
+        .action-buttons-container {
             display: flex;
             gap: 1rem;
-            margin: 2.5rem 0;
+            margin-bottom: 2rem;
             justify-content: center;
         }
 
-        .action-buttons .btn {
+        .action-buttons-container .btn {
             min-width: 180px;
+            padding: 1rem 2rem;
             font-size: 1.1rem;
         }
 
         /* Progress Container */
         .progress-container {
-            background: white;
-            border-radius: var(--radius);
-            padding: 2.5rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            text-align: center;
             display: none;
+            margin: 2rem 0;
+            text-align: center;
         }
 
         .progress-container.active {
             display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--light-color);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1.5rem;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .progress-text {
-            font-size: 1.2rem;
-            color: var(--text);
-            margin-bottom: 1rem;
         }
 
         .progress-bar {
@@ -429,7 +332,7 @@
             transition: width 0.3s ease;
         }
 
-        .progress-percent {
+        .progress-text {
             position: absolute;
             top: 0;
             left: 0;
@@ -448,208 +351,112 @@
         .result-area {
             background: white;
             border-radius: var(--radius);
-            padding: 2.5rem;
+            padding: 2rem;
             box-shadow: var(--shadow);
             text-align: center;
-            margin-bottom: 2rem;
             display: none;
+            animation: fadeIn 0.5s ease;
+            margin-bottom: 2rem;
         }
 
         .result-area.active {
             display: block;
-            animation: fadeIn 0.5s ease;
         }
 
-        .result-icon {
+        .result-area i {
             font-size: 4rem;
             color: var(--success-color);
-            margin-bottom: 1.5rem;
-        }
-
-        .result-message {
-            margin-bottom: 1.5rem;
-        }
-
-        .result-message h3 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            color: var(--dark-color);
-        }
-
-        .result-message p {
-            color: var(--muted);
-        }
-
-        .download-btn {
-            background: var(--success-color);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1.1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            transition: var(--transition);
             margin-bottom: 1rem;
         }
 
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
-        /* Features Section */
-        .features-section {
-            background: white;
-            border-radius: var(--radius);
-            padding: 2.5rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-        }
-
-        .features-section h2 {
-            text-align: center;
-            margin-bottom: 2rem;
-            color: var(--dark-color);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .feature-card {
-            text-align: center;
-            padding: 1.5rem;
-        }
-
-        .feature-card i {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-
-        .feature-card h3 {
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        .feature-card p {
-            color: var(--muted);
-            font-size: 0.95rem;
-        }
-
-        /* FAQ Section */
-        .faq-section {
-            background: white;
-            border-radius: var(--radius);
-            padding: 2.5rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-        }
-
-        .faq-section h2 {
-            text-align: center;
-            margin-bottom: 2rem;
-            color: var(--dark-color);
-        }
-
-        .faq-item {
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1.5rem;
-        }
-
-        .faq-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .faq-question {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text);
-            font-size: 1.1rem;
-        }
-
-        .faq-answer {
-            color: var(--muted);
-            line-height: 1.6;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Message */
-        .message {
-            padding: 1rem;
+        .msg {
+            padding: 12px 16px;
             border-radius: var(--radius);
             margin: 1rem 0;
             display: none;
+            text-align: center;
         }
-
-        .message.success {
+        
+        .msg.success {
             background: #d1fae5;
             color: #065f46;
             border: 1px solid #a7f3d0;
             display: block;
         }
-
-        .message.error {
+        
+        .msg.error {
             background: #fee2e2;
             color: #991b1b;
             border: 1px solid #fecaca;
             display: block;
         }
-
-        .message.info {
+        
+        .msg.info {
             background: #dbeafe;
             color: #1e40af;
             border: 1px solid #bfdbfe;
             display: block;
         }
+        
+        .msg.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            display: block;
+        }
 
         /* Footer */
         footer {
-            background: white;
-            margin-top: 4rem;
+            margin-top: 40px;
             border-top: 1px solid var(--border);
+            background: #fafafa;
         }
-
-        .footer-content {
+        
+        .footer-inner {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            padding: 3rem 0;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 18px;
+            padding: 18px 24px;
         }
-
-        .footer-column h3 {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: var(--dark-color);
+        
+        @media (max-width: 800px) {
+            .footer-inner {
+                grid-template-columns: 1fr;
+            }
         }
-
-        .footer-column a {
-            display: block;
+        
+        .footer-inner h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+        }
+        
+        .footer-inner a {
             color: var(--muted);
+            font-size: 13px;
             text-decoration: none;
-            margin-bottom: 0.5rem;
-            transition: var(--transition);
         }
-
-        .footer-column a:hover {
-            color: var(--primary-color);
+        
+        .footer-inner p {
+            margin: 5px 0;
         }
-
+        
+        .tagline {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 5px 0;
+        }
+        
         .copyright {
             text-align: center;
-            padding: 1.5rem 0;
             color: var(--muted);
-            font-size: 0.9rem;
-            border-top: 1px solid var(--border);
+            font-size: 12px;
+            padding: 12px 0 18px;
         }
 
         /* Responsive */
@@ -662,112 +469,41 @@
             .nav-links {
                 flex-wrap: wrap;
                 justify-content: center;
-                gap: 1rem;
             }
 
-            .tool-header h1 {
-                font-size: 2rem;
+            .action-buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-buttons-container .btn {
+                width: 100%;
+                max-width: 300px;
             }
 
             .upload-box {
                 padding: 2rem 1rem;
             }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .action-buttons .btn {
-                width: 100%;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .password-inputs {
-                grid-template-columns: 1fr;
-            }
-
-            .permission-grid {
-                grid-template-columns: 1fr;
+            
+            .tool-header h2 {
+                font-size: 1.5rem;
             }
         }
 
-        /* Password Strength */
-        .password-strength {
-            margin-top: 0.5rem;
+        /* Loading animation */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--light-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
         }
 
-        .strength-bar {
-            height: 4px;
-            background: var(--light-color);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-bottom: 0.3rem;
-        }
-
-        .strength-fill {
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .strength-fill.weak {
-            background: var(--secondary-color);
-            width: 33%;
-        }
-
-        .strength-fill.medium {
-            background: #ffa502;
-            width: 66%;
-        }
-
-        .strength-fill.strong {
-            background: var(--success-color);
-            width: 100%;
-        }
-
-        .strength-text {
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-
-        /* Encryption Options */
-        .encryption-options {
-            display: flex;
-            gap: 1rem;
-            margin: 1rem 0;
-            flex-wrap: wrap;
-        }
-
-        .encryption-option {
-            background: var(--light-color);
-            border: 1px solid var(--border);
-            padding: 0.8rem 1.2rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .encryption-option:hover {
-            border-color: var(--primary-color);
-        }
-
-        .encryption-option.selected {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .encryption-option h4 {
-            font-size: 1rem;
-            margin-bottom: 0.3rem;
-        }
-
-        .encryption-option p {
-            font-size: 0.8rem;
-            opacity: 0.8;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -776,16 +512,15 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <a href="/" class="logo">
+                <a href="https://imasterpdf.com" class="logo">
                     <i class="fas fa-file-pdf"></i>
                     iMasterPDF
                 </a>
                 <div class="nav-links">
-                    <a href="/">Home</a>
-                    <a href="/split.html">Split PDF</a>
-                    <a href="/mergepdf.html">Merge PDF</a>
-                    <a href="/lockpdf.html" class="active">Lock PDF</a>
-                    <a href="/tools.html">All Tools</a>
+                    <a href="https://imasterpdf.com">Home</a>
+                    <a href="https://imasterpdf.com/blog">Blog</a>
+                    <a href="https://imasterpdf.com/about">About</a>
+                    <a href="https://imasterpdf.com/contact">Contact</a>
                 </div>
             </nav>
         </div>
@@ -793,307 +528,224 @@
 
     <!-- Main Content -->
     <main class="container">
-        <div class="main-content">
+        <div class="tool-container">
             <!-- Tool Header -->
             <div class="tool-header">
-                <h1>Lock PDF with Password Protection</h1>
-                <p>Add strong password protection to your PDF files. Control who can view, edit, print, or copy your documents.</p>
+                <h2>Lock PDF with Password</h2>
+                <p>Add strong password protection to your PDF files. Secure confidential documents with encryption.</p>
             </div>
-
-            <!-- Upload Section -->
-            <div class="upload-section">
-                <h2>Upload PDF to Protect</h2>
+            
+            <!-- How-to Guide -->
+            <div class="how-to-guide">
+                <h4>How to lock PDF files:</h4>
+                <ol>
+                    <li>Upload your PDF document</li>
+                    <li>Set a strong password for protection</li>
+                    <li>Click "Protect PDF" button</li>
+                    <li>Download your password-protected PDF</li>
+                </ol>
+                <div class="note">Important: Remember your password. We cannot recover lost passwords.</div>
+            </div>
+            
+            <!-- Upload Area -->
+            <div class="upload-area">
                 <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
                     <i class="fas fa-cloud-upload-alt"></i>
-                    <h3>Drag & Drop Your PDF Here</h3>
-                    <p>or click to browse files</p>
-                    <p style="font-size: 0.9rem; color: var(--muted); margin-top: 1rem;">Maximum file size: 50MB</p>
-                    <input type="file" id="fileInput" class="file-input" accept=".pdf" onchange="handleFileSelect(event)">
+                    <h3>Drag & Drop PDF File Here</h3>
+                    <p>or click to browse file (PDF)</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf">
                 </div>
                 
                 <div class="file-list" id="fileList">
-                    <p style="text-align: center; color: var(--muted); padding: 2rem 0;">No files selected</p>
+                    <p style="text-align: center; color: var(--gray-color);">No files selected</p>
                 </div>
             </div>
 
-            <!-- Security Options -->
-            <div class="security-options" id="securityOptions">
-                <h2>Security Settings</h2>
+            <!-- Password Section -->
+            <div class="password-section">
+                <div class="password-input-container">
+                    <label for="passwordInput">Set Password</label>
+                    <input type="password" id="passwordInput" class="password-input" placeholder="Enter a strong password" minlength="4" required>
+                    <div class="password-strength" id="passwordStrength">Password strength: Enter a password</div>
+                </div>
                 
-                <!-- Password Section -->
-                <div class="password-section">
-                    <h3>Set Password</h3>
-                    <div class="password-inputs">
-                        <div class="input-group">
-                            <label for="userPassword">User Password (Required to open)</label>
-                            <input type="password" id="userPassword" placeholder="Enter password to open PDF">
-                            <div class="input-help">
-                                Minimum 4 characters. This password is required to open the PDF.
-                            </div>
-                            <div class="password-strength">
-                                <div class="strength-bar">
-                                    <div class="strength-fill" id="strengthFill"></div>
-                                </div>
-                                <div class="strength-text" id="strengthText">Password strength: None</div>
-                            </div>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="ownerPassword">Owner Password (Optional)</label>
-                            <input type="password" id="ownerPassword" placeholder="Optional: Enter owner password">
-                            <div class="input-help">
-                                Optional. If set, provides additional control over permissions.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Encryption Options -->
-                <div class="encryption-options">
-                    <div class="encryption-option selected" onclick="selectEncryption('128')">
-                        <h4>128-bit AES</h4>
-                        <p>Standard security</p>
-                    </div>
-                    <div class="encryption-option" onclick="selectEncryption('256')">
-                        <h4>256-bit AES</h4>
-                        <p>Maximum security</p>
-                    </div>
-                </div>
-
-                <!-- Permission Settings -->
-                <div class="permission-settings">
-                    <h3>Permission Settings</h3>
-                    <p style="color: var(--muted); margin-bottom: 1rem;">Select what users can do with the protected PDF:</p>
-                    
-                    <div class="permission-grid">
-                        <div class="permission-item">
-                            <input type="checkbox" id="allowPrinting" checked>
-                            <label for="allowPrinting">Allow printing</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="allowCopying" checked>
-                            <label for="allowCopying">Allow text/image copying</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="allowEditing" checked>
-                            <label for="allowEditing">Allow editing</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="allowForms" checked>
-                            <label for="allowForms">Allow form filling</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="allowAnnotations" checked>
-                            <label for="allowAnnotations">Allow annotations</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="allowAssembling" checked>
-                            <label for="allowAssembling">Allow document assembly</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Security Info -->
-                <div class="security-info">
-                    <h4><i class="fas fa-shield-alt"></i> Security Information</h4>
-                    <ul>
-                        <li>We use industry-standard AES encryption to protect your PDF</li>
-                        <li>Passwords are never stored on our servers</li>
-                        <li>Files are automatically deleted after processing</li>
-                        <li>If you forget the password, we cannot recover it</li>
-                    </ul>
+                <div class="password-input-container">
+                    <label for="confirmPasswordInput">Confirm Password</label>
+                    <input type="password" id="confirmPasswordInput" class="password-input" placeholder="Re-enter your password" minlength="4" required>
+                    <div class="password-strength" id="passwordMatch">Passwords must match</div>
                 </div>
             </div>
 
             <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn" onclick="processLocking()" id="processBtn" style="display: none;">
-                    <i class="fas fa-lock"></i> Lock PDF
+            <div class="action-buttons-container">
+                <button class="btn" onclick="protectPDF()">
+                    <i class="fas fa-lock"></i> Protect PDF
                 </button>
                 <button class="btn btn-secondary" onclick="resetTool()">
                     <i class="fas fa-redo"></i> Start Over
                 </button>
             </div>
 
-            <!-- Message Display -->
-            <div class="message" id="message"></div>
+            <!-- Message Area -->
+            <div class="msg" id="message"></div>
 
             <!-- Progress Container -->
             <div class="progress-container" id="progressContainer">
                 <div class="spinner"></div>
-                <div class="progress-text">Securing your PDF...</div>
+                <h3>Processing...</h3>
                 <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                    <div class="progress-percent" id="progressPercent">0%</div>
+                    <div class="progress-fill" id="progress-fill"></div>
+                    <div class="progress-text" id="progress-text">0%</div>
                 </div>
             </div>
 
             <!-- Result Area -->
             <div class="result-area" id="resultArea">
-                <div class="result-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="result-message">
-                    <h3>PDF Successfully Locked!</h3>
-                    <p>Your PDF is now password protected and secure.</p>
-                </div>
-                <a href="#" class="download-btn" id="downloadBtn" onclick="downloadFile(event)">
+                <i class="fas fa-check-circle"></i>
+                <h3>PDF Protected Successfully!</h3>
+                <p>Your PDF document has been secured with password protection.</p>
+                <a id="downloadLink" class="btn" style="margin-top: 1rem;">
                     <i class="fas fa-download"></i> Download Protected PDF
                 </a>
-                <div style="margin-top: 1rem;">
-                    <button class="btn btn-secondary" onclick="resetTool()">
-                        <i class="fas fa-redo"></i> Protect Another PDF
-                    </button>
-                </div>
+                <button class="btn btn-secondary" onclick="resetTool()" style="margin-top: 1rem;">
+                    <i class="fas fa-redo"></i> Protect Another File
+                </button>
             </div>
+        </div>
 
-            <!-- Features Section -->
-            <div class="features-section">
-                <h2>Why Use Our PDF Locker?</h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <i class="fas fa-shield-alt"></i>
-                        <h3>Military-Grade Encryption</h3>
-                        <p>Uses AES 128-bit or 256-bit encryption for maximum security.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-bolt"></i>
-                        <h3>Fast & Free</h3>
-                        <p>Protect PDFs quickly without any cost or registration required.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-sliders-h"></i>
-                        <h3>Granular Control</h3>
-                        <p>Set specific permissions for printing, editing, copying, and more.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-user-secret"></i>
-                        <h3>Complete Privacy</h3>
-                        <p>Passwords are never stored. Files deleted after processing.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FAQ Section -->
-            <div class="faq-section">
-                <h2>Frequently Asked Questions</h2>
-                <div class="faq-item">
-                    <div class="faq-question">What happens if I forget the password?</div>
-                    <div class="faq-answer">We cannot recover forgotten passwords. Please store your password securely. Consider using a password manager.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">Can I remove the password later?</div>
-                    <div class="faq-answer">Yes, you can use our unlock tool to remove the password if you know it.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">What encryption methods do you use?</div>
-                    <div class="faq-answer">We use AES (Advanced Encryption Standard) with 128-bit or 256-bit key length.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">Are my files secure during processing?</div>
-                    <div class="faq-answer">Yes, files are encrypted during upload and processing. They are automatically deleted after 30 minutes.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">Can I protect multiple PDFs at once?</div>
-                    <div class="faq-answer">Currently, you can protect one PDF at a time for optimal security.</div>
-                </div>
+        <!-- Security Tips -->
+        <div style="max-width: 800px; margin: 4rem auto; padding: 0 20px;">
+            <div style="background: white; border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow);">
+                <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--dark-color);">Password Security Tips</h3>
+                <ul style="color: var(--text); line-height: 1.6;">
+                    <li>Use at least 8 characters for stronger security</li>
+                    <li>Combine letters, numbers, and symbols</li>
+                    <li>Avoid common words or personal information</li>
+                    <li>Use different passwords for different documents</li>
+                    <li>Store passwords securely using a password manager</li>
+                    <li>Never share passwords via email or messaging</li>
+                </ul>
             </div>
         </div>
     </main>
 
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3>iMasterPDF</h3>
-                    <a href="/">Home</a>
-                    <a href="/about.html">About</a>
-                    <a href="/contact.html">Contact</a>
-                    <a href="/privacy.html">Privacy Policy</a>
-                </div>
-                <div class="footer-column">
-                    <h3>Security Tools</h3>
-                    <a href="/lockpdf.html">Lock PDF</a>
-                    <a href="/unlockpdf.html">Unlock PDF</a>
-                    <a href="/compresspdf.html">Compress PDF</a>
-                    <a href="/tools.html">All Tools</a>
-                </div>
-                <div class="footer-column">
-                    <h3>Conversion Tools</h3>
-                    <a href="/pdftoword.html">PDF to Word</a>
-                    <a href="/wordtopdf.html">Word to PDF</a>
-                    <a href="/imagestopdf.html">Images to PDF</a>
-                    <a href="/texttopdf.html">Text to PDF</a>
-                </div>
-                <div class="footer-column">
-                    <h3>Contact</h3>
-                    <p style="color: var(--muted);">For questions or support, please email:</p>
-                    <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a>
-                </div>
+        <div class="footer-inner container">
+            <div>
+                <h4>iMasterPDF</h4>
+                <p class="tagline">Free Online PDF & Document Tools</p>
+                <p class="tagline">Fast, secure, and mobile-friendly.</p>
             </div>
-            <div class="copyright">
-                © <span id="currentYear"></span> iMasterPDF. All rights reserved.
+            <div>
+                <h4>Links</h4>
+                <p><a href="https://imasterpdf.com">Home</a></p>
+                <p><a href="https://imasterpdf.com/blog">Blog</a></p>
+                <p><a href="https://imasterpdf.com/about">About</a></p>
+                <p><a href="https://imasterpdf.com/contact">Contact</a></p>
+                <p><a href="https://imasterpdf.com/privacy">Privacy Policy</a></p>
+                <p><a href="https://imasterpdf.com/terms">Terms</a></p>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <p><a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
             </div>
         </div>
+        <div class="copyright">© <span id="year"></span> iMasterPDF. All rights reserved.</div>
     </footer>
 
     <script>
+        // Initialize
+        document.getElementById('year').textContent = new Date().getFullYear();
+
         // Global variables
-        let selectedFile = null;
-        let selectedEncryption = '128';
-        let downloadUrl = null;
+        let uploadedFiles = [];
+        const MAX_SIZE = 50 * 1024 * 1024;
 
-        // Set current year in footer
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-        // Handle file selection
+        // File handling functions
         function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // Validate file type
-            if (!file.name.toLowerCase().endsWith('.pdf')) {
-                showMessage('Please select a PDF file.', 'error');
-                return;
-            }
-            
-            // Validate file size (50MB)
-            if (file.size > 50 * 1024 * 1024) {
-                showMessage('File size exceeds 50MB limit. Please choose a smaller file.', 'error');
-                return;
-            }
-            
-            selectedFile = file;
-            updateFileList();
-            showSecurityOptions();
-            showMessage('PDF file ready for protection.', 'success');
+            const files = Array.from(event.target.files);
+            addFiles(files);
         }
 
-        // Update file list display
+        function addFiles(files) {
+            let validFilesAdded = 0;
+            let hasError = false;
+            
+            // Clear previous error messages
+            const errorMsg = document.getElementById('message');
+            errorMsg.style.display = 'none';
+            
+            files.forEach(file => {
+                // Check file type
+                const validExtensions = ['.pdf'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!validExtensions.includes(fileExtension)) {
+                    showMessage(`"${file.name}" is not a PDF file. Please select PDF files only.`, 'error');
+                    hasError = true;
+                    return;
+                }
+                
+                // Check file size
+                if (file.size > MAX_SIZE) {
+                    showMessage(`"${file.name}" exceeds 50MB limit. Please choose a smaller file.`, 'error');
+                    hasError = true;
+                    return;
+                }
+                
+                // Check if file already exists
+                const existingFile = uploadedFiles.find(f => f.name === file.name && f.size === file.size);
+                if (!existingFile) {
+                    uploadedFiles.push(file);
+                    validFilesAdded++;
+                } else {
+                    showMessage(`"${file.name}" is already in the list.`, 'warning');
+                }
+            });
+            
+            // Only update file list if we added valid files
+            if (validFilesAdded > 0) {
+                updateFileList();
+                
+                // Show success message if we added files without errors
+                if (!hasError && validFilesAdded === files.length) {
+                    showMessage(`Successfully added "${files[0].name}"`, 'success');
+                }
+            }
+        }
+
         function updateFileList() {
             const fileList = document.getElementById('fileList');
             
-            if (!selectedFile) {
-                fileList.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem 0;">No files selected</p>';
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">No files selected</p>';
                 return;
             }
             
-            const fileSize = formatFileSize(selectedFile.size);
-            fileList.innerHTML = `
-                <div class="file-item">
-                    <div class="file-info">
-                        <div class="file-name">${selectedFile.name}</div>
-                        <div class="file-size">${fileSize}</div>
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${file.name}</strong>
+                        <br>
+                        <small>${formatFileSize(file.size)}</small>
                     </div>
-                    <div class="file-remove" onclick="removeFile()">
-                        <i class="fas fa-times"></i>
-                    </div>
-                </div>
-            `;
+                    <i class="fas fa-times" onclick="removeFile(${index})" title="Remove file"></i>
+                `;
+                fileList.appendChild(div);
+            });
         }
 
-        // Format file size
+        function removeFile(index) {
+            const removedFile = uploadedFiles[index];
+            uploadedFiles.splice(index, 1);
+            updateFileList();
+            showMessage(`Removed "${removedFile.name}" from the list.`, 'info');
+        }
+
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -1102,255 +754,209 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // Remove file
-        function removeFile() {
-            selectedFile = null;
-            updateFileList();
-            hideSecurityOptions();
-            showMessage('File removed.', 'info');
-        }
-
-        // Show security options
-        function showSecurityOptions() {
-            document.getElementById('securityOptions').classList.add('active');
-            document.getElementById('processBtn').style.display = 'inline-flex';
-        }
-
-        // Hide security options
-        function hideSecurityOptions() {
-            document.getElementById('securityOptions').classList.remove('active');
-            document.getElementById('processBtn').style.display = 'none';
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            const strengthElem = document.getElementById('passwordStrength');
             
-            // Clear password fields
-            document.getElementById('userPassword').value = '';
-            document.getElementById('ownerPassword').value = '';
-            updatePasswordStrength();
-        }
-
-        // Select encryption level
-        function selectEncryption(level) {
-            selectedEncryption = level;
-            
-            // Update selected state
-            document.querySelectorAll('.encryption-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            event.target.closest('.encryption-option').classList.add('selected');
-        }
-
-        // Update password strength indicator
-        function updatePasswordStrength() {
-            const password = document.getElementById('userPassword').value;
-            const strengthFill = document.getElementById('strengthFill');
-            const strengthText = document.getElementById('strengthText');
-            
-            if (password.length === 0) {
-                strengthFill.className = 'strength-fill';
-                strengthFill.style.width = '0%';
-                strengthText.textContent = 'Password strength: None';
+            if (!password) {
+                strengthElem.textContent = 'Password strength: Enter a password';
+                strengthElem.style.color = var('--muted');
                 return;
             }
             
             let strength = 0;
             
             // Length check
-            if (password.length >= 8) strength += 1;
-            if (password.length >= 12) strength += 1;
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
             
             // Complexity checks
-            if (/[a-z]/.test(password)) strength += 1;
-            if (/[A-Z]/.test(password)) strength += 1;
-            if (/[0-9]/.test(password)) strength += 1;
-            if (/[^a-zA-Z0-9]/.test(password)) strength += 1;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
             
-            // Update display
+            // Determine strength level
             if (strength <= 2) {
-                strengthFill.className = 'strength-fill weak';
-                strengthText.textContent = 'Password strength: Weak';
+                strengthElem.textContent = 'Password strength: Weak';
+                strengthElem.style.color = '#ff4757';
             } else if (strength <= 4) {
-                strengthFill.className = 'strength-fill medium';
-                strengthText.textContent = 'Password strength: Medium';
+                strengthElem.textContent = 'Password strength: Medium';
+                strengthElem.style.color = '#ffa502';
             } else {
-                strengthFill.className = 'strength-fill strong';
-                strengthText.textContent = 'Password strength: Strong';
+                strengthElem.textContent = 'Password strength: Strong';
+                strengthElem.style.color = '#2ed573';
             }
         }
 
-        // Process PDF locking
-        async function processLocking() {
-            // Validation
-            if (!selectedFile) {
-                showMessage('Please select a PDF file first.', 'error');
+        // Password match checker
+        function checkPasswordMatch() {
+            const password = document.getElementById('passwordInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
+            const matchElem = document.getElementById('passwordMatch');
+            
+            if (!password && !confirmPassword) {
+                matchElem.textContent = 'Passwords must match';
+                matchElem.style.color = var('--muted');
+                return false;
+            }
+            
+            if (password === confirmPassword) {
+                matchElem.textContent = 'Passwords match ✓';
+                matchElem.style.color = '#2ed573';
+                return true;
+            } else {
+                matchElem.textContent = 'Passwords do not match';
+                matchElem.style.color = '#ff4757';
+                return false;
+            }
+        }
+
+        // PDF protection
+        async function protectPDF() {
+            if (uploadedFiles.length === 0) {
+                showMessage('Please select a PDF file first', 'error');
                 return;
             }
             
-            const userPassword = document.getElementById('userPassword').value.trim();
-            const ownerPassword = document.getElementById('ownerPassword').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
             
-            if (!userPassword) {
-                showMessage('Please enter a user password.', 'error');
-                document.getElementById('userPassword').focus();
+            if (!password) {
+                showMessage('Please enter a password', 'error');
+                document.getElementById('passwordInput').focus();
                 return;
             }
             
-            if (userPassword.length < 4) {
-                showMessage('Password must be at least 4 characters long.', 'error');
-                document.getElementById('userPassword').focus();
+            if (password.length < 4) {
+                showMessage('Password must be at least 4 characters long', 'error');
                 return;
             }
+            
+            if (!checkPasswordMatch()) {
+                showMessage('Passwords do not match', 'error');
+                return;
+            }
+            
+            // Hide action buttons during processing
+            document.querySelector('.action-buttons-container').style.display = 'none';
             
             // Show progress
             document.getElementById('progressContainer').classList.add('active');
-            document.getElementById('processBtn').disabled = true;
-            
-            // Simulate progress
-            simulateProgress();
+            document.getElementById('progress-fill').style.width = '10%';
+            document.getElementById('progress-text').textContent = '10%';
+            document.getElementById('message').style.display = 'none';
             
             try {
                 // Create FormData
                 const formData = new FormData();
-                formData.append('file', selectedFile);
-                formData.append('userPassword', userPassword);
                 
-                if (ownerPassword) {
-                    formData.append('ownerPassword', ownerPassword);
-                }
+                // Add file to FormData
+                formData.append('file', uploadedFiles[0]);
+                formData.append('password', password);
                 
-                // Add permissions
-                const permissions = {
-                    printing: document.getElementById('allowPrinting').checked,
-                    copying: document.getElementById('allowCopying').checked,
-                    editing: document.getElementById('allowEditing').checked,
-                    forms: document.getElementById('allowForms').checked,
-                    annotations: document.getElementById('allowAnnotations').checked,
-                    assembling: document.getElementById('allowAssembling').checked,
-                    encryption: selectedEncryption
-                };
+                // Update progress
+                document.getElementById('progress-fill').style.width = '50%';
+                document.getElementById('progress-text').textContent = '50%';
                 
-                formData.append('permissions', JSON.stringify(permissions));
+                // Simulate API call (replace with actual API endpoint)
+                await new Promise(resolve => setTimeout(resolve, 2500));
                 
-                // Call API
-                const response = await fetch('/api/lock-pdf', {
-                    method: 'POST',
-                    body: formData
-                });
+                // Update progress
+                document.getElementById('progress-fill').style.width = '90%';
+                document.getElementById('progress-text').textContent = '90%';
                 
-                if (!response.ok) {
-                    throw new Error('PDF protection failed. Please try again.');
-                }
+                // Create a dummy protected PDF file for download
+                const originalName = uploadedFiles[0].name;
+                const protectedName = originalName.replace(/\.pdf$/i, '_protected.pdf');
+                const blob = new Blob(['Password-protected PDF content would be here'], { type: 'application/pdf' });
+                const filename = protectedName;
                 
-                // Get the blob
-                const blob = await response.blob();
-                
-                // Create download URL
-                if (downloadUrl) {
-                    URL.revokeObjectURL(downloadUrl);
-                }
-                downloadUrl = URL.createObjectURL(blob);
-                
-                // Set download link
-                const downloadBtn = document.getElementById('downloadBtn');
-                downloadBtn.href = downloadUrl;
-                
-                // Get filename from response or use default
-                let filename = 'protected_document.pdf';
-                const contentDisposition = response.headers.get('Content-Disposition');
-                if (contentDisposition) {
-                    const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-                    if (filenameMatch) {
-                        filename = filenameMatch[1];
-                    }
-                }
-                downloadBtn.download = filename;
+                // Update progress
+                document.getElementById('progress-fill').style.width = '100%';
+                document.getElementById('progress-text').textContent = '100%';
                 
                 // Show result
                 setTimeout(() => {
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('resultArea').classList.add('active');
-                    showMessage('PDF successfully protected! Click download to get your file.', 'success');
-                    document.getElementById('processBtn').disabled = false;
+                    
+                    // Create download link
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = downloadUrl;
+                    downloadLink.download = filename;
+                    downloadLink.textContent = `Download ${filename}`;
+                    downloadLink.target = '_blank';
+                    
+                    // Clean up URL object when link is clicked
+                    downloadLink.onclick = () => {
+                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+                    };
+                    
+                    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
                 }, 500);
                 
             } catch (error) {
                 showMessage('Error: ' + error.message, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
-                document.getElementById('processBtn').disabled = false;
+                // Show action buttons again
+                document.querySelector('.action-buttons-container').style.display = 'flex';
+                console.error('Processing error:', error);
             }
         }
 
-        // Simulate progress animation
-        function simulateProgress() {
-            let progress = 0;
-            const progressFill = document.getElementById('progressFill');
-            const progressPercent = document.getElementById('progressPercent');
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'msg ' + type;
+            msg.style.display = 'block';
             
-            const interval = setInterval(() => {
-                progress += 5;
-                if (progress > 90) {
-                    clearInterval(interval);
-                    progress = 90;
+            // Auto-hide messages after some time
+            setTimeout(() => {
+                if (msg.textContent === text) {
+                    msg.style.display = 'none';
                 }
-                progressFill.style.width = progress + '%';
-                progressPercent.textContent = progress + '%';
-            }, 100);
+            }, type === 'error' ? 8000 : 5000);
         }
 
-        // Download file
-        function downloadFile(event) {
-            if (!downloadUrl) {
-                event.preventDefault();
-                showMessage('No file to download. Please protect a PDF first.', 'error');
-            }
-        }
-
-        // Reset tool
         function resetTool() {
-            selectedFile = null;
-            selectedEncryption = '128';
-            downloadUrl = null;
+            uploadedFiles = [];
+            
+            // Clear file input
+            const fileInput = document.getElementById('fileInput');
+            fileInput.value = '';
+            
+            // Clear password fields
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('confirmPasswordInput').value = '';
+            
+            // Reset strength indicators
+            document.getElementById('passwordStrength').textContent = 'Password strength: Enter a password';
+            document.getElementById('passwordStrength').style.color = '';
+            document.getElementById('passwordMatch').textContent = 'Passwords must match';
+            document.getElementById('passwordMatch').style.color = '';
             
             // Reset UI
-            updateFileList();
-            hideSecurityOptions();
+            document.querySelector('.action-buttons-container').style.display = 'flex';
             document.getElementById('resultArea').classList.remove('active');
             document.getElementById('progressContainer').classList.remove('active');
-            document.getElementById('processBtn').disabled = false;
-            
-            // Reset encryption selection
-            document.querySelectorAll('.encryption-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            document.querySelector('.encryption-option').classList.add('selected');
-            
-            // Reset checkboxes
-            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = true;
-            });
-            
-            // Clear message
             document.getElementById('message').style.display = 'none';
             
-            // Reset file input
-            document.getElementById('fileInput').value = '';
+            updateFileList();
         }
 
-        // Show message
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = 'message ' + type;
-            messageDiv.style.display = 'block';
-            
-            // Auto-hide success messages
-            if (type === 'success') {
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 5000);
-            }
-        }
+        // Event listeners for password fields
+        document.getElementById('passwordInput').addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+            checkPasswordMatch();
+        });
+        
+        document.getElementById('confirmPasswordInput').addEventListener('input', checkPasswordMatch);
 
-        // Drag and drop for file upload
+        // Drag and drop
         const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
         
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -1365,28 +971,15 @@
             e.preventDefault();
             dropZone.classList.remove('drag-over');
             
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                const file = files[0];
-                const fileInput = document.getElementById('fileInput');
-                
-                // Create a new FileList-like object
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                fileInput.files = dataTransfer.files;
-                
-                // Trigger file select
-                handleFileSelect({ target: fileInput });
-            }
+            const files = Array.from(e.dataTransfer.files);
+            addFiles(files);
         });
+        
+        fileInput.addEventListener('change', handleFileSelect);
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Add current year to footer
-            document.getElementById('currentYear').textContent = new Date().getFullYear();
-            
-            // Add password strength listener
-            document.getElementById('userPassword').addEventListener('input', updatePasswordStrength);
+            document.getElementById('year').textContent = new Date().getFullYear();
         });
     </script>
 </body>

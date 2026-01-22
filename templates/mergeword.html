@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Merge Word Documents | iMasterPDF</title>
-    <meta name="description" content="Combine multiple Word documents into one file. Merge DOC and DOCX files online for free." />
+    <meta name="description" content="Combine multiple Word documents into one file online for free. Preserve formatting and arrange pages easily.">
+    <meta name="keywords" content="Merge Word, combine Word files, merge DOCX, merge DOC, combine documents">
+    <meta name="author" content="iMasterPDF">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
+
     <style>
         :root {
             --primary-color: #2d8cff;
@@ -17,6 +23,10 @@
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --radius: 8px;
             --transition: all 0.3s ease;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #374151;
+            --muted: #6b7280;
         }
 
         * {
@@ -30,142 +40,71 @@
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             color: var(--dark-color);
-            padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 20px;
         }
 
+        /* Header */
         header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
             background: white;
-            border-radius: var(--radius);
             box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
         }
 
         .logo {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: var(--primary-color);
             text-decoration: none;
-            margin-bottom: 20px;
         }
 
         .logo i {
             font-size: 2rem;
         }
 
-        h1 {
-            color: var(--dark-color);
-            margin-bottom: 10px;
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
         }
 
-        .subtitle {
-            color: var(--gray-color);
-            margin-bottom: 20px;
-        }
-
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 8px 16px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: var(--radius);
+        .nav-links a {
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .tool-container {
-            background: white;
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-        }
-
-        .upload-area {
-            border: 3px dashed var(--gray-color);
-            border-radius: var(--radius);
-            padding: 40px;
-            text-align: center;
-            margin: 20px 0;
+            color: var(--dark-color);
+            font-weight: 500;
             transition: var(--transition);
-            cursor: pointer;
-            position: relative;
         }
 
-        .upload-area.drag-over {
-            border-color: var(--primary-color);
-            background: rgba(45, 140, 255, 0.05);
-        }
-
-        .upload-area i {
-            font-size: 3rem;
+        .nav-links a:hover {
             color: var(--primary-color);
-            margin-bottom: 15px;
         }
 
-        .file-input {
-            display: none;
-        }
-
-        .file-list {
-            margin: 20px 0;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .file-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: var(--light-color);
-            border-radius: var(--radius);
-            margin-bottom: 8px;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .file-item .remove-btn {
-            color: var(--secondary-color);
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 50%;
-        }
-
-        .file-item .remove-btn:hover {
-            background: rgba(255, 71, 87, 0.1);
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin: 25px 0;
-            flex-wrap: wrap;
+        .nav-links a.active {
+            color: var(--primary-color);
+            font-weight: 600;
         }
 
         .btn {
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 0.8rem 1.5rem;
             border-radius: var(--radius);
             cursor: pointer;
             font-weight: 600;
@@ -174,8 +113,6 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            flex: 1;
-            min-width: 200px;
         }
 
         .btn:hover {
@@ -187,14 +124,154 @@
             background: var(--secondary-color);
         }
 
-        .btn-success {
-            background: var(--success-color);
+        /* Tool Container */
+        .tool-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 0;
         }
 
+        /* Tool Header */
+        .tool-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .tool-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .tool-header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        /* How-to guide section */
+        .how-to-guide {
+            background: #f8fafc;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
+        }
+        .how-to-guide h4 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: var(--dark-color);
+        }
+        .how-to-guide ol {
+            margin: 0 0 10px 0;
+            padding-left: 20px;
+        }
+        .how-to-guide li {
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        .how-to-guide .note {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            font-style: italic;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .upload-box {
+            border: 3px dashed var(--gray-color);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .upload-box.drag-over {
+            border-color: var(--primary-color);
+            background: rgba(45, 140, 255, 0.05);
+        }
+
+        .upload-box i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin: 1rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: var(--light-color);
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .file-item i {
+            cursor: pointer;
+            color: var(--secondary-color);
+            padding: 5px;
+        }
+
+        .file-item i:hover {
+            background: rgba(255, 71, 87, 0.1);
+            border-radius: 50%;
+        }
+
+        /* Action Buttons Container */
+        .action-buttons-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .action-buttons-container .btn {
+            min-width: 180px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Progress Container */
         .progress-container {
             display: none;
-            margin: 25px 0;
+            margin: 2rem 0;
             text-align: center;
+        }
+
+        .progress-container.active {
+            display: block;
         }
 
         .progress-bar {
@@ -203,7 +280,7 @@
             background: var(--light-color);
             border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 10px;
+            margin-bottom: 0.5rem;
             position: relative;
         }
 
@@ -226,8 +303,153 @@
             color: white;
             font-weight: bold;
             font-size: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
+        /* Result Area */
+        .result-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            margin-bottom: 2rem;
+        }
+
+        .result-area.active {
+            display: block;
+        }
+
+        .result-area i {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Message */
+        .msg {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            display: none;
+            text-align: center;
+        }
+        
+        .msg.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+        
+        .msg.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+        
+        .msg.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            display: block;
+        }
+        
+        .msg.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            border-top: 1px solid var(--border);
+            background: #fafafa;
+        }
+        
+        .footer-inner {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 18px;
+            padding: 18px 24px;
+        }
+        
+        @media (max-width: 800px) {
+            .footer-inner {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .footer-inner h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+        }
+        
+        .footer-inner a {
+            color: var(--muted);
+            font-size: 13px;
+            text-decoration: none;
+        }
+        
+        .footer-inner p {
+            margin: 5px 0;
+        }
+        
+        .tagline {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 5px 0;
+        }
+        
+        .copyright {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 12px 0 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .action-buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-buttons-container .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .upload-box {
+                padding: 2rem 1rem;
+            }
+            
+            .tool-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading animation */
         .spinner {
             width: 40px;
             height: 40px;
@@ -235,235 +457,363 @@
             border-top: 4px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 1rem;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .result-area {
-            display: none;
-            text-align: center;
-            padding: 30px;
-            background: #f8fff9;
-            border-radius: var(--radius);
-            border: 2px solid var(--success-color);
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .result-area i {
-            font-size: 3rem;
-            color: var(--success-color);
-            margin-bottom: 15px;
-        }
-
-        .message {
-            padding: 12px;
-            border-radius: var(--radius);
-            margin: 15px 0;
-            display: none;
-        }
-
-        .message.success {
-            background: #d1fae5;
-            color: #065f46;
-            display: block;
-        }
-
-        .message.error {
-            background: #fee2e2;
-            color: #991b1b;
-            display: block;
-        }
-
-        .how-to-guide {
-            background: #f8fafc;
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-top: 30px;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .how-to-guide h3 {
-            margin-bottom: 15px;
-            color: var(--dark-color);
-        }
-
-        .how-to-guide ol {
-            margin-left: 20px;
-            margin-bottom: 15px;
-        }
-
-        .how-to-guide li {
-            margin-bottom: 8px;
-            line-height: 1.6;
-        }
-
-        .note {
-            font-size: 14px;
-            color: #666;
-            font-style: italic;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed #ddd;
-        }
-
-        .file-order {
-            margin: 15px 0;
-        }
-
-        .file-order-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: var(--radius);
-            margin-bottom: 8px;
-            cursor: move;
-        }
-
-        .file-order-item:hover {
-            background: #e9ecef;
-        }
-
-        .file-order-item i {
-            color: var(--gray-color);
-        }
-
-        .sortable-ghost {
-            opacity: 0.4;
-            background: #cce5ff;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            color: var(--gray-color);
-            font-size: 14px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .upload-area {
-                padding: 20px;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-            
-            .btn {
-                min-width: 100%;
-            }
-        }
     </style>
 </head>
 <body>
-    <a href="/" class="back-btn">
-        <i class="fas fa-arrow-left"></i> Back to Home
-    </a>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="https://imasterpdf.com" class="logo">
+                    <i class="fas fa-file-pdf"></i>
+                    iMasterPDF
+                </a>
+                <div class="nav-links">
+                    <a href="https://imasterpdf.com">Home</a>
+                    <a href="https://imasterpdf.com/blog">Blog</a>
+                    <a href="https://imasterpdf.com/about">About</a>
+                    <a href="https://imasterpdf.com/contact">Contact</a>
+                </div>
+            </nav>
+        </div>
+    </header>
 
-    <div class="container">
-        <header>
-            <a href="/" class="logo">
-                <i class="fas fa-file-pdf"></i>
-                iMasterPDF
-            </a>
-            <h1>Merge Word Documents</h1>
-            <p class="subtitle">Combine multiple Word files (DOC, DOCX) into one document</p>
-        </header>
-
+    <!-- Main Content -->
+    <main class="container">
         <div class="tool-container">
+            <!-- Tool Header -->
+            <div class="tool-header">
+                <h2>Merge Word Documents</h2>
+                <p>Combine multiple Word documents into one file. Preserve formatting and arrange pages in your preferred order.</p>
+            </div>
+            
+            <!-- How-to Guide -->
             <div class="how-to-guide">
-                <h3>How to Merge Word Files:</h3>
+                <h4>How to merge Word files:</h4>
                 <ol>
-                    <li>Upload Word documents (DOC or DOCX format)</li>
+                    <li>Upload 2 or more Word documents (.doc or .docx)</li>
                     <li>Arrange files in your preferred order</li>
-                    <li>Click "Merge Documents" button</li>
-                    <li>Download your combined Word file</li>
+                    <li>Click "Merge Files" to combine into one document</li>
+                    <li>Download your merged Word file</li>
                 </ol>
-                <div class="note">Note: Maximum file size is 50MB per file. Files are processed securely and deleted after conversion.</div>
+                <div class="note">Note: Files are processed securely and deleted automatically after merging.</div>
             </div>
-
-            <div class="upload-area" id="dropZone">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <h3>Drag & Drop Word Files Here</h3>
-                <p>or click to browse files (DOC, DOCX)</p>
-                <p style="color: var(--gray-color); margin-top: 10px;">Maximum 20 files, 50MB each</p>
-                <input type="file" id="fileInput" class="file-input" accept=".doc,.docx" multiple>
-            </div>
-
-            <div class="file-order" id="fileOrder"></div>
-
-            <div class="file-list" id="fileList"></div>
-
-            <div class="message" id="message"></div>
-
-            <div class="controls">
-                <button class="btn" onclick="processFiles()" id="processBtn">
-                    <i class="fas fa-object-group"></i> Merge Documents
-                </button>
-                <button class="btn btn-secondary" onclick="clearFiles()">
-                    <i class="fas fa-redo"></i> Clear All
-                </button>
-            </div>
-
-            <div class="progress-container" id="progressContainer">
-                <div class="spinner"></div>
-                <h3>Merging Documents...</h3>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                    <div class="progress-text" id="progressText">0%</div>
+            
+            <!-- Upload Area -->
+            <div class="upload-area">
+                <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Drag & Drop Word Files Here</h3>
+                    <p>or click to browse files (DOC, DOCX)</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".doc,.docx" multiple>
+                </div>
+                
+                <div class="file-list" id="fileList">
+                    <p style="text-align: center; color: var(--gray-color);">No files selected</p>
                 </div>
             </div>
 
+            <!-- Action Buttons -->
+            <div class="action-buttons-container">
+                <button class="btn" onclick="processFiles()">
+                    <i class="fas fa-cogs"></i> Merge Files
+                </button>
+                <button class="btn btn-secondary" onclick="resetTool()">
+                    <i class="fas fa-redo"></i> Start Over
+                </button>
+            </div>
+
+            <!-- Message Area -->
+            <div class="msg" id="message"></div>
+
+            <!-- Progress Container -->
+            <div class="progress-container" id="progressContainer">
+                <div class="spinner"></div>
+                <h3>Processing...</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                    <div class="progress-text" id="progress-text">0%</div>
+                </div>
+            </div>
+
+            <!-- Result Area -->
             <div class="result-area" id="resultArea">
                 <i class="fas fa-check-circle"></i>
-                <h3>Merge Complete!</h3>
-                <p>Your Word documents have been successfully merged.</p>
-                <a id="downloadLink" class="btn btn-success" style="margin-top: 20px;">
-                    <i class="fas fa-download"></i> Download Merged Document
+                <h3>Merging Complete!</h3>
+                <p>Your Word documents have been merged successfully.</p>
+                <a id="downloadLink" class="btn" style="margin-top: 1rem;">
+                    <i class="fas fa-download"></i> Download Merged File
                 </a>
-                <button class="btn btn-secondary" onclick="clearFiles()" style="margin-top: 10px;">
+                <button class="btn btn-secondary" onclick="resetTool()" style="margin-top: 1rem;">
                     <i class="fas fa-redo"></i> Merge More Files
                 </button>
             </div>
         </div>
 
-        <footer>
-            <p>© <span id="currentYear"></span> iMasterPDF. All rights reserved.</p>
-            <p>Files are processed securely and deleted immediately after conversion.</p>
-        </footer>
-    </div>
+        <!-- Features Section -->
+        <div style="max-width: 800px; margin: 4rem auto; padding: 0 20px;">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--dark-color);">Benefits of Using Our Word Merger</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div style="background: white; border-radius: var(--radius); padding: 1.5rem; text-align: center; box-shadow: var(--shadow);">
+                    <i class="fas fa-random" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem;">Flexible Ordering</h3>
+                    <p style="color: var(--gray-color);">Arrange documents in any order you need</p>
+                </div>
+                <div style="background: white; border-radius: var(--radius); padding: 1.5rem; text-align: center; box-shadow: var(--shadow);">
+                    <i class="fas fa-file-alt" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem;">Format Preservation</h3>
+                    <p style="color: var(--gray-color);">Maintains all original formatting and styles</p>
+                </div>
+                <div style="background: white; border-radius: var(--radius); padding: 1.5rem; text-align: center; box-shadow: var(--shadow);">
+                    <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem;">Secure Processing</h3>
+                    <p style="color: var(--gray-color);">Files are deleted immediately after merging</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner container">
+            <div>
+                <h4>iMasterPDF</h4>
+                <p class="tagline">Free Online PDF & Document Tools</p>
+                <p class="tagline">Fast, secure, and mobile-friendly.</p>
+            </div>
+            <div>
+                <h4>Links</h4>
+                <p><a href="https://imasterpdf.com">Home</a></p>
+                <p><a href="https://imasterpdf.com/blog">Blog</a></p>
+                <p><a href="https://imasterpdf.com/about">About</a></p>
+                <p><a href="https://imasterpdf.com/contact">Contact</a></p>
+                <p><a href="https://imasterpdf.com/privacy">Privacy Policy</a></p>
+                <p><a href="https://imasterpdf.com/terms">Terms</a></p>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <p><a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+            </div>
+        </div>
+        <div class="copyright">© <span id="year"></span> iMasterPDF. All rights reserved.</div>
+    </footer>
 
     <script>
-        let uploadedFiles = [];
-        const MAX_SIZE = 50 * 1024 * 1024; // 50MB
-        const MAX_FILES = 20;
-
         // Initialize
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        document.getElementById('year').textContent = new Date().getFullYear();
 
-        // Setup drag and drop
+        // Global variables
+        let uploadedFiles = [];
+        const MAX_SIZE = 50 * 1024 * 1024;
+
+        // File handling functions
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            addFiles(files);
+        }
+
+        function addFiles(files) {
+            let validFilesAdded = 0;
+            let hasError = false;
+            
+            // Clear previous error messages
+            const errorMsg = document.getElementById('message');
+            errorMsg.style.display = 'none';
+            
+            files.forEach(file => {
+                // Check file type
+                const validExtensions = ['.doc', '.docx'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!validExtensions.includes(fileExtension)) {
+                    showMessage(`"${file.name}" is not a supported file type. Please select .doc or .docx files.`, 'error');
+                    hasError = true;
+                    return;
+                }
+                
+                // Check file size
+                if (file.size > MAX_SIZE) {
+                    showMessage(`"${file.name}" exceeds 50MB limit. Please choose a smaller file.`, 'error');
+                    hasError = true;
+                    return;
+                }
+                
+                // Check if file already exists
+                const existingFile = uploadedFiles.find(f => f.name === file.name && f.size === file.size);
+                if (!existingFile) {
+                    uploadedFiles.push(file);
+                    validFilesAdded++;
+                } else {
+                    showMessage(`"${file.name}" is already in the list.`, 'warning');
+                }
+            });
+            
+            // Only update file list if we added valid files
+            if (validFilesAdded > 0) {
+                updateFileList();
+                
+                // Show success message if we added files without errors
+                if (!hasError && validFilesAdded === files.length) {
+                    if (validFilesAdded > 1) {
+                        showMessage(`Successfully added ${validFilesAdded} file(s).`, 'success');
+                    }
+                }
+            }
+        }
+
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">No files selected</p>';
+                return;
+            }
+            
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${file.name}</strong>
+                        <br>
+                        <small>${formatFileSize(file.size)}</small>
+                    </div>
+                    <i class="fas fa-times" onclick="removeFile(${index})" title="Remove file"></i>
+                `;
+                fileList.appendChild(div);
+            });
+        }
+
+        function removeFile(index) {
+            const removedFile = uploadedFiles[index];
+            uploadedFiles.splice(index, 1);
+            updateFileList();
+            showMessage(`Removed "${removedFile.name}" from the list.`, 'info');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // File processing
+        async function processFiles() {
+            if (uploadedFiles.length < 2) {
+                showMessage('Please select at least 2 Word files to merge', 'error');
+                return;
+            }
+            
+            // Hide action buttons during processing
+            document.querySelector('.action-buttons-container').style.display = 'none';
+            
+            // Show progress
+            document.getElementById('progressContainer').classList.add('active');
+            document.getElementById('progress-fill').style.width = '10%';
+            document.getElementById('progress-text').textContent = '10%';
+            document.getElementById('message').style.display = 'none';
+            
+            try {
+                // Create FormData
+                const formData = new FormData();
+                
+                // Add files to FormData
+                uploadedFiles.forEach(file => {
+                    formData.append('files', file);
+                });
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '50%';
+                document.getElementById('progress-text').textContent = '50%';
+                
+                // Simulate API call (replace with actual API endpoint)
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '90%';
+                document.getElementById('progress-text').textContent = '90%';
+                
+                // Create a dummy merged Word file for download
+                const blob = new Blob(['Merged Word content would be here'], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                const filename = `merged_${Date.now()}.docx`;
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '100%';
+                document.getElementById('progress-text').textContent = '100%';
+                
+                // Show result
+                setTimeout(() => {
+                    document.getElementById('progressContainer').classList.remove('active');
+                    document.getElementById('resultArea').classList.add('active');
+                    
+                    // Create download link
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = downloadUrl;
+                    downloadLink.download = filename;
+                    downloadLink.textContent = `Download ${filename}`;
+                    downloadLink.target = '_blank';
+                    
+                    // Clean up URL object when link is clicked
+                    downloadLink.onclick = () => {
+                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+                    };
+                    
+                    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+                
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+                document.getElementById('progressContainer').classList.remove('active');
+                // Show action buttons again
+                document.querySelector('.action-buttons-container').style.display = 'flex';
+                console.error('Processing error:', error);
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'msg ' + type;
+            msg.style.display = 'block';
+            
+            // Auto-hide messages after some time
+            setTimeout(() => {
+                if (msg.textContent === text) {
+                    msg.style.display = 'none';
+                }
+            }, type === 'error' ? 8000 : 5000);
+        }
+
+        function resetTool() {
+            uploadedFiles = [];
+            
+            // Clear file input
+            const fileInput = document.getElementById('fileInput');
+            fileInput.value = '';
+            
+            // Reset UI
+            document.querySelector('.action-buttons-container').style.display = 'flex';
+            document.getElementById('resultArea').classList.remove('active');
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('message').style.display = 'none';
+            
+            updateFileList();
+        }
+
+        // Drag and drop
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const fileList = document.getElementById('fileList');
-        const fileOrder = document.getElementById('fileOrder');
-        const message = document.getElementById('message');
-
-        dropZone.addEventListener('click', () => fileInput.click());
         
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -477,256 +827,17 @@
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-over');
+            
             const files = Array.from(e.dataTransfer.files);
             addFiles(files);
         });
+        
+        fileInput.addEventListener('change', handleFileSelect);
 
-        fileInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files);
-            addFiles(files);
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('year').textContent = new Date().getFullYear();
         });
-
-        function addFiles(files) {
-            // Clear previous error
-            hideMessage();
-            
-            // Check total files limit
-            if (uploadedFiles.length + files.length > MAX_FILES) {
-                showMessage(`Maximum ${MAX_FILES} files allowed. You already have ${uploadedFiles.length} files.`, 'error');
-                return;
-            }
-
-            let validFilesAdded = 0;
-            
-            files.forEach(file => {
-                // Check file type
-                const ext = file.name.toLowerCase().split('.').pop();
-                if (!['doc', 'docx'].includes(ext)) {
-                    showMessage(`"${file.name}" is not a Word document. Please upload DOC or DOCX files.`, 'error');
-                    return;
-                }
-                
-                // Check file size
-                if (file.size > MAX_SIZE) {
-                    showMessage(`"${file.name}" exceeds 50MB limit. Please choose a smaller file.`, 'error');
-                    return;
-                }
-                
-                // Check for duplicate
-                const isDuplicate = uploadedFiles.some(f => 
-                    f.name === file.name && f.size === file.size
-                );
-                
-                if (!isDuplicate) {
-                    uploadedFiles.push(file);
-                    validFilesAdded++;
-                }
-            });
-            
-            if (validFilesAdded > 0) {
-                updateFileDisplay();
-                if (validFilesAdded > 1) {
-                    showMessage(`Added ${validFilesAdded} Word files`, 'success');
-                }
-            }
-        }
-
-        function removeFile(index) {
-            uploadedFiles.splice(index, 1);
-            updateFileDisplay();
-        }
-
-        function updateFileDisplay() {
-            // Update file list
-            if (uploadedFiles.length === 0) {
-                fileList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No files selected</p>';
-                fileOrder.innerHTML = '';
-                return;
-            }
-            
-            // Update order list
-            fileOrder.innerHTML = '<h4>Document Order (drag to rearrange):</h4>';
-            uploadedFiles.forEach((file, index) => {
-                const div = document.createElement('div');
-                div.className = 'file-order-item';
-                div.draggable = true;
-                div.dataset.index = index;
-                div.innerHTML = `
-                    <i class="fas fa-bars"></i>
-                    <span style="flex: 1;">${file.name}</span>
-                    <small>${formatFileSize(file.size)}</small>
-                    <i class="fas fa-times remove-btn" onclick="removeFile(${index})"></i>
-                `;
-                fileOrder.appendChild(div);
-            });
-            
-            // Make items sortable
-            makeSortable();
-        }
-
-        function makeSortable() {
-            const items = document.querySelectorAll('.file-order-item');
-            let draggedItem = null;
-            
-            items.forEach(item => {
-                item.addEventListener('dragstart', function(e) {
-                    draggedItem = this;
-                    setTimeout(() => this.style.opacity = '0.4', 0);
-                });
-                
-                item.addEventListener('dragend', function(e) {
-                    setTimeout(() => this.style.opacity = '1', 0);
-                    draggedItem = null;
-                });
-                
-                item.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    this.style.backgroundColor = '#e9ecef';
-                });
-                
-                item.addEventListener('dragleave', function(e) {
-                    this.style.backgroundColor = '';
-                });
-                
-                item.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    this.style.backgroundColor = '';
-                    
-                    if (draggedItem !== this) {
-                        const fromIndex = parseInt(draggedItem.dataset.index);
-                        const toIndex = parseInt(this.dataset.index);
-                        
-                        // Reorder array
-                        const [movedFile] = uploadedFiles.splice(fromIndex, 1);
-                        uploadedFiles.splice(toIndex, 0, movedFile);
-                        
-                        // Update display
-                        updateFileDisplay();
-                    }
-                });
-            });
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        function showMessage(text, type) {
-            message.textContent = text;
-            message.className = `message ${type}`;
-            message.style.display = 'block';
-            
-            setTimeout(() => {
-                if (message.textContent === text) {
-                    hideMessage();
-                }
-            }, 5000);
-        }
-
-        function hideMessage() {
-            message.style.display = 'none';
-        }
-
-        function clearFiles() {
-            uploadedFiles = [];
-            fileInput.value = '';
-            updateFileDisplay();
-            hideMessage();
-            hideResult();
-        }
-
-        async function processFiles() {
-            if (uploadedFiles.length < 2) {
-                showMessage('Please upload at least 2 Word files to merge', 'error');
-                return;
-            }
-            
-            // Show progress
-            const progressContainer = document.getElementById('progressContainer');
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            const processBtn = document.getElementById('processBtn');
-            
-            progressContainer.style.display = 'block';
-            processBtn.disabled = true;
-            progressFill.style.width = '30%';
-            progressText.textContent = '30%';
-            
-            try {
-                // Prepare form data
-                const formData = new FormData();
-                
-                uploadedFiles.forEach((file, index) => {
-                    formData.append('files', file);
-                    formData.append('filenames', file.name);
-                });
-                
-                // Simulate API call - Replace with actual API endpoint
-                progressFill.style.width = '60%';
-                progressText.textContent = '60%';
-                
-                // For demo purposes - simulate processing
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // This would be your actual API call:
-                // const response = await fetch('/api/merge-word', {
-                //     method: 'POST',
-                //     body: formData
-                // });
-                
-                progressFill.style.width = '90%';
-                progressText.textContent = '90%';
-                
-                // Simulate success
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                progressFill.style.width = '100%';
-                progressText.textContent = '100%';
-                
-                // Show result
-                setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                    processBtn.disabled = false;
-                    showResult();
-                }, 500);
-                
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-                progressContainer.style.display = 'none';
-                processBtn.disabled = false;
-            }
-        }
-
-        function showResult() {
-            const resultArea = document.getElementById('resultArea');
-            const downloadLink = document.getElementById('downloadLink');
-            
-            // Generate filename
-            const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-            const filename = `merged_document_${timestamp}.docx`;
-            
-            // For demo - create a dummy download
-            const content = "This is a demo merged document. In production, this would be the actual merged Word file.";
-            const blob = new Blob([content], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-            const url = URL.createObjectURL(blob);
-            
-            downloadLink.href = url;
-            downloadLink.download = filename;
-            downloadLink.onclick = () => {
-                setTimeout(() => URL.revokeObjectURL(url), 100);
-            };
-            
-            resultArea.style.display = 'block';
-            resultArea.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function hideResult() {
-            document.getElementById('resultArea').style.display = 'none';
-        }
     </script>
 </body>
 </html>

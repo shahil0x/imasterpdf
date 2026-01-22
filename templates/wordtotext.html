@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word to Text Converter | iMasterPDF</title>
-    <meta name="description" content="Extract text from Word documents. Convert DOC and DOCX files to plain text online for free." />
+    <meta name="description" content="Extract text from Word documents and convert to plain text online for free. Perfect for content extraction and text processing.">
+    <meta name="keywords" content="Word to Text, extract text from Word, DOC to TXT, DOCX to TXT, text extraction">
+    <meta name="author" content="iMasterPDF">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
+
     <style>
         :root {
             --primary-color: #2d8cff;
@@ -17,6 +23,10 @@
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --radius: 8px;
             --transition: all 0.3s ease;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #374151;
+            --muted: #6b7280;
         }
 
         * {
@@ -30,180 +40,71 @@
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             color: var(--dark-color);
-            padding: 20px;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 20px;
         }
 
+        /* Header */
         header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
             background: white;
-            border-radius: var(--radius);
             box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
         }
 
         .logo {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: var(--primary-color);
             text-decoration: none;
-            margin-bottom: 20px;
         }
 
         .logo i {
             font-size: 2rem;
         }
 
-        h1 {
-            color: var(--dark-color);
-            margin-bottom: 10px;
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
         }
 
-        .subtitle {
-            color: var(--gray-color);
-            margin-bottom: 20px;
-        }
-
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 8px 16px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: var(--radius);
+        .nav-links a {
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .tool-container {
-            background: white;
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-        }
-
-        .upload-area {
-            border: 3px dashed var(--gray-color);
-            border-radius: var(--radius);
-            padding: 40px;
-            text-align: center;
-            margin: 20px 0;
+            color: var(--dark-color);
+            font-weight: 500;
             transition: var(--transition);
-            cursor: pointer;
         }
 
-        .upload-area.drag-over {
-            border-color: var(--primary-color);
-            background: rgba(45, 140, 255, 0.05);
-        }
-
-        .upload-area i {
-            font-size: 3rem;
+        .nav-links a:hover {
             color: var(--primary-color);
-            margin-bottom: 15px;
         }
 
-        .file-input {
-            display: none;
-        }
-
-        .file-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            background: var(--light-color);
-            border-radius: var(--radius);
-            margin: 20px 0;
-            display: none;
-        }
-
-        .file-info.show {
-            display: flex;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .file-info .remove-btn {
-            color: var(--secondary-color);
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 50%;
-        }
-
-        .file-info .remove-btn:hover {
-            background: rgba(255, 71, 87, 0.1);
-        }
-
-        .options {
-            margin: 25px 0;
-            display: none;
-        }
-
-        .options.show {
-            display: block;
-        }
-
-        .option-group {
-            margin-bottom: 20px;
-        }
-
-        .option-group label {
-            display: block;
-            margin-bottom: 8px;
+        .nav-links a.active {
+            color: var(--primary-color);
             font-weight: 600;
-        }
-
-        .option-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--gray-color);
-            border-radius: var(--radius);
-            font-size: 1rem;
-            font-family: inherit;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin: 25px 0;
-            flex-wrap: wrap;
         }
 
         .btn {
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 0.8rem 1.5rem;
             border-radius: var(--radius);
             cursor: pointer;
             font-weight: 600;
@@ -212,8 +113,6 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            flex: 1;
-            min-width: 200px;
         }
 
         .btn:hover {
@@ -225,21 +124,154 @@
             background: var(--secondary-color);
         }
 
-        .btn-success {
-            background: var(--success-color);
+        /* Tool Container */
+        .tool-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 0;
         }
 
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
+        /* Tool Header */
+        .tool-header {
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
+        .tool-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .tool-header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        /* How-to guide section */
+        .how-to-guide {
+            background: #f8fafc;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
+        }
+        .how-to-guide h4 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: var(--dark-color);
+        }
+        .how-to-guide ol {
+            margin: 0 0 10px 0;
+            padding-left: 20px;
+        }
+        .how-to-guide li {
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        .how-to-guide .note {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            font-style: italic;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .upload-box {
+            border: 3px dashed var(--gray-color);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .upload-box.drag-over {
+            border-color: var(--primary-color);
+            background: rgba(45, 140, 255, 0.05);
+        }
+
+        .upload-box i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin: 1rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: var(--light-color);
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .file-item i {
+            cursor: pointer;
+            color: var(--secondary-color);
+            padding: 5px;
+        }
+
+        .file-item i:hover {
+            background: rgba(255, 71, 87, 0.1);
+            border-radius: 50%;
+        }
+
+        /* Action Buttons Container */
+        .action-buttons-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .action-buttons-container .btn {
+            min-width: 180px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Progress Container */
         .progress-container {
             display: none;
-            margin: 25px 0;
+            margin: 2rem 0;
             text-align: center;
+        }
+
+        .progress-container.active {
+            display: block;
         }
 
         .progress-bar {
@@ -248,7 +280,7 @@
             background: var(--light-color);
             border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 10px;
+            margin-bottom: 0.5rem;
             position: relative;
         }
 
@@ -271,8 +303,153 @@
             color: white;
             font-weight: bold;
             font-size: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
+        /* Result Area */
+        .result-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            margin-bottom: 2rem;
+        }
+
+        .result-area.active {
+            display: block;
+        }
+
+        .result-area i {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Message */
+        .msg {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            display: none;
+            text-align: center;
+        }
+        
+        .msg.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+        
+        .msg.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+        
+        .msg.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            display: block;
+        }
+        
+        .msg.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            border-top: 1px solid var(--border);
+            background: #fafafa;
+        }
+        
+        .footer-inner {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 18px;
+            padding: 18px 24px;
+        }
+        
+        @media (max-width: 800px) {
+            .footer-inner {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .footer-inner h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+        }
+        
+        .footer-inner a {
+            color: var(--muted);
+            font-size: 13px;
+            text-decoration: none;
+        }
+        
+        .footer-inner p {
+            margin: 5px 0;
+        }
+        
+        .tagline {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 5px 0;
+        }
+        
+        .copyright {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 12px 0 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .action-buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-buttons-container .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .upload-box {
+                padding: 2rem 1rem;
+            }
+            
+            .tool-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading animation */
         .spinner {
             width: 40px;
             height: 40px;
@@ -280,276 +457,360 @@
             border-top: 4px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 1rem;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .result-area {
-            display: none;
-            text-align: center;
-            padding: 30px;
-            background: #f8fff9;
-            border-radius: var(--radius);
-            border: 2px solid var(--success-color);
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .result-area i {
-            font-size: 3rem;
-            color: var(--success-color);
-            margin-bottom: 15px;
-        }
-
-        .result-preview {
-            background: #f8f9fa;
-            border-radius: var(--radius);
-            padding: 20px;
-            margin: 20px 0;
-            max-height: 300px;
-            overflow-y: auto;
-            text-align: left;
-            font-family: monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .message {
-            padding: 12px;
-            border-radius: var(--radius);
-            margin: 15px 0;
-            display: none;
-        }
-
-        .message.success {
-            background: #d1fae5;
-            color: #065f46;
-            display: block;
-        }
-
-        .message.error {
-            background: #fee2e2;
-            color: #991b1b;
-            display: block;
-        }
-
-        .how-to-guide {
-            background: #f8fafc;
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-top: 30px;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .how-to-guide h3 {
-            margin-bottom: 15px;
-            color: var(--dark-color);
-        }
-
-        .how-to-guide ol {
-            margin-left: 20px;
-            margin-bottom: 15px;
-        }
-
-        .how-to-guide li {
-            margin-bottom: 8px;
-            line-height: 1.6;
-        }
-
-        .note {
-            font-size: 14px;
-            color: #666;
-            font-style: italic;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed #ddd;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            color: var(--gray-color);
-            font-size: 14px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .upload-area {
-                padding: 20px;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-            
-            .btn {
-                min-width: 100%;
-            }
-            
-            .file-info {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-        }
     </style>
 </head>
 <body>
-    <a href="/" class="back-btn">
-        <i class="fas fa-arrow-left"></i> Back to Home
-    </a>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="https://imasterpdf.com" class="logo">
+                    <i class="fas fa-file-pdf"></i>
+                    iMasterPDF
+                </a>
+                <div class="nav-links">
+                    <a href="https://imasterpdf.com">Home</a>
+                    <a href="https://imasterpdf.com/blog">Blog</a>
+                    <a href="https://imasterpdf.com/about">About</a>
+                    <a href="https://imasterpdf.com/contact">Contact</a>
+                </div>
+            </nav>
+        </div>
+    </header>
 
-    <div class="container">
-        <header>
-            <a href="/" class="logo">
-                <i class="fas fa-file-pdf"></i>
-                iMasterPDF
-            </a>
-            <h1>Word to Text Converter</h1>
-            <p class="subtitle">Extract text from Word documents (DOC, DOCX) to plain text format</p>
-        </header>
-
+    <!-- Main Content -->
+    <main class="container">
         <div class="tool-container">
+            <!-- Tool Header -->
+            <div class="tool-header">
+                <h2>Word to Text Converter</h2>
+                <p>Extract plain text from Word documents. Perfect for content extraction, data processing, and text analysis.</p>
+            </div>
+            
+            <!-- How-to Guide -->
             <div class="how-to-guide">
-                <h3>How to Convert Word to Text:</h3>
+                <h4>How to extract text from Word files:</h4>
                 <ol>
-                    <li>Upload your Word document (DOC or DOCX)</li>
-                    <li>Configure text extraction options if needed</li>
+                    <li>Upload your Word document (.doc or .docx)</li>
                     <li>Click "Extract Text" button</li>
                     <li>Download your plain text file</li>
                 </ol>
-                <div class="note">Note: Maximum file size is 50MB. Files are processed securely and deleted after conversion.</div>
+                <div class="note">Note: Files are processed securely and deleted automatically after conversion.</div>
             </div>
-
-            <div class="upload-area" id="dropZone">
-                <i class="fas fa-file-word"></i>
-                <h3>Drag & Drop Word File Here</h3>
-                <p>or click to browse files (DOC, DOCX)</p>
-                <input type="file" id="fileInput" class="file-input" accept=".doc,.docx">
-            </div>
-
-            <div class="file-info" id="fileInfo">
-                <div>
-                    <strong id="fileName"></strong>
-                    <br>
-                    <small id="fileSize"></small>
-                </div>
-                <i class="fas fa-times remove-btn" id="removeFile"></i>
-            </div>
-
-            <div class="options" id="options">
-                <h3>Extraction Options</h3>
-                <div class="option-group">
-                    <label for="encoding">Text Encoding:</label>
-                    <select id="encoding">
-                        <option value="utf-8">UTF-8 (Recommended)</option>
-                        <option value="ascii">ASCII</option>
-                        <option value="utf-16">UTF-16</option>
-                        <option value="iso-8859-1">ISO-8859-1</option>
-                    </select>
+            
+            <!-- Upload Area -->
+            <div class="upload-area">
+                <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Drag & Drop Word Files Here</h3>
+                    <p>or click to browse files (DOC, DOCX)</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".doc,.docx">
                 </div>
                 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="preserveParagraphs" checked>
-                    <label for="preserveParagraphs">Preserve paragraph breaks</label>
-                </div>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="removeFormatting" checked>
-                    <label for="removeFormatting">Remove formatting (bold, italic, etc.)</label>
-                </div>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="extractLists">
-                    <label for="extractLists">Preserve list numbering</label>
-                </div>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="extractTables">
-                    <label for="extractTables">Extract table content as text</label>
+                <div class="file-list" id="fileList">
+                    <p style="text-align: center; color: var(--gray-color);">No files selected</p>
                 </div>
             </div>
 
-            <div class="message" id="message"></div>
-
-            <div class="controls">
-                <button class="btn" onclick="extractText()" id="extractBtn" disabled>
-                    <i class="fas fa-file-alt"></i> Extract Text
+            <!-- Action Buttons -->
+            <div class="action-buttons-container">
+                <button class="btn" onclick="processFiles()">
+                    <i class="fas fa-cogs"></i> Extract Text
                 </button>
-                <button class="btn btn-secondary" onclick="clearFile()">
-                    <i class="fas fa-redo"></i> Clear
+                <button class="btn btn-secondary" onclick="resetTool()">
+                    <i class="fas fa-redo"></i> Start Over
                 </button>
             </div>
 
+            <!-- Message Area -->
+            <div class="msg" id="message"></div>
+
+            <!-- Progress Container -->
             <div class="progress-container" id="progressContainer">
                 <div class="spinner"></div>
-                <h3>Extracting Text...</h3>
+                <h3>Processing...</h3>
                 <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                    <div class="progress-text" id="progressText">0%</div>
+                    <div class="progress-fill" id="progress-fill"></div>
+                    <div class="progress-text" id="progress-text">0%</div>
                 </div>
             </div>
 
+            <!-- Result Area -->
             <div class="result-area" id="resultArea">
                 <i class="fas fa-check-circle"></i>
-                <h3>Text Extraction Complete!</h3>
+                <h3>Extraction Complete!</h3>
                 <p>Text has been successfully extracted from your Word document.</p>
-                
-                <div class="result-preview" id="textPreview"></div>
-                
-                <div class="controls">
-                    <a id="downloadLink" class="btn btn-success">
-                        <i class="fas fa-download"></i> Download Text File (.txt)
-                    </a>
-                    <button class="btn" onclick="copyToClipboard()">
-                        <i class="fas fa-copy"></i> Copy to Clipboard
-                    </button>
-                    <button class="btn btn-secondary" onclick="clearFile()">
-                        <i class="fas fa-redo"></i> Convert Another
-                    </button>
-                </div>
+                <a id="downloadLink" class="btn" style="margin-top: 1rem;">
+                    <i class="fas fa-download"></i> Download Text File
+                </a>
+                <button class="btn btn-secondary" onclick="resetTool()" style="margin-top: 1rem;">
+                    <i class="fas fa-redo"></i> Extract Another File
+                </button>
             </div>
         </div>
 
-        <footer>
-            <p>© <span id="currentYear"></span> iMasterPDF. All rights reserved.</p>
-            <p>Files are processed securely and deleted immediately after conversion.</p>
-        </footer>
-    </div>
+        <!-- Features Section -->
+        <div style="max-width: 800px; margin: 4rem auto; padding: 0 20px;">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--dark-color);">Why Use Our Text Extractor?</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div style="background: white; border-radius: var(--radius); padding: 1.5rem; text-align: center; box-shadow: var(--shadow);">
+                    <i class="fas fa-file-alt" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem;">Clean Text Output</h3>
+                    <p style="color: var(--gray-color);">Extracts readable text without formatting artifacts</p>
+                </div>
+                <div style="background: white; border-radius: var(--radius); padding: 1.5rem; text-align: center; box-shadow: var(--shadow);">
+                    <i class="fas fa-bolt" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem;">Fast Processing</h3>
+                    <p style="color: var(--gray-color);">Extract text from documents in seconds</p>
+                </div>
+                <div style="background: white; border-radius: var(--radius); padding: 1.5rem; text-align: center; box-shadow: var(--shadow);">
+                    <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem;">Secure Processing</h3>
+                    <p style="color: var(--gray-color);">Files are deleted immediately after extraction</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner container">
+            <div>
+                <h4>iMasterPDF</h4>
+                <p class="tagline">Free Online PDF & Document Tools</p>
+                <p class="tagline">Fast, secure, and mobile-friendly.</p>
+            </div>
+            <div>
+                <h4>Links</h4>
+                <p><a href="https://imasterpdf.com">Home</a></p>
+                <p><a href="https://imasterpdf.com/blog">Blog</a></p>
+                <p><a href="https://imasterpdf.com/about">About</a></p>
+                <p><a href="https://imasterpdf.com/contact">Contact</a></p>
+                <p><a href="https://imasterpdf.com/privacy">Privacy Policy</a></p>
+                <p><a href="https://imasterpdf.com/terms">Terms</a></p>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <p><a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+            </div>
+        </div>
+        <div class="copyright">© <span id="year"></span> iMasterPDF. All rights reserved.</div>
+    </footer>
 
     <script>
-        let currentFile = null;
-        const MAX_SIZE = 50 * 1024 * 1024; // 50MB
-        let extractedText = '';
-
         // Initialize
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        document.getElementById('year').textContent = new Date().getFullYear();
 
-        // Setup drag and drop
+        // Global variables
+        let uploadedFiles = [];
+        const MAX_SIZE = 50 * 1024 * 1024;
+
+        // File handling functions
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            addFiles(files);
+        }
+
+        function addFiles(files) {
+            let validFilesAdded = 0;
+            let hasError = false;
+            
+            // Clear previous error messages
+            const errorMsg = document.getElementById('message');
+            errorMsg.style.display = 'none';
+            
+            files.forEach(file => {
+                // Check file type
+                const validExtensions = ['.doc', '.docx'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!validExtensions.includes(fileExtension)) {
+                    showMessage(`"${file.name}" is not a supported file type. Please select .doc or .docx files.`, 'error');
+                    hasError = true;
+                    return;
+                }
+                
+                // Check file size
+                if (file.size > MAX_SIZE) {
+                    showMessage(`"${file.name}" exceeds 50MB limit. Please choose a smaller file.`, 'error');
+                    hasError = true;
+                    return;
+                }
+                
+                // Check if file already exists
+                const existingFile = uploadedFiles.find(f => f.name === file.name && f.size === file.size);
+                if (!existingFile) {
+                    uploadedFiles.push(file);
+                    validFilesAdded++;
+                } else {
+                    showMessage(`"${file.name}" is already in the list.`, 'warning');
+                }
+            });
+            
+            // Only update file list if we added valid files
+            if (validFilesAdded > 0) {
+                updateFileList();
+                
+                // Show success message if we added files without errors
+                if (!hasError && validFilesAdded === files.length) {
+                    showMessage(`Successfully added "${files[0].name}"`, 'success');
+                }
+            }
+        }
+
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">No files selected</p>';
+                return;
+            }
+            
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${file.name}</strong>
+                        <br>
+                        <small>${formatFileSize(file.size)}</small>
+                    </div>
+                    <i class="fas fa-times" onclick="removeFile(${index})" title="Remove file"></i>
+                `;
+                fileList.appendChild(div);
+            });
+        }
+
+        function removeFile(index) {
+            const removedFile = uploadedFiles[index];
+            uploadedFiles.splice(index, 1);
+            updateFileList();
+            showMessage(`Removed "${removedFile.name}" from the list.`, 'info');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // File processing
+        async function processFiles() {
+            if (uploadedFiles.length === 0) {
+                showMessage('Please select a Word file first', 'error');
+                return;
+            }
+            
+            // Hide action buttons during processing
+            document.querySelector('.action-buttons-container').style.display = 'none';
+            
+            // Show progress
+            document.getElementById('progressContainer').classList.add('active');
+            document.getElementById('progress-fill').style.width = '10%';
+            document.getElementById('progress-text').textContent = '10%';
+            document.getElementById('message').style.display = 'none';
+            
+            try {
+                // Create FormData
+                const formData = new FormData();
+                
+                // Add file to FormData
+                formData.append('file', uploadedFiles[0]);
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '50%';
+                document.getElementById('progress-text').textContent = '50%';
+                
+                // Simulate API call (replace with actual API endpoint)
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '90%';
+                document.getElementById('progress-text').textContent = '90%';
+                
+                // Create a dummy text file for download
+                const originalName = uploadedFiles[0].name;
+                const textName = originalName.replace(/\.(doc|docx)$/i, '.txt');
+                const blob = new Blob(['Extracted text content would be here'], { type: 'text/plain' });
+                const filename = textName;
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '100%';
+                document.getElementById('progress-text').textContent = '100%';
+                
+                // Show result
+                setTimeout(() => {
+                    document.getElementById('progressContainer').classList.remove('active');
+                    document.getElementById('resultArea').classList.add('active');
+                    
+                    // Create download link
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = downloadUrl;
+                    downloadLink.download = filename;
+                    downloadLink.textContent = `Download ${filename}`;
+                    downloadLink.target = '_blank';
+                    
+                    // Clean up URL object when link is clicked
+                    downloadLink.onclick = () => {
+                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+                    };
+                    
+                    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+                
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+                document.getElementById('progressContainer').classList.remove('active');
+                // Show action buttons again
+                document.querySelector('.action-buttons-container').style.display = 'flex';
+                console.error('Processing error:', error);
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'msg ' + type;
+            msg.style.display = 'block';
+            
+            // Auto-hide messages after some time
+            setTimeout(() => {
+                if (msg.textContent === text) {
+                    msg.style.display = 'none';
+                }
+            }, type === 'error' ? 8000 : 5000);
+        }
+
+        function resetTool() {
+            uploadedFiles = [];
+            
+            // Clear file input
+            const fileInput = document.getElementById('fileInput');
+            fileInput.value = '';
+            
+            // Reset UI
+            document.querySelector('.action-buttons-container').style.display = 'flex';
+            document.getElementById('resultArea').classList.remove('active');
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('message').style.display = 'none';
+            
+            updateFileList();
+        }
+
+        // Drag and drop
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const removeFileBtn = document.getElementById('removeFile');
-        const options = document.getElementById('options');
-        const message = document.getElementById('message');
-        const extractBtn = document.getElementById('extractBtn');
-        const textPreview = document.getElementById('textPreview');
-
-        dropZone.addEventListener('click', () => fileInput.click());
         
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -563,206 +824,17 @@
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-over');
+            
             const files = Array.from(e.dataTransfer.files);
-            if (files.length > 0) {
-                handleFile(files[0]);
-            }
+            addFiles(files);
         });
+        
+        fileInput.addEventListener('change', handleFileSelect);
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
-            }
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('year').textContent = new Date().getFullYear();
         });
-
-        removeFileBtn.addEventListener('click', clearFile);
-
-        function handleFile(file) {
-            // Clear previous error
-            hideMessage();
-            
-            // Check file type
-            const ext = file.name.toLowerCase().split('.').pop();
-            if (!['doc', 'docx'].includes(ext)) {
-                showMessage('Please upload a Word document (DOC or DOCX format)', 'error');
-                return;
-            }
-            
-            // Check file size
-            if (file.size > MAX_SIZE) {
-                showMessage('File size exceeds 50MB limit. Please choose a smaller file.', 'error');
-                return;
-            }
-            
-            currentFile = file;
-            updateFileInfo();
-            options.classList.add('show');
-            extractBtn.disabled = false;
-        }
-
-        function updateFileInfo() {
-            fileName.textContent = currentFile.name;
-            fileSize.textContent = formatFileSize(currentFile.size);
-            fileInfo.classList.add('show');
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        function showMessage(text, type) {
-            message.textContent = text;
-            message.className = `message ${type}`;
-            message.style.display = 'block';
-            
-            setTimeout(() => {
-                if (message.textContent === text) {
-                    hideMessage();
-                }
-            }, 5000);
-        }
-
-        function hideMessage() {
-            message.style.display = 'none';
-        }
-
-        function clearFile() {
-            currentFile = null;
-            fileInput.value = '';
-            fileInfo.classList.remove('show');
-            options.classList.remove('show');
-            extractBtn.disabled = true;
-            hideResult();
-            hideMessage();
-        }
-
-        async function extractText() {
-            if (!currentFile) {
-                showMessage('Please upload a Word file first', 'error');
-                return;
-            }
-            
-            // Show progress
-            const progressContainer = document.getElementById('progressContainer');
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            
-            progressContainer.style.display = 'block';
-            extractBtn.disabled = true;
-            progressFill.style.width = '30%';
-            progressText.textContent = '30%';
-            
-            try {
-                // Get options
-                const encoding = document.getElementById('encoding').value;
-                const preserveParagraphs = document.getElementById('preserveParagraphs').checked;
-                const removeFormatting = document.getElementById('removeFormatting').checked;
-                const extractLists = document.getElementById('extractLists').checked;
-                const extractTables = document.getElementById('extractTables').checked;
-                
-                // Prepare form data
-                const formData = new FormData();
-                formData.append('file', currentFile);
-                formData.append('encoding', encoding);
-                formData.append('preserveParagraphs', preserveParagraphs);
-                formData.append('removeFormatting', removeFormatting);
-                formData.append('extractLists', extractLists);
-                formData.append('extractTables', extractTables);
-                
-                // Simulate API call - Replace with actual API endpoint
-                progressFill.style.width = '60%';
-                progressText.textContent = '60%';
-                
-                // For demo purposes - simulate processing
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // This would be your actual API call:
-                // const response = await fetch('/api/word-to-text', {
-                //     method: 'POST',
-                //     body: formData
-                // });
-                
-                progressFill.style.width = '90%';
-                progressText.textContent = '90%';
-                
-                // Simulate extracted text (in production, this would come from API)
-                extractedText = `Sample extracted text from "${currentFile.name}"
-
-This is a demonstration of text extraction from a Word document.
-
-Features included:
-- Paragraph preservation
-- List extraction (if enabled)
-- Table content extraction (if enabled)
-- Clean formatting
-
-Original document had ${Math.floor(currentFile.size / 1024)}KB of content.
-Extracted on: ${new Date().toLocaleDateString()}
-
-Note: In the actual implementation, this would be the real text content extracted from your Word document using server-side processing.`;
-                
-                progressFill.style.width = '100%';
-                progressText.textContent = '100%';
-                
-                // Show result
-                setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                    extractBtn.disabled = false;
-                    showResult();
-                }, 500);
-                
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-                progressContainer.style.display = 'none';
-                extractBtn.disabled = false;
-            }
-        }
-
-        function showResult() {
-            const resultArea = document.getElementById('resultArea');
-            const downloadLink = document.getElementById('downloadLink');
-            
-            // Show preview (first 1000 chars)
-            const previewText = extractedText.length > 1000 
-                ? extractedText.substring(0, 1000) + '...' 
-                : extractedText;
-            textPreview.textContent = previewText;
-            
-            // Generate filename
-            const originalName = currentFile.name.replace(/\.[^/.]+$/, "");
-            const filename = `${originalName}_extracted.txt`;
-            
-            // Create download
-            const blob = new Blob([extractedText], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            
-            downloadLink.href = url;
-            downloadLink.download = filename;
-            downloadLink.onclick = () => {
-                setTimeout(() => URL.revokeObjectURL(url), 100);
-            };
-            
-            resultArea.style.display = 'block';
-            resultArea.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function hideResult() {
-            document.getElementById('resultArea').style.display = 'none';
-            extractedText = '';
-        }
-
-        async function copyToClipboard() {
-            try {
-                await navigator.clipboard.writeText(extractedText);
-                showMessage('Text copied to clipboard!', 'success');
-            } catch (err) {
-                showMessage('Failed to copy text. Please try again.', 'error');
-            }
-        }
     </script>
 </body>
 </html>
