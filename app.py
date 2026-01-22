@@ -106,25 +106,6 @@ def wrap_text(text, max_chars=95):
         lines.append(' '.join(current))
     return lines
 
-def parse_pages(pages_str):
-    pages = set()
-    parts = [p.strip() for p in pages_str.split(',') if p.strip()]
-    for part in parts:
-        if '-' in part:
-            a, b = part.split('-', 1)
-            try:
-                start = int(a); end = int(b)
-                for i in range(min(start, end), max(start, end)+1):
-                    pages.add(i)
-            except ValueError:
-                abort(Response("Invalid page range.", status=400))
-        else:
-            try:
-                pages.add(int(part))
-            except ValueError:
-                abort(Response("Invalid page number.", status=400))
-    return pages
-
 def safe_remove(path):
     try:
         if os.path.exists(path):
@@ -171,28 +152,48 @@ def images_to_pdf_page():
 def lock_pdf_page():
     return render_template('lock-pdf.html')
 
+@app.route('/pdf-to-word')
+def pdf_to_word_page():
+    return render_template('pdf-to-word.html')
+
+@app.route('/merge-pdf')
+def merge_pdf_page():
+    return render_template('merge-pdf.html')
+
+@app.route('/rotate-pdf')
+def rotate_pdf_page():
+    return render_template('rotate-pdf.html')
+
+@app.route('/delete-pages-pdf')
+def delete_pages_pdf_page():
+    return render_template('delete-pages-pdf.html')
+
+@app.route('/unlock-pdf')
+def unlock_pdf_page():
+    return render_template('unlock-pdf.html')
+
 # -----------------------------------------------------------------------------
 # Blog and info pages
 # -----------------------------------------------------------------------------
 @app.route('/blog')
 def blog_page():
-    return render_template('index.html')  # Will be handled by frontend JS
+    return render_template('index.html')
 
 @app.route('/about')
 def about_page():
-    return render_template('index.html')  # Will be handled by frontend JS
+    return render_template('index.html')
 
 @app.route('/contact')
 def contact_page():
-    return render_template('index.html')  # Will be handled by frontend JS
+    return render_template('index.html')
 
 @app.route('/privacy')
 def privacy_page():
-    return render_template('index.html')  # Will be handled by frontend JS
+    return render_template('index.html')
 
 @app.route('/terms')
 def terms_page():
-    return render_template('index.html')  # Will be handled by frontend JS
+    return render_template('index.html')
 
 # -----------------------------------------------------------------------------
 # API Endpoints
@@ -216,7 +217,8 @@ def api_word_to_pdf():
         # Validate file types
         for path in paths:
             if ext_of(path) not in ALLOWED_WORD_EXT:
-                safe_remove(path)
+                for p in paths:
+                    safe_remove(p)
                 return jsonify({"error": "Only DOC/DOCX files are supported"}), 400
         
         try:
@@ -250,14 +252,12 @@ def api_word_to_pdf():
             output_name = generate_unique_filename(original_name, "converted")
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
-            response = send_file(
+            return send_file(
                 buffer,
                 as_attachment=True,
                 download_name=output_name,
                 mimetype='application/pdf'
             )
-            
-            return response
             
         except Exception as e:
             app.logger.error(f"Word to PDF conversion error: {str(e)}")
@@ -319,14 +319,12 @@ def api_merge_word():
             output_name = generate_unique_filename(original_name, "merged")
             output_name = os.path.splitext(output_name)[0] + ".docx"
             
-            response = send_file(
+            return send_file(
                 buffer,
                 as_attachment=True,
                 download_name=output_name,
                 mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
             )
-            
-            return response
             
         except Exception as e:
             app.logger.error(f"Word merge error: {str(e)}")
@@ -358,7 +356,8 @@ def api_word_to_text():
         # Validate file types
         for path in paths:
             if ext_of(path) not in ALLOWED_WORD_EXT:
-                safe_remove(path)
+                for p in paths:
+                    safe_remove(p)
                 return jsonify({"error": "Only DOC/DOCX files are supported"}), 400
         
         try:
@@ -380,14 +379,12 @@ def api_word_to_text():
             output_name = generate_unique_filename(original_name, "extracted")
             output_name = os.path.splitext(output_name)[0] + ".txt"
             
-            response = send_file(
+            return send_file(
                 buffer,
                 as_attachment=True,
                 download_name=output_name,
                 mimetype='text/plain'
             )
-            
-            return response
             
         except Exception as e:
             app.logger.error(f"Word to text error: {str(e)}")
@@ -441,16 +438,15 @@ def api_text_to_pdf():
             buffer.seek(0)
             
             # Create filename
-            output_name = f"text_converted_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            output_name = f"text_converted_{timestamp}.pdf"
             
-            response = send_file(
+            return send_file(
                 buffer,
                 as_attachment=True,
                 download_name=output_name,
                 mimetype='application/pdf'
             )
-            
-            return response
             
         except Exception as e:
             app.logger.error(f"Text to PDF error: {str(e)}")
@@ -486,16 +482,15 @@ def api_text_to_word():
             buffer.seek(0)
             
             # Create filename
-            output_name = f"text_converted_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            output_name = f"text_converted_{timestamp}.docx"
             
-            response = send_file(
+            return send_file(
                 buffer,
                 as_attachment=True,
                 download_name=output_name,
                 mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
             )
-            
-            return response
             
         except Exception as e:
             app.logger.error(f"Text to Word error: {str(e)}")
@@ -554,14 +549,12 @@ def api_images_to_pdf():
             output_name = generate_unique_filename(original_name, "images_pdf")
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
-            response = send_file(
+            return send_file(
                 buffer,
                 as_attachment=True,
                 download_name=output_name,
                 mimetype='application/pdf'
             )
-            
-            return response
             
         except Exception as e:
             app.logger.error(f"Images to PDF error: {str(e)}")
@@ -597,7 +590,8 @@ def api_lock_pdf():
         # Validate file types
         for path in paths:
             if ext_of(path) not in ALLOWED_PDF_EXT:
-                safe_remove(path)
+                for p in paths:
+                    safe_remove(p)
                 return jsonify({"error": "Only PDF files are supported"}), 400
         
         try:
@@ -622,18 +616,365 @@ def api_lock_pdf():
             output_name = generate_unique_filename(original_name, "protected")
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
-            response = send_file(
+            return send_file(
                 buffer,
                 as_attachment=True,
                 download_name=output_name,
                 mimetype='application/pdf'
             )
             
-            return response
-            
         except Exception as e:
             app.logger.error(f"PDF lock error: {str(e)}")
             return jsonify({"error": f"Encryption failed: {str(e)}"}), 500
+            
+    except Exception as e:
+        app.logger.error(f"API error: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": str(e)}), 500
+        
+    finally:
+        for path in paths:
+            safe_remove(path)
+
+@app.route('/api/pdf-to-word', methods=['POST'])
+def api_pdf_to_word():
+    """Convert PDF to Word document"""
+    try:
+        cleanup_temp()
+        
+        if 'files' not in request.files:
+            return jsonify({"error": "No files provided"}), 400
+        
+        files = request.files.getlist('files')
+        if not files or len(files) == 0:
+            return jsonify({"error": "Upload a PDF file"}), 400
+        
+        paths = save_uploads(files)
+        
+        # Validate file types
+        for path in paths:
+            if ext_of(path) not in ALLOWED_PDF_EXT:
+                for p in paths:
+                    safe_remove(p)
+                return jsonify({"error": "Only PDF files are supported"}), 400
+        
+        try:
+            # Extract text from PDF
+            text = extract_text(paths[0])
+            
+            if not text or len(text.strip()) == 0:
+                return jsonify({"error": "No extractable text found in PDF"}), 400
+            
+            # Create Word document
+            doc = Document()
+            
+            # Split text into paragraphs
+            paragraphs = text.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    doc.add_paragraph(para.strip())
+            
+            # Save to buffer
+            buffer = io.BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+            
+            # Create filename
+            original_name = secure_filename(files[0].filename)
+            output_name = generate_unique_filename(original_name, "converted")
+            output_name = os.path.splitext(output_name)[0] + ".docx"
+            
+            return send_file(
+                buffer,
+                as_attachment=True,
+                download_name=output_name,
+                mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            )
+            
+        except Exception as e:
+            app.logger.error(f"PDF to Word error: {str(e)}")
+            return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
+            
+    except Exception as e:
+        app.logger.error(f"API error: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": str(e)}), 500
+        
+    finally:
+        for path in paths:
+            safe_remove(path)
+
+@app.route('/api/merge-pdf', methods=['POST'])
+def api_merge_pdf():
+    """Merge multiple PDFs into one"""
+    try:
+        cleanup_temp()
+        
+        if 'files' not in request.files:
+            return jsonify({"error": "No files provided"}), 400
+        
+        files = request.files.getlist('files')
+        if not files or len(files) < 2:
+            return jsonify({"error": "Upload at least two PDF files"}), 400
+        
+        paths = save_uploads(files)
+        
+        # Validate file types
+        for path in paths:
+            if ext_of(path) not in ALLOWED_PDF_EXT:
+                for p in paths:
+                    safe_remove(p)
+                return jsonify({"error": "Only PDF files are supported"}), 400
+        
+        try:
+            # Merge PDFs
+            merger = PdfMerger()
+            
+            for path in paths:
+                merger.append(path)
+            
+            # Save to buffer
+            buffer = io.BytesIO()
+            merger.write(buffer)
+            buffer.seek(0)
+            merger.close()
+            
+            # Create filename
+            original_name = secure_filename(files[0].filename)
+            output_name = generate_unique_filename(original_name, "merged")
+            output_name = os.path.splitext(output_name)[0] + ".pdf"
+            
+            return send_file(
+                buffer,
+                as_attachment=True,
+                download_name=output_name,
+                mimetype='application/pdf'
+            )
+            
+        except Exception as e:
+            app.logger.error(f"PDF merge error: {str(e)}")
+            return jsonify({"error": f"Merging failed: {str(e)}"}), 500
+            
+    except Exception as e:
+        app.logger.error(f"API error: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": str(e)}), 500
+        
+    finally:
+        for path in paths:
+            safe_remove(path)
+
+@app.route('/api/rotate-pdf', methods=['POST'])
+def api_rotate_pdf():
+    """Rotate PDF pages"""
+    try:
+        cleanup_temp()
+        
+        if 'files' not in request.files:
+            return jsonify({"error": "No files provided"}), 400
+        
+        files = request.files.getlist('files')
+        if not files or len(files) == 0:
+            return jsonify({"error": "Upload a PDF file"}), 400
+        
+        rotation = int(request.form.get('rotation', 90))
+        if rotation not in [90, -90, 180]:
+            return jsonify({"error": "Rotation must be 90, -90, or 180 degrees"}), 400
+        
+        paths = save_uploads(files)
+        
+        # Validate file types
+        for path in paths:
+            if ext_of(path) not in ALLOWED_PDF_EXT:
+                for p in paths:
+                    safe_remove(p)
+                return jsonify({"error": "Only PDF files are supported"}), 400
+        
+        try:
+            # Read PDF and rotate pages
+            reader = PdfReader(paths[0])
+            writer = PdfWriter()
+            
+            # Rotate each page
+            for page in reader.pages:
+                page.rotate(rotation)
+                writer.add_page(page)
+            
+            # Save to buffer
+            buffer = io.BytesIO()
+            writer.write(buffer)
+            buffer.seek(0)
+            
+            # Create filename
+            original_name = secure_filename(files[0].filename)
+            output_name = generate_unique_filename(original_name, f"rotated_{rotation}")
+            output_name = os.path.splitext(output_name)[0] + ".pdf"
+            
+            return send_file(
+                buffer,
+                as_attachment=True,
+                download_name=output_name,
+                mimetype='application/pdf'
+            )
+            
+        except Exception as e:
+            app.logger.error(f"PDF rotate error: {str(e)}")
+            return jsonify({"error": f"Rotation failed: {str(e)}"}), 500
+            
+    except Exception as e:
+        app.logger.error(f"API error: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": str(e)}), 500
+        
+    finally:
+        for path in paths:
+            safe_remove(path)
+
+@app.route('/api/delete-pages-pdf', methods=['POST'])
+def api_delete_pages_pdf():
+    """Delete pages from PDF"""
+    try:
+        cleanup_temp()
+        
+        if 'files' not in request.files:
+            return jsonify({"error": "No files provided"}), 400
+        
+        files = request.files.getlist('files')
+        if not files or len(files) == 0:
+            return jsonify({"error": "Upload a PDF file"}), 400
+        
+        pages_str = request.form.get('pages', '').strip()
+        if not pages_str:
+            return jsonify({"error": "Pages to delete are required"}), 400
+        
+        paths = save_uploads(files)
+        
+        # Validate file types
+        for path in paths:
+            if ext_of(path) not in ALLOWED_PDF_EXT:
+                for p in paths:
+                    safe_remove(p)
+                return jsonify({"error": "Only PDF files are supported"}), 400
+        
+        try:
+            # Parse pages to delete
+            pages_to_delete = set()
+            parts = [p.strip() for p in pages_str.split(',') if p.strip()]
+            
+            for part in parts:
+                if '-' in part:
+                    try:
+                        start, end = map(int, part.split('-'))
+                        for page in range(start, end + 1):
+                            pages_to_delete.add(page)
+                    except ValueError:
+                        return jsonify({"error": f"Invalid page range: {part}"}), 400
+                else:
+                    try:
+                        pages_to_delete.add(int(part))
+                    except ValueError:
+                        return jsonify({"error": f"Invalid page number: {part}"}), 400
+            
+            # Read PDF and delete pages
+            reader = PdfReader(paths[0])
+            writer = PdfWriter()
+            total_pages = len(reader.pages)
+            
+            # Add pages that are NOT in the delete list
+            for i in range(total_pages):
+                if (i + 1) not in pages_to_delete:
+                    writer.add_page(reader.pages[i])
+            
+            # Save to buffer
+            buffer = io.BytesIO()
+            writer.write(buffer)
+            buffer.seek(0)
+            
+            # Create filename
+            original_name = secure_filename(files[0].filename)
+            output_name = generate_unique_filename(original_name, "pages_deleted")
+            output_name = os.path.splitext(output_name)[0] + ".pdf"
+            
+            return send_file(
+                buffer,
+                as_attachment=True,
+                download_name=output_name,
+                mimetype='application/pdf'
+            )
+            
+        except Exception as e:
+            app.logger.error(f"PDF delete pages error: {str(e)}")
+            return jsonify({"error": f"Page deletion failed: {str(e)}"}), 500
+            
+    except Exception as e:
+        app.logger.error(f"API error: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": str(e)}), 500
+        
+    finally:
+        for path in paths:
+            safe_remove(path)
+
+@app.route('/api/unlock-pdf', methods=['POST'])
+def api_unlock_pdf():
+    """Remove password from PDF"""
+    try:
+        cleanup_temp()
+        
+        if 'files' not in request.files:
+            return jsonify({"error": "No files provided"}), 400
+        
+        files = request.files.getlist('files')
+        if not files or len(files) == 0:
+            return jsonify({"error": "Upload a PDF file"}), 400
+        
+        password = request.form.get('password', '').strip()
+        if not password:
+            return jsonify({"error": "Password is required"}), 400
+        
+        paths = save_uploads(files)
+        
+        # Validate file types
+        for path in paths:
+            if ext_of(path) not in ALLOWED_PDF_EXT:
+                for p in paths:
+                    safe_remove(p)
+                return jsonify({"error": "Only PDF files are supported"}), 400
+        
+        try:
+            # Read encrypted PDF
+            reader = PdfReader(paths[0])
+            
+            # Check if PDF is encrypted
+            if not reader.is_encrypted:
+                return jsonify({"error": "PDF is not password protected"}), 400
+            
+            # Try to decrypt
+            if not reader.decrypt(password):
+                return jsonify({"error": "Incorrect password"}), 400
+            
+            # Create unlocked PDF
+            writer = PdfWriter()
+            
+            # Copy all pages
+            for page in reader.pages:
+                writer.add_page(page)
+            
+            # Save to buffer
+            buffer = io.BytesIO()
+            writer.write(buffer)
+            buffer.seek(0)
+            
+            # Create filename
+            original_name = secure_filename(files[0].filename)
+            output_name = generate_unique_filename(original_name, "unlocked")
+            output_name = os.path.splitext(output_name)[0] + ".pdf"
+            
+            return send_file(
+                buffer,
+                as_attachment=True,
+                download_name=output_name,
+                mimetype='application/pdf'
+            )
+            
+        except Exception as e:
+            app.logger.error(f"PDF unlock error: {str(e)}")
+            return jsonify({"error": f"Unlocking failed: {str(e)}"}), 500
             
     except Exception as e:
         app.logger.error(f"API error: {str(e)}\n{traceback.format_exc()}")
@@ -711,4 +1052,7 @@ def server_error(e):
 # Run the application
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
+    print("Starting iMasterPDF server...")
+    print(f"Upload directory: {UPLOAD_DIR}")
+    print(f"Output directory: {OUTPUT_DIR}")
     app.run(host='0.0.0.0', port=8000, debug=True)
