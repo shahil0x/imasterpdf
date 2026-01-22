@@ -126,51 +126,51 @@ def index():
 # -----------------------------------------------------------------------------
 @app.route('/word-to-pdf')
 def word_to_pdf_page():
-    return render_template('word-to-pdf.html')
+    return render_template('wordtopdf.html')
 
 @app.route('/merge-word')
 def merge_word_page():
-    return render_template('merge-word.html')
+    return render_template('mergeword.html')
 
 @app.route('/word-to-text')
 def word_to_text_page():
-    return render_template('word-to-text.html')
+    return render_template('wordtotext.html')
 
 @app.route('/text-to-pdf')
 def text_to_pdf_page():
-    return render_template('text-to-pdf.html')
+    return render_template('texttopdf.html')
 
 @app.route('/text-to-word')
 def text_to_word_page():
-    return render_template('text-to-word.html')
+    return render_template('texttoword.html')
 
 @app.route('/images-to-pdf')
 def images_to_pdf_page():
-    return render_template('images-to-pdf.html')
+    return render_template('imagestopdf.html')
 
 @app.route('/lock-pdf')
 def lock_pdf_page():
-    return render_template('lock-pdf.html')
+    return render_template('lockpdf.html')
 
 @app.route('/pdf-to-word')
 def pdf_to_word_page():
-    return render_template('pdf-to-word.html')
+    return render_template('pdftoword.html')
 
 @app.route('/merge-pdf')
 def merge_pdf_page():
-    return render_template('merge-pdf.html')
+    return render_template('mergepdf.html')
 
 @app.route('/rotate-pdf')
 def rotate_pdf_page():
-    return render_template('rotate-pdf.html')
+    return render_template('rotatepdf.html')
 
 @app.route('/delete-pages-pdf')
 def delete_pages_pdf_page():
-    return render_template('delete-pages-pdf.html')
+    return render_template('deletepdf.html')
 
 @app.route('/unlock-pdf')
 def unlock_pdf_page():
-    return render_template('unlock-pdf.html')
+    return render_template('unlockpdf.html')
 
 # -----------------------------------------------------------------------------
 # Blog and info pages
