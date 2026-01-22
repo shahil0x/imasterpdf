@@ -20,7 +20,6 @@ from pdfminer.high_level import extract_text
 # -----------------------------------------------------------------------------
 app = Flask(__name__)
 
-
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
 OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_outputs")
@@ -57,7 +56,6 @@ def generate_unique_filename(original_filename, suffix=""):
     name, ext = os.path.splitext(original_filename)
     safe_name = secure_filename(name)
     
-    # If suffix is provided, include it
     if suffix:
         return f"{safe_name}_{suffix}_{timestamp}_{unique_id}{ext}"
     return f"{safe_name}_{timestamp}_{unique_id}{ext}"
@@ -70,7 +68,6 @@ def save_uploads(files):
         if not filename:
             abort(Response("Invalid filename.", status=400))
         
-        # Generate unique filename with UUID
         unique_filename = generate_unique_filename(storage.filename)
         path = os.path.join(UPLOAD_DIR, unique_filename)
         storage.save(path)
@@ -136,13 +133,91 @@ def safe_remove(path):
         pass
 
 # -----------------------------------------------------------------------------
-# Single SPA route handler
+# SPA Routes for each tool page
 # -----------------------------------------------------------------------------
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def index(path):
-    """Handle all routes for SPA"""
+
+@app.route('/')
+def index():
+    """Main landing page"""
     return render_template('index.html')
+
+@app.route('/split')
+@app.route('/split.html')
+def split_pdf():
+    """Split PDF tool page"""
+    return render_template('split.html')
+
+@app.route('/mergepdf')
+@app.route('/mergepdf.html')
+def merge_pdf():
+    """Merge PDF tool page"""
+    return render_template('mergepdf.html')
+
+@app.route('/deletepdf')
+@app.route('/deletepdf.html')
+def delete_pdf():
+    """Delete pages from PDF tool page"""
+    return render_template('deletepdf.html')
+
+@app.route('/rotatepdf')
+@app.route('/rotatepdf.html')
+def rotate_pdf():
+    """Rotate PDF pages tool page"""
+    return render_template('rotatepdf.html')
+
+@app.route('/pdftoword')
+@app.route('/pdftoword.html')
+def pdf_to_word():
+    """PDF to Word converter page"""
+    return render_template('pdftoword.html')
+
+@app.route('/lockpdf')
+@app.route('/lockpdf.html')
+def lock_pdf():
+    """Lock PDF with password page"""
+    return render_template('lockpdf.html')
+
+@app.route('/unlockpdf')
+@app.route('/unlockpdf.html')
+def unlock_pdf():
+    """Unlock PDF page"""
+    return render_template('unlockpdf.html')
+
+@app.route('/wordtopdf')
+@app.route('/wordtopdf.html')
+def word_to_pdf():
+    """Word to PDF converter page"""
+    return render_template('wordtopdf.html')
+
+@app.route('/mergeword')
+@app.route('/mergeword.html')
+def merge_word():
+    """Merge Word documents page"""
+    return render_template('mergeword.html')
+
+@app.route('/wordtotext')
+@app.route('/wordtotext.html')
+def word_to_text():
+    """Word to Text converter page"""
+    return render_template('wordtotext.html')
+
+@app.route('/texttopdf')
+@app.route('/texttopdf.html')
+def text_to_pdf():
+    """Text to PDF converter page"""
+    return render_template('texttopdf.html')
+
+@app.route('/texttoword')
+@app.route('/texttoword.html')
+def text_to_word():
+    """Text to Word converter page"""
+    return render_template('texttoword.html')
+
+@app.route('/imagestopdf')
+@app.route('/imagestopdf.html')
+def images_to_pdf():
+    """Images to PDF converter page"""
+    return render_template('imagestopdf.html')
 
 # -----------------------------------------------------------------------------
 # Contact API
@@ -155,55 +230,11 @@ def api_contact():
     message = (data.get('message') or '').strip()
     if not name or not email or not message:
         return Response("Please provide name, email, and message.", status=400)
-    # In production, integrate with email service or ticketing system.
-    # For now, acknowledge receipt.
     return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
 
 # -----------------------------------------------------------------------------
-# Tool APIs
+# Tool APIs - PDF Operations
 # -----------------------------------------------------------------------------
-@app.route('/api/pdf-to-word', methods=['POST'])
-def api_pdf_to_word():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
-    paths = save_uploads(files)
-    pdf_path = paths[0]
-    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
-
-    try:
-        # Extract original filename for output naming
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "converted_to_word")
-        output_name = os.path.splitext(output_name)[0] + ".docx"
-        
-        # Extract text from PDF
-        text = extract_text(pdf_path) or ""
-        doc = Document()
-        
-        # Split text into paragraphs and add to document
-        paragraphs = text.split('\n\n')
-        for para in paragraphs:
-            if para.strip():
-                doc.add_paragraph(para.strip())
-        
-        # Create a BytesIO buffer for the Word file
-        buffer = io.BytesIO()
-        doc.save(buffer)
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        )
-    except Exception as e:
-        abort(Response(f"Conversion failed: {str(e)}", status=500))
-    finally:
-        safe_remove(pdf_path)
 
 @app.route('/api/merge-pdf', methods=['POST'])
 def api_merge_pdf():
@@ -221,12 +252,10 @@ def api_merge_pdf():
         for p in paths:
             merger.append(p)
         
-        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "merged")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
-        # Create a BytesIO buffer for the PDF
         buffer = io.BytesIO()
         merger.write(buffer)
         buffer.seek(0)
@@ -244,44 +273,84 @@ def api_merge_pdf():
             safe_remove(p)
         merger.close()
 
-@app.route('/api/rotate-pdf', methods=['POST'])
-def api_rotate_pdf():
+@app.route('/api/split-pdf', methods=['POST'])
+def api_split_pdf():
+    """Split PDF by page ranges"""
     cleanup_temp()
-    rotation = int(request.form.get('rotation', '90'))
     files = request.files.getlist('files')
     if not files or len(files) != 1:
         abort(Response("Upload exactly one PDF.", status=400))
+    
+    ranges_str = request.form.get('ranges', '').strip()
+    if not ranges_str:
+        abort(Response("Page ranges are required.", status=400))
+    
     paths = save_uploads(files)
     pdf_path = paths[0]
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         abort(Response("Only PDF files are allowed.", status=400))
-
-    writer = PdfWriter()
+    
     try:
         reader = PdfReader(pdf_path)
+        total_pages = len(reader.pages)
         
-        # Generate output filename with UUID
+        # Parse page ranges (e.g., "1-3,5,7-9")
+        ranges = []
+        parts = [p.strip() for p in ranges_str.split(',') if p.strip()]
+        for part in parts:
+            if '-' in part:
+                start, end = part.split('-', 1)
+                try:
+                    start = int(start); end = int(end)
+                    if 1 <= start <= total_pages and 1 <= end <= total_pages:
+                        ranges.append((min(start, end)-1, max(start, end)))
+                    else:
+                        abort(Response(f"Page range out of bounds (1-{total_pages}).", status=400))
+                except ValueError:
+                    abort(Response("Invalid page range format.", status=400))
+            else:
+                try:
+                    page = int(part)
+                    if 1 <= page <= total_pages:
+                        ranges.append((page-1, page))
+                    else:
+                        abort(Response(f"Page out of bounds (1-{total_pages}).", status=400))
+                except ValueError:
+                    abort(Response("Invalid page number.", status=400))
+        
+        # Create ZIP file with all split PDFs
+        zip_buffer = io.BytesIO()
+        import zipfile
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for i, (start_idx, end_page) in enumerate(ranges):
+                writer = PdfWriter()
+                for page_idx in range(start_idx, end_page):
+                    writer.add_page(reader.pages[page_idx])
+                
+                split_buffer = io.BytesIO()
+                writer.write(split_buffer)
+                split_buffer.seek(0)
+                
+                original_name = secure_filename(files[0].filename)
+                split_name = generate_unique_filename(original_name, f"split_{i+1}")
+                split_name = os.path.splitext(split_name)[0] + ".pdf"
+                
+                zipf.writestr(split_name, split_buffer.getvalue())
+                writer.close()
+        
+        zip_buffer.seek(0)
         original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, f"rotated_{rotation}")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        for page in reader.pages:
-            page.rotate(rotation)
-            writer.add_page(page)
-        
-        # Create a BytesIO buffer for the PDF
-        buffer = io.BytesIO()
-        writer.write(buffer)
-        buffer.seek(0)
+        zip_name = generate_unique_filename(original_name, "split_parts")
+        zip_name = os.path.splitext(zip_name)[0] + ".zip"
         
         return send_file(
-            buffer,
+            zip_buffer,
             as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
+            download_name=zip_name,
+            mimetype='application/zip'
         )
     except Exception as e:
-        abort(Response(f"Rotation failed: {str(e)}", status=500))
+        abort(Response(f"Splitting failed: {str(e)}", status=500))
     finally:
         safe_remove(pdf_path)
 
@@ -306,7 +375,6 @@ def api_delete_pages_pdf():
         reader = PdfReader(pdf_path)
         total = len(reader.pages)
         
-        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "pages_removed")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -315,7 +383,6 @@ def api_delete_pages_pdf():
             if (i+1) not in pages_to_remove:
                 writer.add_page(reader.pages[i])
         
-        # Create a BytesIO buffer for the PDF
         buffer = io.BytesIO()
         writer.write(buffer)
         buffer.seek(0)
@@ -328,6 +395,45 @@ def api_delete_pages_pdf():
         )
     except Exception as e:
         abort(Response(f"Page removal failed: {str(e)}", status=500))
+    finally:
+        safe_remove(pdf_path)
+
+@app.route('/api/rotate-pdf', methods=['POST'])
+def api_rotate_pdf():
+    cleanup_temp()
+    rotation = int(request.form.get('rotation', '90'))
+    files = request.files.getlist('files')
+    if not files or len(files) != 1:
+        abort(Response("Upload exactly one PDF.", status=400))
+    paths = save_uploads(files)
+    pdf_path = paths[0]
+    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
+        abort(Response("Only PDF files are allowed.", status=400))
+
+    writer = PdfWriter()
+    try:
+        reader = PdfReader(pdf_path)
+        
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, f"rotated_{rotation}")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        
+        for page in reader.pages:
+            page.rotate(rotation)
+            writer.add_page(page)
+        
+        buffer = io.BytesIO()
+        writer.write(buffer)
+        buffer.seek(0)
+        
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=output_name,
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        abort(Response(f"Rotation failed: {str(e)}", status=500))
     finally:
         safe_remove(pdf_path)
 
@@ -349,7 +455,6 @@ def api_lock_pdf():
     try:
         reader = PdfReader(pdf_path)
         
-        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "locked")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -358,7 +463,6 @@ def api_lock_pdf():
             writer.add_page(page)
         writer.encrypt(pin)
         
-        # Create a BytesIO buffer for the PDF
         buffer = io.BytesIO()
         writer.write(buffer)
         buffer.seek(0)
@@ -392,7 +496,6 @@ def api_unlock_pdf():
     try:
         reader = PdfReader(pdf_path)
         
-        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "unlocked")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -403,7 +506,6 @@ def api_unlock_pdf():
         for page in reader.pages:
             writer.add_page(page)
         
-        # Create a BytesIO buffer for the PDF
         buffer = io.BytesIO()
         writer.write(buffer)
         buffer.seek(0)
@@ -419,6 +521,53 @@ def api_unlock_pdf():
     finally:
         safe_remove(pdf_path)
 
+# -----------------------------------------------------------------------------
+# Tool APIs - PDF to Word
+# -----------------------------------------------------------------------------
+
+@app.route('/api/pdf-to-word', methods=['POST'])
+def api_pdf_to_word():
+    cleanup_temp()
+    files = request.files.getlist('files')
+    if not files or len(files) != 1:
+        abort(Response("Upload exactly one PDF.", status=400))
+    paths = save_uploads(files)
+    pdf_path = paths[0]
+    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
+        abort(Response("Only PDF files are allowed.", status=400))
+
+    try:
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "converted_to_word")
+        output_name = os.path.splitext(output_name)[0] + ".docx"
+        
+        text = extract_text(pdf_path) or ""
+        doc = Document()
+        
+        paragraphs = text.split('\n\n')
+        for para in paragraphs:
+            if para.strip():
+                doc.add_paragraph(para.strip())
+        
+        buffer = io.BytesIO()
+        doc.save(buffer)
+        buffer.seek(0)
+        
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=output_name,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    except Exception as e:
+        abort(Response(f"Conversion failed: {str(e)}", status=500))
+    finally:
+        safe_remove(pdf_path)
+
+# -----------------------------------------------------------------------------
+# Tool APIs - Word Operations
+# -----------------------------------------------------------------------------
+
 @app.route('/api/word-to-pdf', methods=['POST'])
 def api_word_to_pdf():
     cleanup_temp()
@@ -433,15 +582,12 @@ def api_word_to_pdf():
         abort(Response("Only DOC/DOCX files are supported.", status=400))
 
     try:
-        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "converted_to_pdf")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
-        # Read Word document
         doc = Document(doc_path)
         
-        # Create PDF using reportlab
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=letter)
         width, height = letter
@@ -458,7 +604,6 @@ def api_word_to_pdf():
                     if top < 50:
                         c.showPage()
                         top = height - 50
-                # Add space between paragraphs
                 top -= line_height / 2
                 if top < 50:
                     c.showPage()
@@ -473,7 +618,6 @@ def api_word_to_pdf():
             download_name=output_name,
             mimetype='application/pdf'
         )
-
     except Exception as e:
         abort(Response(f"Conversion failed: {str(e)}", status=500))
     finally:
@@ -500,12 +644,10 @@ def api_merge_word():
             if idx < len(paths) - 1:
                 merged.add_paragraph("\n--- End of Document ---\n")
         
-        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "merged")
         output_name = os.path.splitext(output_name)[0] + ".docx"
         
-        # Create a BytesIO buffer for the Word file
         buffer = io.BytesIO()
         merged.save(buffer)
         buffer.seek(0)
@@ -534,7 +676,6 @@ def api_word_to_text():
         abort(Response("Only DOC/DOCX files are allowed.", status=400))
 
     try:
-        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "extracted_text")
         output_name = os.path.splitext(output_name)[0] + ".txt"
@@ -559,6 +700,10 @@ def api_word_to_text():
     finally:
         safe_remove(doc_path)
 
+# -----------------------------------------------------------------------------
+# Tool APIs - Text Operations
+# -----------------------------------------------------------------------------
+
 @app.route('/api/text-to-pdf', methods=['POST'])
 def api_text_to_pdf():
     cleanup_temp()
@@ -566,12 +711,10 @@ def api_text_to_pdf():
     if not text:
         abort(Response("Text content is required.", status=400))
 
-    # Generate unique filename with UUID
     unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_name = f"text_converted_{timestamp}_{unique_id}.pdf"
 
-    # Create PDF in memory
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
@@ -589,7 +732,6 @@ def api_text_to_pdf():
                     c.showPage()
                     top = height - 50
         else:
-            # Empty line
             top -= line_height
             if top < 50:
                 c.showPage()
@@ -612,7 +754,6 @@ def api_text_to_word():
     if not text:
         abort(Response("Text content is required.", status=400))
     
-    # Generate unique filename with UUID
     unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_name = f"text_converted_{timestamp}_{unique_id}.docx"
@@ -623,7 +764,6 @@ def api_text_to_word():
         if line.strip():
             doc.add_paragraph(line)
     
-    # Create a BytesIO buffer for the Word file
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
@@ -634,6 +774,10 @@ def api_text_to_word():
         download_name=output_name,
         mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
+
+# -----------------------------------------------------------------------------
+# Tool APIs - Images to PDF
+# -----------------------------------------------------------------------------
 
 @app.route('/api/images-to-pdf', methods=['POST'])
 def api_images_to_pdf():
@@ -647,7 +791,6 @@ def api_images_to_pdf():
             abort(Response("Only image files (JPG, PNG, WEBP, BMP, TIFF) are allowed.", status=400))
 
     try:
-        # Generate output filename with UUID
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "images_to_pdf")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -657,7 +800,6 @@ def api_images_to_pdf():
             img = Image.open(p).convert('RGB')
             images.append(img)
         
-        # Create PDF in memory
         buffer = io.BytesIO()
         if len(images) == 1:
             images[0].save(buffer, format='PDF', save_all=True)
@@ -680,7 +822,7 @@ def api_images_to_pdf():
             safe_remove(p)
 
 # -----------------------------------------------------------------------------
-# Health check endpoint for Render
+# Health check endpoint
 # -----------------------------------------------------------------------------
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -702,7 +844,14 @@ def server_error(e):
     return jsonify({"error": "Internal server error."}), 500
 
 # -----------------------------------------------------------------------------
-# Gunicorn entrypoint
+# Static file serving for templates (if needed)
+# -----------------------------------------------------------------------------
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('static', filename)
+
+# -----------------------------------------------------------------------------
+# Run the application
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=False)
+    app.run(host='0.0.0.0', port=8000, debug=True)

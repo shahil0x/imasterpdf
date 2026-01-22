@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete PDF Pages - iMasterPDF | Remove Pages from PDF</title>
+    <meta name="description" content="Delete specific pages from PDF files. Remove unwanted pages quickly and easily. Fast, secure, and free.">
+    <meta name="keywords" content="delete PDF pages, remove PDF pages, extract PDF pages, PDF editor, PDF page remover">
+    <meta name="author" content="iMasterPDF">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2d8cff;
+            --secondary-color: #ff4757;
+            --success-color: #2ed573;
+            --dark-color: #2f3542;
+            --light-color: #f1f2f6;
+            --gray-color: #a4b0be;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+            --transition: all 0.3s ease;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #374151;
+            --muted: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--dark-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 3rem 0;
+        }
+
+        .tool-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .tool-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .tool-header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Upload Area */
+        .upload-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .upload-box {
+            border: 3px dashed var(--gray-color);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .upload-box.drag-over {
+            border-color: var(--primary-color);
+            background: rgba(45, 140, 255, 0.05);
+        }
+
+        .upload-box i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-box h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-box p {
+            color: var(--muted);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin: 1.5rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--light-color);
+            border-radius: var(--radius);
+            margin-bottom: 0.8rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .file-size {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .file-remove {
+            color: var(--secondary-color);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .file-remove:hover {
+            background: rgba(255, 71, 87, 0.1);
+        }
+
+        /* Options Section */
+        .options-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .options-section h2 {
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        .option-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .option-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .option-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .option-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.1);
+        }
+
+        .option-help {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+        }
+
+        /* Page Examples */
+        .page-examples {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .page-examples strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-examples ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .page-examples li {
+            margin-bottom: 0.3rem;
+        }
+
+        /* Page Preview */
+        .page-preview {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .page-preview h3 {
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: var(--light-color);
+            border-radius: var(--radius);
+        }
+
+        .page-item {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .page-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .page-item.selected {
+            border-color: var(--secondary-color);
+            background: rgba(255, 71, 87, 0.1);
+        }
+
+        .page-number {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .page-select {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            color: var(--secondary-color);
+            display: none;
+        }
+
+        .page-item.selected .page-select {
+            display: block;
+        }
+
+        /* Quick Selection */
+        .quick-selection {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            background: var(--light-color);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .quick-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin: 2.5rem 0;
+            justify-content: center;
+        }
+
+        .action-buttons .btn {
+            min-width: 180px;
+            font-size: 1.1rem;
+        }
+
+        /* Progress Container */
+        .progress-container {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            text-align: center;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--light-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-text {
+            font-size: 1.2rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--light-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-percent {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Result Area */
+        .result-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .result-area.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .result-message {
+            margin-bottom: 1.5rem;
+        }
+
+        .result-message h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .result-message p {
+            color: var(--muted);
+        }
+
+        .download-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: var(--transition);
+            margin-bottom: 1rem;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Features Section */
+        .features-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .features-section h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--dark-color);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .feature-card i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .faq-section h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--dark-color);
+        }
+
+        .faq-item {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .faq-question {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+
+        .faq-answer {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* Message */
+        .message {
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+
+        .message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            background: white;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 3rem 0;
+        }
+
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .footer-column a {
+            display: block;
+            color: var(--muted);
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .footer-column a:hover {
+            color: var(--primary-color);
+        }
+
+        .copyright {
+            text-align: center;
+            padding: 1.5rem 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .tool-header h1 {
+                font-size: 2rem;
+            }
+
+            .upload-box {
+                padding: 2rem 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons .btn {
+                width: 100%;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-selection {
+                flex-direction: column;
+            }
+
+            .page-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo">
+                    <i class="fas fa-file-pdf"></i>
+                    iMasterPDF
+                </a>
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/split.html">Split PDF</a>
+                    <a href="/mergepdf.html">Merge PDF</a>
+                    <a href="/deletepdf.html" class="active">Delete Pages</a>
+                    <a href="/tools.html">All Tools</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="main-content">
+            <!-- Tool Header -->
+            <div class="tool-header">
+                <h1>Delete Pages from PDF</h1>
+                <p>Remove specific pages from your PDF document. Select pages to delete and download the cleaned version instantly.</p>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <h2>Upload Your PDF</h2>
+                <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Drag & Drop Your PDF Here</h3>
+                    <p>or click to browse files</p>
+                    <p style="font-size: 0.9rem; color: var(--muted); margin-top: 1rem;">Maximum file size: 50MB</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf" onchange="handleFileSelect(event)">
+                </div>
+                
+                <div class="file-list" id="fileList">
+                    <p style="text-align: center; color: var(--muted); padding: 2rem 0;">No files selected</p>
+                </div>
+            </div>
+
+            <!-- Options Section -->
+            <div class="options-section" id="optionsSection" style="display: none;">
+                <h2>Select Pages to Delete</h2>
+                
+                <!-- Page Input -->
+                <div class="option-group">
+                    <label for="pagesToDelete">Pages to Delete</label>
+                    <input type="text" id="pagesToDelete" placeholder="Example: 1,3,5 or 2-4">
+                    <div class="option-help">
+                        Enter page numbers or ranges separated by commas. These pages will be removed from your PDF.
+                    </div>
+                </div>
+                
+                <!-- Page Examples -->
+                <div class="page-examples">
+                    <strong>Examples:</strong>
+                    <ul>
+                        <li>1,3,5 (deletes pages 1, 3, and 5)</li>
+                        <li>2-4 (deletes pages 2 through 4)</li>
+                        <li>1-3, 7-9 (deletes pages 1-3 and 7-9)</li>
+                        <li>10- (deletes from page 10 to the end)</li>
+                    </ul>
+                </div>
+                
+                <!-- Quick Selection -->
+                <div class="quick-selection">
+                    <button class="quick-btn" onclick="selectOddPages()">Select Odd Pages</button>
+                    <button class="quick-btn" onclick="selectEvenPages()">Select Even Pages</button>
+                    <button class="quick-btn" onclick="selectFirstPage()">Select First Page</button>
+                    <button class="quick-btn" onclick="selectLastPage()">Select Last Page</button>
+                    <button class="quick-btn" onclick="clearSelection()">Clear Selection</button>
+                </div>
+                
+                <!-- Page Preview -->
+                <div class="page-preview">
+                    <h3>Page Preview <small>(Total pages: <span id="totalPages">0</span>)</small></h3>
+                    <div class="page-grid" id="pageGrid">
+                        <!-- Pages will be dynamically generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn" onclick="processDelete()" id="processBtn" style="display: none;">
+                    <i class="fas fa-trash-alt"></i> Delete Selected Pages
+                </button>
+                <button class="btn btn-secondary" onclick="resetTool()">
+                    <i class="fas fa-redo"></i> Start Over
+                </button>
+            </div>
+
+            <!-- Message Display -->
+            <div class="message" id="message"></div>
+
+            <!-- Progress Container -->
+            <div class="progress-container" id="progressContainer">
+                <div class="spinner"></div>
+                <div class="progress-text">Removing pages from PDF...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-percent" id="progressPercent">0%</div>
+                </div>
+            </div>
+
+            <!-- Result Area -->
+            <div class="result-area" id="resultArea">
+                <div class="result-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="result-message">
+                    <h3>Pages Successfully Deleted!</h3>
+                    <p>Your PDF has been cleaned and is ready for download.</p>
+                </div>
+                <a href="#" class="download-btn" id="downloadBtn" onclick="downloadFile(event)">
+                    <i class="fas fa-download"></i> Download Cleaned PDF
+                </a>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="resetTool()">
+                        <i class="fas fa-redo"></i> Delete More Pages
+                    </button>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="features-section">
+                <h2>Why Use Our PDF Page Deleter?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Secure Processing</h3>
+                        <p>Files are processed securely and deleted automatically after 30 minutes.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-bolt"></i>
+                        <h3>Fast & Free</h3>
+                        <p>Delete pages quickly without any cost or registration required.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-eye"></i>
+                        <h3>Visual Preview</h3>
+                        <p>See all pages before selecting which ones to delete.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-thumbs-up"></i>
+                        <h3>High Quality</h3>
+                        <p>Preserves original PDF quality of remaining pages.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="faq-section">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-item">
+                    <div class="faq-question">Can I delete multiple pages at once?</div>
+                    <div class="faq-answer">Yes, you can delete any number of pages by specifying page numbers or ranges.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What happens if I delete all pages?</div>
+                    <div class="faq-answer">You must keep at least one page in the PDF. The tool will prevent you from deleting all pages.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Are my files secure?</div>
+                    <div class="faq-answer">Yes, all files are processed automatically and deleted after 30 minutes. We don't store or share your documents.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Can I delete pages from password-protected PDFs?</div>
+                    <div class="faq-answer">Yes, but you'll need to unlock them first using our unlock tool.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Is there a limit to how many pages I can delete?</div>
+                    <div class="faq-answer">No, you can delete as many pages as you want, as long as at least one page remains.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>iMasterPDF</h3>
+                    <a href="/">Home</a>
+                    <a href="/about.html">About</a>
+                    <a href="/contact.html">Contact</a>
+                    <a href="/privacy.html">Privacy Policy</a>
+                </div>
+                <div class="footer-column">
+                    <h3>PDF Tools</h3>
+                    <a href="/split.html">Split PDF</a>
+                    <a href="/mergepdf.html">Merge PDF</a>
+                    <a href="/deletepdf.html">Delete Pages</a>
+                    <a href="/rotatepdf.html">Rotate PDF</a>
+                </div>
+                <div class="footer-column">
+                    <h3>More Tools</h3>
+                    <a href="/lockpdf.html">Lock PDF</a>
+                    <a href="/unlockpdf.html">Unlock PDF</a>
+                    <a href="/pdftoword.html">PDF to Word</a>
+                    <a href="/imagestopdf.html">Images to PDF</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <p style="color: var(--muted);">For questions or support, please email:</p>
+                    <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a>
+                </div>
+            </div>
+            <div class="copyright">
+                © <span id="currentYear"></span> iMasterPDF. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let selectedFile = null;
+        let selectedPages = new Set();
+        let totalPageCount = 0;
+        let downloadUrl = null;
+
+        // Set current year in footer
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                showMessage('Please select a PDF file.', 'error');
+                return;
+            }
+            
+            // Validate file size (50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                showMessage('File size exceeds 50MB limit. Please choose a smaller file.', 'error');
+                return;
+            }
+            
+            selectedFile = file;
+            updateFileList();
+            
+            // For demo purposes, we'll simulate getting page count
+            // In production, you would use a PDF library to get actual page count
+            simulateGetPageCount();
+        }
+
+        // Update file list display
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            
+            if (!selectedFile) {
+                fileList.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem 0;">No files selected</p>';
+                return;
+            }
+            
+            const fileSize = formatFileSize(selectedFile.size);
+            fileList.innerHTML = `
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-name">${selectedFile.name}</div>
+                        <div class="file-size">${fileSize}</div>
+                    </div>
+                    <div class="file-remove" onclick="removeFile()">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Remove file
+        function removeFile() {
+            selectedFile = null;
+            selectedPages.clear();
+            totalPageCount = 0;
+            
+            updateFileList();
+            hideOptionsSection();
+            showMessage('File removed.', 'info');
+        }
+
+        // Simulate getting page count (for demo)
+        function simulateGetPageCount() {
+            // Show loading
+            document.getElementById('optionsSection').style.display = 'block';
+            document.getElementById('processBtn').style.display = 'inline-flex';
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Generate a random page count between 10 and 50 for demo
+                totalPageCount = Math.floor(Math.random() * 41) + 10;
+                document.getElementById('totalPages').textContent = totalPageCount;
+                
+                // Generate page preview
+                generatePagePreview();
+                
+                showMessage('PDF loaded successfully. Select pages to delete.', 'success');
+            }, 1000);
+        }
+
+        // Generate page preview
+        function generatePagePreview() {
+            const pageGrid = document.getElementById('pageGrid');
+            pageGrid.innerHTML = '';
+            
+            for (let i = 1; i <= totalPageCount; i++) {
+                const pageItem = document.createElement('div');
+                pageItem.className = 'page-item';
+                pageItem.dataset.page = i;
+                pageItem.onclick = () => togglePageSelection(i);
+                
+                pageItem.innerHTML = `
+                    <div class="page-number">${i}</div>
+                    <div class="page-select">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                `;
+                
+                pageGrid.appendChild(pageItem);
+            }
+        }
+
+        // Toggle page selection
+        function togglePageSelection(pageNumber) {
+            if (selectedPages.has(pageNumber)) {
+                selectedPages.delete(pageNumber);
+            } else {
+                selectedPages.add(pageNumber);
+            }
+            
+            // Update UI
+            const pageItem = document.querySelector(`.page-item[data-page="${pageNumber}"]`);
+            pageItem.classList.toggle('selected');
+            
+            // Update input field
+            updatePagesInput();
+        }
+
+        // Update pages input field
+        function updatePagesInput() {
+            if (selectedPages.size === 0) {
+                document.getElementById('pagesToDelete').value = '';
+                return;
+            }
+            
+            // Convert set to sorted array
+            const sortedPages = Array.from(selectedPages).sort((a, b) => a - b);
+            
+            // Group consecutive pages
+            const ranges = [];
+            let start = sortedPages[0];
+            let end = sortedPages[0];
+            
+            for (let i = 1; i <= sortedPages.length; i++) {
+                if (sortedPages[i] === end + 1) {
+                    end = sortedPages[i];
+                } else {
+                    if (start === end) {
+                        ranges.push(start.toString());
+                    } else {
+                        ranges.push(`${start}-${end}`);
+                    }
+                    start = sortedPages[i];
+                    end = sortedPages[i];
+                }
+            }
+            
+            document.getElementById('pagesToDelete').value = ranges.join(', ');
+        }
+
+        // Parse pages input field
+        function parsePagesInput() {
+            const input = document.getElementById('pagesToDelete').value.trim();
+            if (!input) return;
+            
+            selectedPages.clear();
+            const parts = input.split(',').map(part => part.trim());
+            
+            parts.forEach(part => {
+                if (part.includes('-')) {
+                    const [start, end] = part.split('-').map(num => parseInt(num.trim()));
+                    if (!isNaN(start) && !isNaN(end)) {
+                        for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
+                            if (i >= 1 && i <= totalPageCount) {
+                                selectedPages.add(i);
+                            }
+                        }
+                    }
+                } else {
+                    const page = parseInt(part);
+                    if (!isNaN(page) && page >= 1 && page <= totalPageCount) {
+                        selectedPages.add(page);
+                    }
+                }
+            });
+            
+            // Update UI
+            document.querySelectorAll('.page-item').forEach(item => {
+                const pageNum = parseInt(item.dataset.page);
+                item.classList.toggle('selected', selectedPages.has(pageNum));
+            });
+        }
+
+        // Quick selection functions
+        function selectOddPages() {
+            for (let i = 1; i <= totalPageCount; i++) {
+                if (i % 2 !== 0) {
+                    selectedPages.add(i);
+                }
+            }
+            updatePagesInput();
+            updatePageSelectionUI();
+        }
+
+        function selectEvenPages() {
+            for (let i = 1; i <= totalPageCount; i++) {
+                if (i % 2 === 0) {
+                    selectedPages.add(i);
+                }
+            }
+            updatePagesInput();
+            updatePageSelectionUI();
+        }
+
+        function selectFirstPage() {
+            selectedPages.add(1);
+            updatePagesInput();
+            updatePageSelectionUI();
+        }
+
+        function selectLastPage() {
+            selectedPages.add(totalPageCount);
+            updatePagesInput();
+            updatePageSelectionUI();
+        }
+
+        function clearSelection() {
+            selectedPages.clear();
+            document.getElementById('pagesToDelete').value = '';
+            updatePageSelectionUI();
+        }
+
+        function updatePageSelectionUI() {
+            document.querySelectorAll('.page-item').forEach(item => {
+                const pageNum = parseInt(item.dataset.page);
+                item.classList.toggle('selected', selectedPages.has(pageNum));
+            });
+        }
+
+        // Hide options section
+        function hideOptionsSection() {
+            document.getElementById('optionsSection').style.display = 'none';
+            document.getElementById('processBtn').style.display = 'none';
+            document.getElementById('pageGrid').innerHTML = '';
+            document.getElementById('totalPages').textContent = '0';
+            document.getElementById('pagesToDelete').value = '';
+        }
+
+        // Process page deletion
+        async function processDelete() {
+            // Validation
+            if (!selectedFile) {
+                showMessage('Please select a PDF file first.', 'error');
+                return;
+            }
+            
+            if (selectedPages.size === 0) {
+                showMessage('Please select at least one page to delete.', 'error');
+                return;
+            }
+            
+            // Validate that not all pages are selected
+            if (selectedPages.size >= totalPageCount) {
+                showMessage('Cannot delete all pages. At least one page must remain.', 'error');
+                return;
+            }
+            
+            // Show progress
+            document.getElementById('progressContainer').classList.add('active');
+            document.getElementById('processBtn').disabled = true;
+            
+            // Simulate progress
+            simulateProgress();
+            
+            try {
+                // Create FormData
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                // Convert selected pages to string
+                const pagesArray = Array.from(selectedPages).sort((a, b) => a - b);
+                const pagesString = pagesArray.join(',');
+                formData.append('pages', pagesString);
+                
+                // Call API
+                const response = await fetch('/api/delete-pages-pdf', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Page deletion failed. Please try again.');
+                }
+                
+                // Get the blob
+                const blob = await response.blob();
+                
+                // Create download URL
+                if (downloadUrl) {
+                    URL.revokeObjectURL(downloadUrl);
+                }
+                downloadUrl = URL.createObjectURL(blob);
+                
+                // Set download link
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.href = downloadUrl;
+                
+                // Get filename from response or use default
+                let filename = 'cleaned_document.pdf';
+                const contentDisposition = response.headers.get('Content-Disposition');
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                    if (filenameMatch) {
+                        filename = filenameMatch[1];
+                    }
+                }
+                downloadBtn.download = filename;
+                
+                // Show result
+                setTimeout(() => {
+                    document.getElementById('progressContainer').classList.remove('active');
+                    document.getElementById('resultArea').classList.add('active');
+                    showMessage('Pages successfully deleted! Click download to get your file.', 'success');
+                    document.getElementById('processBtn').disabled = false;
+                }, 500);
+                
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+                document.getElementById('progressContainer').classList.remove('active');
+                document.getElementById('processBtn').disabled = false;
+            }
+        }
+
+        // Simulate progress animation
+        function simulateProgress() {
+            let progress = 0;
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            
+            const interval = setInterval(() => {
+                progress += 5;
+                if (progress > 90) {
+                    clearInterval(interval);
+                    progress = 90;
+                }
+                progressFill.style.width = progress + '%';
+                progressPercent.textContent = progress + '%';
+            }, 100);
+        }
+
+        // Download file
+        function downloadFile(event) {
+            if (!downloadUrl) {
+                event.preventDefault();
+                showMessage('No file to download. Please delete pages first.', 'error');
+            }
+        }
+
+        // Reset tool
+        function resetTool() {
+            selectedFile = null;
+            selectedPages.clear();
+            totalPageCount = 0;
+            downloadUrl = null;
+            
+            // Reset UI
+            updateFileList();
+            hideOptionsSection();
+            document.getElementById('resultArea').classList.remove('active');
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('processBtn').disabled = false;
+            
+            // Clear message
+            document.getElementById('message').style.display = 'none';
+            
+            // Reset file input
+            document.getElementById('fileInput').value = '';
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+            
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Drag and drop for file upload
+        const dropZone = document.getElementById('dropZone');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                const fileInput = document.getElementById('fileInput');
+                
+                // Create a new FileList-like object
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                // Trigger file select
+                handleFileSelect({ target: fileInput });
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add current year to footer
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            
+            // Parse pages input on change
+            document.getElementById('pagesToDelete').addEventListener('input', parsePagesInput);
+        });
+    </script>
+</body>
+</html>

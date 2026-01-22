@@ -198,14 +198,21 @@
             font-size: 0.9rem;
         }
 
+        /* Tool Container */
+        .tool-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
         /* Upload Area */
         .upload-area {
             background: white;
             border-radius: var(--radius);
             padding: 2rem;
             box-shadow: var(--shadow);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             display: none;
+            text-align: center;
         }
 
         .upload-area.active {
@@ -221,7 +228,7 @@
         .upload-box {
             border: 3px dashed var(--gray-color);
             border-radius: var(--radius);
-            padding: 3rem;
+            padding: 3rem 2rem;
             text-align: center;
             margin: 1rem 0;
             transition: var(--transition);
@@ -276,13 +283,30 @@
             border-radius: 50%;
         }
 
+        /* Tool Content Header */
+        .tool-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .tool-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .tool-header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
         /* Options Panel */
         .options-panel {
             background: white;
             border-radius: var(--radius);
             padding: 2rem;
             box-shadow: var(--shadow);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             display: none;
         }
 
@@ -309,6 +333,53 @@
             border-radius: var(--radius);
             font-size: 1rem;
             font-family: inherit;
+        }
+
+        /* How-to guide section */
+        .how-to-guide {
+            background: #f8fafc;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
+        }
+        .how-to-guide h4 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: var(--dark-color);
+        }
+        .how-to-guide ol {
+            margin: 0 0 10px 0;
+            padding-left: 20px;
+        }
+        .how-to-guide li {
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        .how-to-guide .note {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            font-style: italic;
+        }
+
+        /* Action Buttons Container - NEW */
+        .action-buttons-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .action-buttons-container .btn {
+            min-width: 180px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
         }
 
         /* Progress Container */
@@ -354,22 +425,6 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            margin: 2rem 0;
-            display: none;
-        }
-
-        .action-buttons.active {
-            display: flex;
-        }
-
-        .action-buttons .btn {
-            flex: 1;
-        }
-
         /* Result Area */
         .result-area {
             background: white;
@@ -379,6 +434,7 @@
             text-align: center;
             display: none;
             animation: fadeIn 0.5s ease;
+            margin-bottom: 2rem;
         }
 
         .result-area.active {
@@ -462,34 +518,41 @@
             margin: 0;
         }
 
-        /* How-to guide section */
-        .how-to-guide {
-            background: #f8fafc;
+        /* Message */
+        .msg {
+            padding: 12px 16px;
             border-radius: var(--radius);
-            padding: 16px;
-            margin-top: 20px;
-            border-left: 4px solid var(--primary-color);
+            margin: 1rem 0;
+            display: none;
+            text-align: center;
         }
-        .how-to-guide h4 {
-            margin: 0 0 10px;
-            font-size: 16px;
-            color: var(--text);
+        
+        .msg.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
         }
-        .how-to-guide ol {
-            margin: 0 0 10px 0;
-            padding-left: 20px;
+        
+        .msg.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
         }
-        .how-to-guide li {
-            margin-bottom: 6px;
-            color: var(--text);
-            font-size: 14px;
+        
+        .msg.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            display: block;
         }
-        .how-to-guide .note {
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px dashed var(--border);
+        
+        .msg.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            display: block;
         }
 
         /* Info pages */
@@ -669,26 +732,6 @@
             resize: vertical;
         }
 
-        /* Message */
-        .msg {
-            padding: 10px;
-            border-radius: var(--radius);
-            margin: 10px 0;
-            display: none;
-        }
-        
-        .msg.success {
-            background: #d1fae5;
-            color: #065f46;
-            display: block;
-        }
-        
-        .msg.error {
-            background: #fee2e2;
-            color: #991b1b;
-            display: block;
-        }
-
         /* Pagination */
         .pagination {
             display: flex;
@@ -787,12 +830,22 @@
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
 
-            .action-buttons {
+            .action-buttons-container {
                 flex-direction: column;
+                align-items: center;
+            }
+
+            .action-buttons-container .btn {
+                width: 100%;
+                max-width: 300px;
             }
 
             .upload-box {
                 padding: 2rem 1rem;
+            }
+            
+            .tool-header h2 {
+                font-size: 1.5rem;
             }
         }
 
@@ -838,67 +891,6 @@
     </header>
 
     <!-- Hero Section -->
-         </section>  <!-- This closes the Hero section -->
-
-    <!-- ===== ADD YOUR TOOL BUTTONS RIGHT HERE ===== -->
-    <section class="container" style="margin: 40px auto; padding: 30px 20px; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-        <h2 style="text-align: center; margin-bottom: 35px; color: #2d3436; font-size: 28px;">Popular PDF Tools</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
-            
-            <a href="https://imasterpdf-xdde.onrender.com/merge" style="text-decoration: none;">
-                <div style="padding: 25px; background: #f8fafc; border-radius: 10px; text-align: center; border: 2px solid #e2e8f0; transition: all 0.3s; cursor: pointer;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
-                    <h3 style="margin: 0 0 10px; color: #2d3436;">Merge PDF</h3>
-                    <p style="color: #666; font-size: 14px; margin: 0;">Combine multiple PDFs into one</p>
-                </div>
-            </a>
-            
-            <a href="https://imasterpdf-xdde.onrender.com/split" style="text-decoration: none;">
-                <div style="padding: 25px; background: #f8fafc; border-radius: 10px; text-align: center; border: 2px solid #e2e8f0; transition: all 0.3s; cursor: pointer;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">✂️</div>
-                    <h3 style="margin: 0 0 10px; color: #2d3436;">Split PDF</h3>
-                    <p style="color: #666; font-size: 14px; margin: 0;">Split PDF into multiple files</p>
-                </div>
-            </a>
-            
-            <a href="https://imasterpdf-xdde.onrender.com/compress" style="text-decoration: none;">
-                <div style="padding: 25px; background: #f8fafc; border-radius: 10px; text-align: center; border: 2px solid #e2e8f0; transition: all 0.3s; cursor: pointer;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">🗜️</div>
-                    <h3 style="margin: 0 0 10px; color: #2d3436;">Compress PDF</h3>
-                    <p style="color: #666; font-size: 14px; margin: 0;">Reduce PDF file size</p>
-                </div>
-            </a>
-            
-            <a href="https://imasterpdf-xdde.onrender.com/pdf-to-word" style="text-decoration: none;">
-                <div style="padding: 25px; background: #f8fafc; border-radius: 10px; text-align: center; border: 2px solid #e2e8f0; transition: all 0.3s; cursor: pointer;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
-                    <h3 style="margin: 0 0 10px; color: #2d3436;">PDF to Word</h3>
-                    <p style="color: #666; font-size: 14px; margin: 0;">Convert PDF to editable Word</p>
-                </div>
-            </a>
-            
-            <a href="https://imasterpdf-xdde.onrender.com/jpg-to-pdf" style="text-decoration: none;">
-                <div style="padding: 25px; background: #f8fafc; border-radius: 10px; text-align: center; border: 2px solid #e2e8f0; transition: all 0.3s; cursor: pointer;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">🖼️</div>
-                    <h3 style="margin: 0 0 10px; color: #2d3436;">JPG to PDF</h3>
-                    <p style="color: #666; font-size: 14px; margin: 0;">Convert images to PDF</p>
-                </div>
-            </a>
-            
-            <a href="https://imasterpdf-xdde.onrender.com/unlock-pdf" style="text-decoration: none;">
-                <div style="padding: 25px; background: #f8fafc; border-radius: 10px; text-align: center; border: 2px solid #e2e8f0; transition: all 0.3s; cursor: pointer;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">🔓</div>
-                    <h3 style="margin: 0 0 10px; color: #2d3436;">Unlock PDF</h3>
-                    <p style="color: #666; font-size: 14px; margin: 0;">Remove password protection</p>
-                </div>
-            </a>
-            
-        </div>
-        <p style="text-align: center; color: #666; margin-top: 25px; font-size: 14px;">Direct access to tools - Click any tool above</p>
-    </section>
-    <!-- ===== END OF TOOL BUTTONS ===== -->
-
-    <!-- Main Content -->
     <section class="hero" id="hero">
         <div class="container">
             <h1>iMasterPDF - Free Online Document Tools</h1>
@@ -1031,66 +1023,84 @@
 
         <!-- Tool Section -->
         <section id="tool" class="hidden-section">
-            <div class="upload-area" id="uploadArea">
-                <h2 id="toolTitle">Select Tool</h2>
-                <p id="toolDescription">Description will appear here</p>
-                
-                <div class="how-to-guide" id="howToGuide"></div>
-                
-                <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <h3>Drag & Drop Files Here</h3>
-                    <p>or click to browse files</p>
-                    <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)">
+            <div class="tool-container">
+                <!-- Tool Header -->
+                <div class="tool-header">
+                    <h2 id="toolTitle">Select Tool</h2>
+                    <p id="toolDescription">Description will appear here</p>
                 </div>
                 
-                <div class="file-list" id="fileList"></div>
+                <!-- How-to Guide -->
+                <div class="how-to-guide" id="howToGuide">
+                    <h4>How to use this tool:</h4>
+                    <ol>
+                        <li>Upload your file(s) using the upload area</li>
+                        <li>Configure options if available</li>
+                        <li>Click "Process Files" to start conversion</li>
+                    </ol>
+                    <div class="note">Note: Files are processed securely and deleted automatically after conversion.</div>
+                </div>
+                
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Drag & Drop Files Here</h3>
+                        <p>or click to browse files</p>
+                        <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)">
+                    </div>
+                    
+                    <div class="file-list" id="fileList">
+                        <p style="text-align: center; color: var(--gray-color);">No files selected</p>
+                    </div>
+                </div>
+
+                <!-- Options Panel -->
+                <div class="options-panel" id="optionsPanel">
+                    <h3 style="margin-bottom: 1.5rem; text-align: center;">Options</h3>
+                    <div id="toolOptions"></div>
+                </div>
+
+                <!-- Action Buttons - MOVED HERE -->
+                <div class="action-buttons-container" id="actionButtons">
+                    <button class="btn" onclick="processFiles()">
+                        <i class="fas fa-cogs"></i> Process Files
+                    </button>
+                    <button class="btn btn-secondary" onclick="goHome(event)">
+                        <i class="fas fa-redo"></i> Start Over
+                    </button>
+                </div>
+
+                <!-- Message Area -->
+                <div class="msg" id="message"></div>
+
+                <!-- Progress Container -->
+                <div class="progress-container" id="progressContainer">
+                    <div class="spinner"></div>
+                    <h3>Processing...</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <div class="progress-text" id="progress-text">0%</div>
+                    </div>
+                </div>
+
+                <!-- Result Area -->
+                <div class="result-area" id="resultArea">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Conversion Complete!</h3>
+                    <p>Your file has been processed successfully.</p>
+                    <a id="downloadLink" class="btn" style="margin-top: 1rem;">
+                        <i class="fas fa-download"></i> Download File
+                    </a>
+                    <button class="btn btn-secondary" onclick="goHome(event)" style="margin-top: 1rem;">
+                        <i class="fas fa-redo"></i> Convert Another File
+                    </button>
+                </div>
             </div>
 
             <!-- Detailed Tool Content -->
             <div class="tool-detail-content" id="toolDetailContent">
                 <!-- Content will be dynamically inserted here -->
-            </div>
-
-            <!-- Options Panel -->
-            <div class="options-panel" id="optionsPanel">
-                <h3>Options</h3>
-                <div id="toolOptions"></div>
-            </div>
-
-            <!-- Progress Container -->
-            <div class="progress-container" id="progressContainer">
-                <div class="spinner"></div>
-                <h3>Processing...</h3>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill"></div>
-                    <div class="progress-text" id="progress-text">0%</div>
-                </div>
-            </div>
-
-            <div class="msg" id="message"></div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons" id="actionButtons">
-                <button class="btn" onclick="processFiles()">
-                    <i class="fas fa-cogs"></i> Process Files
-                </button>
-                <button class="btn btn-secondary" onclick="goHome(event)">
-                    <i class="fas fa-redo"></i> Start Over
-                </button>
-            </div>
-
-            <!-- Result Area -->
-            <div class="result-area" id="resultArea">
-                <i class="fas fa-check-circle"></i>
-                <h3>Conversion Complete!</h3>
-                <p>Your file has been processed successfully.</p>
-                <a id="downloadLink" class="btn" style="margin-top: 1rem;">
-                    <i class="fas fa-download"></i> Download File
-                </a>
-                <button class="btn btn-secondary" onclick="goHome(event)" style="margin-top: 1rem;">
-                    <i class="fas fa-redo"></i> Convert Another File
-                </button>
             </div>
         </section>
 
@@ -1838,7 +1848,7 @@
             // Clear any previous messages
             document.getElementById('message').style.display = 'none';
             
-            // Show how-to guide
+            // Show how-to guide with tool-specific steps
             const guideHtml = `
                 <h4>How to ${toolInfo.title}:</h4>
                 <ol>
@@ -1851,9 +1861,9 @@
             // Show detailed tool content
             renderToolDetailContent(tool);
             
-            // Reset file input - IMPORTANT: Clear the value too!
+            // Reset file input
             const fileInput = document.getElementById('fileInput');
-            fileInput.value = ''; // This clears any previously selected files
+            fileInput.value = '';
             fileInput.accept = toolInfo.accept;
             if (toolInfo.multiple) {
                 fileInput.setAttribute('multiple', '');
@@ -1877,7 +1887,7 @@
             document.getElementById('uploadArea').classList.add('active');
             
             // Show action buttons
-            document.getElementById('actionButtons').classList.add('active');
+            document.getElementById('actionButtons').style.display = 'flex';
             
             // Hide result and progress areas
             document.getElementById('resultArea').classList.remove('active');
@@ -1887,6 +1897,9 @@
             // Show tool section
             showSection('tool');
             window.history.pushState({}, '', '/tool');
+            
+            // Scroll to tool section
+            document.getElementById('tool').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Render detailed tool content
@@ -2048,13 +2061,13 @@
 
         function updateFileList() {
             const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';
             
             if (uploadedFiles.length === 0) {
                 fileList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">No files selected</p>';
                 return;
             }
             
+            fileList.innerHTML = '';
             uploadedFiles.forEach((file, index) => {
                 const div = document.createElement('div');
                 div.className = 'file-item';
@@ -2182,6 +2195,9 @@
                 }
             }
             
+            // Hide action buttons during processing
+            document.getElementById('actionButtons').style.display = 'none';
+            
             // Show progress
             document.getElementById('progressContainer').classList.add('active');
             document.getElementById('progress-fill').style.width = '10%';
@@ -2291,6 +2307,8 @@
             } catch (error) {
                 showMessage('Error: ' + error.message, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
+                // Show action buttons again
+                document.getElementById('actionButtons').style.display = 'flex';
                 console.error('Processing error:', error);
             }
         }
@@ -2326,7 +2344,7 @@
             
             document.getElementById('uploadArea').classList.remove('active');
             document.getElementById('optionsPanel').classList.remove('active');
-            document.getElementById('actionButtons').classList.remove('active');
+            document.getElementById('actionButtons').style.display = 'none';
             document.getElementById('resultArea').classList.remove('active');
             document.getElementById('progressContainer').classList.remove('active');
             document.getElementById('toolDetailContent').classList.remove('active');
@@ -2480,7 +2498,7 @@
             this.reset();
         });
 
-        // Back to blog button - FIXED: Changed from "secondary" to "btn-secondary"
+        // Back to blog button
         document.getElementById('back-to-blog').addEventListener('click', function(e) {
             e.preventDefault();
             showSection('blog');
