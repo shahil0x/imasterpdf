@@ -18,7 +18,7 @@ import traceback
 # -----------------------------------------------------------------------------
 # Flask app configuration
 # -----------------------------------------------------------------------------
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
@@ -122,7 +122,7 @@ def index():
     return render_template('index.html')
 
 # -----------------------------------------------------------------------------
-# Tool page routes
+# Tool page routes - FIXED: Each tool now renders its own template
 # -----------------------------------------------------------------------------
 @app.route('/wordtopdf')
 def word_to_pdf_page():
@@ -172,31 +172,40 @@ def delete_pages_pdf_page():
 def unlock_pdf_page():
     return render_template('unlockpdf.html')
 
+@app.route('/split')
+def split_pdf_page():
+    return render_template('split.html')
+
 # -----------------------------------------------------------------------------
 # Blog and info pages
 # -----------------------------------------------------------------------------
 @app.route('/blog')
 def blog_page():
+    # For blog, we'll use the main index.html which has SPA functionality
     return render_template('index.html')
 
 @app.route('/about')
 def about_page():
+    # For about, we'll use the main index.html which has SPA functionality
     return render_template('index.html')
 
 @app.route('/contact')
 def contact_page():
+    # For contact, we'll use the main index.html which has SPA functionality
     return render_template('index.html')
 
 @app.route('/privacy')
 def privacy_page():
+    # For privacy, we'll use the main index.html which has SPA functionality
     return render_template('index.html')
 
 @app.route('/terms')
 def terms_page():
+    # For terms, we'll use the main index.html which has SPA functionality
     return render_template('index.html')
 
 # -----------------------------------------------------------------------------
-# API Endpoints
+# API Endpoints - ADDED: Split PDF endpoint
 # -----------------------------------------------------------------------------
 
 @app.route('/api/word-to-pdf', methods=['POST'])
@@ -975,6 +984,147 @@ def api_unlock_pdf():
         except Exception as e:
             app.logger.error(f"PDF unlock error: {str(e)}")
             return jsonify({"error": f"Unlocking failed: {str(e)}"}), 500
+            
+    except Exception as e:
+        app.logger.error(f"API error: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": str(e)}), 500
+        
+    finally:
+        for path in paths:
+            safe_remove(path)
+
+@app.route('/api/split-pdf', methods=['POST'])
+def api_split_pdf():
+    """Split PDF into multiple documents"""
+    try:
+        cleanup_temp()
+        
+        if 'files' not in request.files:
+            return jsonify({"error": "No files provided"}), 400
+        
+        files = request.files.getlist('files')
+        if not files or len(files) == 0:
+            return jsonify({"error": "Upload a PDF file"}), 400
+        
+        split_method = request.form.get('split_method', 'range').strip()
+        page_range = request.form.get('page_range', '').strip()
+        
+        paths = save_uploads(files)
+        
+        # Validate file types
+        for path in paths:
+            if ext_of(path) not in ALLOWED_PDF_EXT:
+                for p in paths:
+                    safe_remove(p)
+                return jsonify({"error": "Only PDF files are supported"}), 400
+        
+        try:
+            reader = PdfReader(paths[0])
+            total_pages = len(reader.pages)
+            
+            # Create temporary directory for split files
+            temp_dir = tempfile.mkdtemp(dir=OUTPUT_DIR)
+            split_files = []
+            
+            if split_method == 'single':
+                # Split into single pages
+                for i in range(total_pages):
+                    writer = PdfWriter()
+                    writer.add_page(reader.pages[i])
+                    
+                    temp_path = os.path.join(temp_dir, f"page_{i+1}.pdf")
+                    with open(temp_path, 'wb') as f:
+                        writer.write(f)
+                    split_files.append(temp_path)
+                    
+            elif split_method == 'every':
+                # Split every N pages
+                try:
+                    n = int(page_range)
+                    if n < 1:
+                        raise ValueError
+                    
+                    for start in range(0, total_pages, n):
+                        end = min(start + n, total_pages)
+                        writer = PdfWriter()
+                        
+                        for i in range(start, end):
+                            writer.add_page(reader.pages[i])
+                        
+                        temp_path = os.path.join(temp_dir, f"pages_{start+1}_{end}.pdf")
+                        with open(temp_path, 'wb') as f:
+                            writer.write(f)
+                        split_files.append(temp_path)
+                        
+                except ValueError:
+                    shutil.rmtree(temp_dir, ignore_errors=True)
+                    return jsonify({"error": "Invalid number for split every N pages"}), 400
+                    
+            elif split_method == 'range':
+                # Split by page ranges
+                if not page_range:
+                    shutil.rmtree(temp_dir, ignore_errors=True)
+                    return jsonify({"error": "Page range is required"}), 400
+                
+                try:
+                    ranges = [r.strip() for r in page_range.split(',') if r.strip()]
+                    file_num = 1
+                    
+                    for range_str in ranges:
+                        writer = PdfWriter()
+                        
+                        if '-' in range_str:
+                            start, end = map(int, range_str.split('-'))
+                            start = max(1, start) - 1
+                            end = min(total_pages, end)
+                            
+                            for i in range(start, end):
+                                writer.add_page(reader.pages[i])
+                            
+                            temp_path = os.path.join(temp_dir, f"pages_{start+1}_{end}.pdf")
+                            with open(temp_path, 'wb') as f:
+                                writer.write(f)
+                            split_files.append(temp_path)
+                            
+                        else:
+                            page = int(range_str)
+                            if 1 <= page <= total_pages:
+                                writer.add_page(reader.pages[page-1])
+                                temp_path = os.path.join(temp_dir, f"page_{page}.pdf")
+                                with open(temp_path, 'wb') as f:
+                                    writer.write(f)
+                                split_files.append(temp_path)
+                                
+                except ValueError:
+                    shutil.rmtree(temp_dir, ignore_errors=True)
+                    return jsonify({"error": "Invalid page range format"}), 400
+            
+            # Create ZIP file
+            buffer = io.BytesIO()
+            with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for file_path in split_files:
+                    zipf.write(file_path, os.path.basename(file_path))
+            
+            buffer.seek(0)
+            
+            # Clean up temp files
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            
+            # Create filename
+            original_name = secure_filename(files[0].filename)
+            output_name = generate_unique_filename(original_name, "split")
+            output_name = os.path.splitext(output_name)[0] + ".zip"
+            
+            return send_file(
+                buffer,
+                as_attachment=True,
+                download_name=output_name,
+                mimetype='application/zip'
+            )
+            
+        except Exception as e:
+            app.logger.error(f"PDF split error: {str(e)}")
+            return jsonify({"error": f"Splitting failed: {str(e)}"}), 500
             
     except Exception as e:
         app.logger.error(f"API error: {str(e)}\n{traceback.format_exc()}")
