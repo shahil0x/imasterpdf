@@ -576,7 +576,7 @@
                 </div>
             </div>
 
-            <div class="action-buttons-container">
+            <div class="action-buttons-container" id="action-buttons">
                 <button class="btn" onclick="processFile()">
                     <i class="fas fa-cut"></i> Split PDF
                 </button>
@@ -631,14 +631,15 @@
                 <p><a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
             </div>
         </div>
-        <div class="copyright">© 2026 iMasterPDF. All rights reserved.</div>
+        <div class="copyright">© <span id="currentYear">2026</span> iMasterPDF. All rights reserved.</div>
     </footer>
 
     <script>
         let uploadedFiles = [];
         const MAX_SIZE = 50 * 1024 * 1024;
 
-        document.getElementById('year').textContent = new Date().getFullYear();
+        // Set current year in footer
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
 
         function handleFileSelect(event) {
             const files = Array.from(event.target.files);
@@ -714,8 +715,10 @@
             
             if (splitMethod === 'every') {
                 everyGroup.style.display = 'block';
+                document.getElementById('everyNumber').focus();
             } else if (splitMethod === 'range') {
                 rangeGroup.style.display = 'block';
+                document.getElementById('pageRange').focus();
             }
         }
 
@@ -741,8 +744,14 @@
                     showMessage('Please enter page ranges', 'error');
                     return;
                 }
+                // Validate page range format
+                if (!isValidPageRange(pageRange)) {
+                    showMessage('Invalid page range format. Use format like: 1-3,5,7-10', 'error');
+                    return;
+                }
             }
 
+            // Hide action buttons and show progress
             document.getElementById('action-buttons').style.display = 'none';
             document.getElementById('progressContainer').classList.add('active');
             document.getElementById('progress-fill').style.width = '10%';
@@ -761,6 +770,7 @@
                 document.getElementById('progress-fill').style.width = '50%';
                 document.getElementById('progress-text').textContent = '50%';
 
+                // Send request to API
                 const response = await fetch('/api/split-pdf', {
                     method: 'POST',
                     body: formData
@@ -770,12 +780,31 @@
                 document.getElementById('progress-text').textContent = '90%';
 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || 'Splitting failed');
+                    let errorMessage = 'Splitting failed';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (e) {
+                        const errorText = await response.text();
+                        errorMessage = errorText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                // Get the filename from response headers or generate one
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = 'split_pdf.zip';
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="(.+)"/);
+                    if (match) {
+                        filename = match[1];
+                    } else {
+                        const match2 = contentDisposition.match(/filename=([^;]+)/);
+                        if (match2) filename = match2[1];
+                    }
                 }
 
                 const blob = await response.blob();
-                const filename = getFilenameFromResponse(response, uploadedFiles[0].name, '.zip');
 
                 document.getElementById('progress-fill').style.width = '100%';
                 document.getElementById('progress-text').textContent = '100%';
@@ -784,38 +813,49 @@
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('resultArea').classList.add('active');
 
+                    // Create download link
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = downloadUrl;
                     downloadLink.download = filename;
-                    downloadLink.textContent = `Download ${filename}`;
-                    downloadLink.target = '_blank';
+                    downloadLink.innerHTML = `<i class="fas fa-download"></i> Download ${filename}`;
 
-                    downloadLink.onclick = () => {
-                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
-                    };
+                    // Clean up URL after download
+                    downloadLink.addEventListener('click', function() {
+                        setTimeout(() => {
+                            URL.revokeObjectURL(downloadUrl);
+                        }, 100);
+                    });
 
+                    // Scroll to result area
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
                 }, 500);
 
             } catch (error) {
+                console.error('Split error:', error);
                 showMessage('Error: ' + error.message, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
                 document.getElementById('action-buttons').style.display = 'flex';
             }
         }
 
-        function getFilenameFromResponse(response, originalName, defaultExt) {
-            const contentDisposition = response.headers.get('Content-Disposition');
-            if (contentDisposition) {
-                const match = contentDisposition.match(/filename="(.+)"/);
-                if (match) return match[1];
+        function isValidPageRange(range) {
+            const parts = range.split(',');
+            for (const part of parts) {
+                const trimmed = part.trim();
+                if (trimmed.includes('-')) {
+                    const [start, end] = trimmed.split('-').map(s => parseInt(s.trim()));
+                    if (isNaN(start) || isNaN(end) || start < 1 || end < 1 || start > end) {
+                        return false;
+                    }
+                } else {
+                    const page = parseInt(trimmed);
+                    if (isNaN(page) || page < 1) {
+                        return false;
+                    }
+                }
             }
-            
-            const timestamp = new Date().getTime();
-            const randomId = Math.random().toString(36).substr(2, 9);
-            const nameWithoutExt = originalName.replace(/\.[^/.]+$/, "");
-            return `${nameWithoutExt}_split_${timestamp}_${randomId}${defaultExt}`;
+            return true;
         }
 
         function showMessage(text, type) {
@@ -836,11 +876,14 @@
             document.getElementById('fileInput').value = '';
             document.getElementById('everyNumber').value = '1';
             document.getElementById('pageRange').value = '';
+            document.getElementById('splitMethod').value = 'single';
             updateFileList();
             document.getElementById('resultArea').classList.remove('active');
             document.getElementById('action-buttons').style.display = 'flex';
+            toggleSplitOptions(); // Reset to show correct options
         }
 
+        // Drag and drop functionality
         const dropZone = document.getElementById('dropZone');
         
         dropZone.addEventListener('dragover', (e) => {
@@ -860,7 +903,7 @@
             addFiles(files);
         });
 
-        // Initialize split options visibility
+        // Initialize
         toggleSplitOptions();
     </script>
 </body>
