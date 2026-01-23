@@ -14,6 +14,7 @@ from PIL import Image
 import zipfile
 from pdfminer.high_level import extract_text
 import traceback
+import json
 
 # -----------------------------------------------------------------------------
 # Flask app configuration
@@ -52,13 +53,13 @@ def validate_file(stream):
 def generate_unique_filename(original_filename, suffix=""):
     """Generate a unique filename with UUID and timestamp"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    unique_id = str(uuid.uuid4())[:12]  # Use first 12 chars of UUID
+    unique_id = str(uuid.uuid4())  # Full UUID
     name, ext = os.path.splitext(original_filename)
     safe_name = secure_filename(name)
     
     if suffix:
-        return f"{safe_name}_{suffix}_{timestamp}_{unique_id}{ext}"
-    return f"{safe_name}_{timestamp}_{unique_id}{ext}"
+        return f"imasterpdf_{suffix}_{timestamp}_{unique_id}{ext}"
+    return f"imasterpdf_{timestamp}_{unique_id}{ext}"
 
 def save_uploads(files):
     saved = []
@@ -114,98 +115,111 @@ def safe_remove(path):
         pass
 
 # -----------------------------------------------------------------------------
-# Home page route
+# Home page route - FIXED to serve index.html
 # -----------------------------------------------------------------------------
 @app.route('/')
 def index():
-    """Main landing page"""
+    """Main landing page - serves the SPA index.html"""
     return render_template('index.html')
 
 # -----------------------------------------------------------------------------
-# Tool page routes - FIXED: Each tool now renders its own template
+# Tool page routes - Each tool now renders its own template
 # -----------------------------------------------------------------------------
-@app.route('/wordtopdf')
-def word_to_pdf_page():
-    return render_template('wordtopdf.html')
-
-@app.route('/mergeword')
-def merge_word_page():
-    return render_template('mergeword.html')
-
-@app.route('/wordtotext')
-def word_to_text_page():
-    return render_template('wordtotext.html')
-
-@app.route('/texttopdf')
-def text_to_pdf_page():
-    return render_template('texttopdf.html')
-
-@app.route('/texttoword')
-def text_to_word_page():
-    return render_template('texttoword.html')
-
-@app.route('/imagestopdf')
-def images_to_pdf_page():
-    return render_template('imagestopdf.html')
-
-@app.route('/lockpdf')
-def lock_pdf_page():
-    return render_template('lockpdf.html')
-
 @app.route('/pdftoword')
 def pdf_to_word_page():
+    """PDF to Word converter page"""
     return render_template('pdftoword.html')
 
 @app.route('/mergepdf')
 def merge_pdf_page():
+    """Merge PDF page"""
     return render_template('mergepdf.html')
+
+@app.route('/wordtopdf')
+def word_to_pdf_page():
+    """Word to PDF converter page"""
+    return render_template('wordtopdf.html')
+
+@app.route('/lockpdf')
+def lock_pdf_page():
+    """Lock PDF page"""
+    return render_template('lockpdf.html')
+
+@app.route('/imagestopdf')
+def images_to_pdf_page():
+    """Images to PDF page"""
+    return render_template('imagestopdf.html')
 
 @app.route('/rotatepdf')
 def rotate_pdf_page():
+    """Rotate PDF page"""
     return render_template('rotatepdf.html')
-
-@app.route('/deletepdf')
-def delete_pages_pdf_page():
-    return render_template('deletepdf.html')
 
 @app.route('/unlockpdf')
 def unlock_pdf_page():
+    """Unlock PDF page"""
     return render_template('unlockpdf.html')
+
+@app.route('/deletepdf')
+def delete_pages_pdf_page():
+    """Delete PDF pages page"""
+    return render_template('deletepdf.html')
+
+@app.route('/mergeword')
+def merge_word_page():
+    """Merge Word page"""
+    return render_template('mergeword.html')
+
+@app.route('/wordtotext')
+def word_to_text_page():
+    """Word to Text page"""
+    return render_template('wordtotext.html')
+
+@app.route('/texttopdf')
+def text_to_pdf_page():
+    """Text to PDF page"""
+    return render_template('texttopdf.html')
+
+@app.route('/texttoword')
+def text_to_word_page():
+    """Text to Word page"""
+    return render_template('texttoword.html')
 
 @app.route('/split')
 def split_pdf_page():
+    """Split PDF page"""
     return render_template('split.html')
 
 # -----------------------------------------------------------------------------
-# Blog and info pages
+# Blog and info pages - FIXED to serve index.html for SPA routing
 # -----------------------------------------------------------------------------
 @app.route('/blog')
 def blog_page():
-    # For blog, we'll use the main index.html which has SPA functionality
+    """Blog page - served by SPA"""
     return render_template('index.html')
 
 @app.route('/about')
 def about_page():
-    # For about, we'll use the main index.html which has SPA functionality
+    """About page - served by SPA"""
     return render_template('index.html')
 
 @app.route('/contact')
 def contact_page():
-    # For contact, we'll use the main index.html which has SPA functionality
+    """Contact page - served by SPA"""
     return render_template('index.html')
 
 @app.route('/privacy')
 def privacy_page():
-    # For privacy, we'll use the main index.html which has SPA functionality
+    """Privacy page - served by SPA"""
     return render_template('index.html')
 
 @app.route('/terms')
 def terms_page():
-    # For terms, we'll use the main index.html which has SPA functionality
+    """Terms page - served by SPA"""
     return render_template('index.html')
 
 # -----------------------------------------------------------------------------
-# API Endpoints - ADDED: Split PDF endpoint
+# API Endpoints
 # -----------------------------------------------------------------------------
 
 @app.route('/api/word-to-pdf', methods=['POST'])
@@ -256,9 +270,8 @@ def api_word_to_pdf():
             c.save()
             buffer.seek(0)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "converted")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "converted")
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
             return send_file(
@@ -323,9 +336,8 @@ def api_merge_word():
             merged_doc.save(buffer)
             buffer.seek(0)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "merged")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "merged")
             output_name = os.path.splitext(output_name)[0] + ".docx"
             
             return send_file(
@@ -383,9 +395,8 @@ def api_word_to_text():
             buffer = io.BytesIO(text.encode('utf-8'))
             buffer.seek(0)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "extracted")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "extracted")
             output_name = os.path.splitext(output_name)[0] + ".txt"
             
             return send_file(
@@ -446,9 +457,10 @@ def api_text_to_pdf():
             c.save()
             buffer.seek(0)
             
-            # Create filename
+            # Create filename with UUID
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            output_name = f"text_converted_{timestamp}.pdf"
+            unique_id = str(uuid.uuid4())
+            output_name = f"imasterpdf_text_pdf_{timestamp}_{unique_id}.pdf"
             
             return send_file(
                 buffer,
@@ -490,9 +502,10 @@ def api_text_to_word():
             doc.save(buffer)
             buffer.seek(0)
             
-            # Create filename
+            # Create filename with UUID
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            output_name = f"text_converted_{timestamp}.docx"
+            unique_id = str(uuid.uuid4())
+            output_name = f"imasterpdf_text_word_{timestamp}_{unique_id}.docx"
             
             return send_file(
                 buffer,
@@ -553,9 +566,8 @@ def api_images_to_pdf():
             
             buffer.seek(0)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "images_pdf")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "images_pdf")
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
             return send_file(
@@ -620,9 +632,8 @@ def api_lock_pdf():
             writer.write(buffer)
             buffer.seek(0)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "protected")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "protected")
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
             return send_file(
@@ -687,9 +698,8 @@ def api_pdf_to_word():
             doc.save(buffer)
             buffer.seek(0)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "converted")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "converted")
             output_name = os.path.splitext(output_name)[0] + ".docx"
             
             return send_file(
@@ -746,9 +756,8 @@ def api_merge_pdf():
             buffer.seek(0)
             merger.close()
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "merged")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "merged")
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
             return send_file(
@@ -811,9 +820,9 @@ def api_rotate_pdf():
             writer.write(buffer)
             buffer.seek(0)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, f"rotated_{rotation}")
+            # Create filename with UUID
+            rotation_suffix = f"rotated_{rotation}"
+            output_name = generate_unique_filename(files[0].filename, rotation_suffix)
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
             return send_file(
@@ -895,9 +904,8 @@ def api_delete_pages_pdf():
             writer.write(buffer)
             buffer.seek(0)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "pages_deleted")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "pages_deleted")
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
             return send_file(
@@ -969,9 +977,8 @@ def api_unlock_pdf():
             writer.write(buffer)
             buffer.seek(0)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "unlocked")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "unlocked")
             output_name = os.path.splitext(output_name)[0] + ".pdf"
             
             return send_file(
@@ -1110,9 +1117,8 @@ def api_split_pdf():
             # Clean up temp files
             shutil.rmtree(temp_dir, ignore_errors=True)
             
-            # Create filename
-            original_name = secure_filename(files[0].filename)
-            output_name = generate_unique_filename(original_name, "split")
+            # Create filename with UUID
+            output_name = generate_unique_filename(files[0].filename, "split")
             output_name = os.path.splitext(output_name)[0] + ".zip"
             
             return send_file(
@@ -1202,7 +1208,31 @@ def server_error(e):
 # Run the application
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    print("Starting iMasterPDF server...")
+    print("=" * 60)
+    print("Starting iMasterPDF Server")
+    print("=" * 60)
     print(f"Upload directory: {UPLOAD_DIR}")
     print(f"Output directory: {OUTPUT_DIR}")
+    print(f"Available tools:")
+    print("  - PDF to Word: /pdftoword")
+    print("  - Merge PDF: /mergepdf")
+    print("  - Word to PDF: /wordtopdf")
+    print("  - Lock PDF: /lockpdf")
+    print("  - Images to PDF: /imagestopdf")
+    print("  - Rotate PDF: /rotatepdf")
+    print("  - Unlock PDF: /unlockpdf")
+    print("  - Delete PDF Pages: /deletepdf")
+    print("  - Merge Word: /mergeword")
+    print("  - Word to Text: /wordtotext")
+    print("  - Text to PDF: /texttopdf")
+    print("  - Text to Word: /texttoword")
+    print("  - Split PDF: /split")
+    print("  - Blog: /blog")
+    print("  - About: /about")
+    print("  - Contact: /contact")
+    print("=" * 60)
+    print("Server running on http://0.0.0.0:8000")
+    print("Press Ctrl+C to stop")
+    print("=" * 60)
+    
     app.run(host='0.0.0.0', port=8000, debug=True)

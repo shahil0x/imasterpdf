@@ -3,119 +3,642 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text to Word - iMasterPDF</title>
-    <meta name="description" content="Convert text to Word document online for free.">
+    <title>Text to Word Converter - iMasterPDF</title>
+    <meta name="description" content="Create Word documents from plain text online for free. Convert text to DOCX format." />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --primary-color: #2d8cff;
             --secondary-color: #ff4757;
+            --success-color: #2ed573;
             --dark-color: #2f3542;
             --light-color: #f1f2f6;
             --gray-color: #a4b0be;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --radius: 8px;
             --transition: all 0.3s ease;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #374151;
+            --muted: #6b7280;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; min-height: 100vh; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        header { background: white; padding: 1rem; box-shadow: var(--shadow); margin-bottom: 2rem; }
-        .logo { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: bold; color: var(--primary-color); text-decoration: none; }
-        .logo i { font-size: 2rem; }
-        .tool-container { background: white; border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); }
-        .tool-header { text-align: center; margin-bottom: 2rem; }
-        .tool-header h1 { color: var(--dark-color); margin-bottom: 0.5rem; }
-        .tool-header p { color: var(--gray-color); }
-        .text-input { width: 100%; min-height: 200px; padding: 1rem; border: 2px solid #e2e8f0; border-radius: var(--radius); margin: 1rem 0; font-size: 1rem; font-family: inherit; resize: vertical; }
-        .btn { background: var(--primary-color); color: white; border: none; padding: 1rem 2rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; margin: 1rem 0; display: inline-flex; align-items: center; gap: 8px; }
-        .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-        .result-area { display: none; text-align: center; margin-top: 2rem; padding: 2rem; background: #f8f9fa; border-radius: var(--radius); }
-        .result-area.active { display: block; }
-        .result-area i { font-size: 4rem; color: #2ed573; margin-bottom: 1rem; }
-        footer { text-align: center; margin-top: 3rem; padding: 2rem; color: var(--gray-color); border-top: 1px solid #e2e8f0; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--dark-color);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+        }
+
+        /* Tool Container */
+        .tool-container {
+            max-width: 800px;
+            margin: 3rem auto;
+        }
+
+        .tool-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .tool-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .tool-header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        /* Text Input Area */
+        .text-input-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .input-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-family: inherit;
+            min-height: 200px;
+            resize: vertical;
+            transition: var(--transition);
+        }
+
+        .input-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.1);
+        }
+
+        /* How-to guide section */
+        .how-to-guide {
+            background: #f8fafc;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
+        }
+
+        .how-to-guide h4 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: var(--dark-color);
+        }
+
+        .how-to-guide ol {
+            margin: 0 0 10px 0;
+            padding-left: 20px;
+        }
+
+        .how-to-guide li {
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .how-to-guide .note {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            font-style: italic;
+        }
+
+        /* Action Buttons */
+        .action-buttons-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .action-buttons-container .btn {
+            min-width: 180px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Progress Container */
+        .progress-container {
+            display: none;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--light-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Result Area */
+        .result-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            margin-bottom: 2rem;
+        }
+
+        .result-area.active {
+            display: block;
+        }
+
+        .result-area i {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Message */
+        .msg {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            display: none;
+            text-align: center;
+        }
+        
+        .msg.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+        
+        .msg.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+        
+        .msg.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            display: block;
+        }
+        
+        .msg.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            border-top: 1px solid var(--border);
+            background: #fafafa;
+        }
+        
+        .footer-inner {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 18px;
+            padding: 18px 24px;
+        }
+        
+        .footer-inner h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+        }
+        
+        .footer-inner a {
+            color: var(--muted);
+            font-size: 13px;
+            text-decoration: none;
+        }
+        
+        .footer-inner p {
+            margin: 5px 0;
+        }
+        
+        .tagline {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 5px 0;
+        }
+        
+        .copyright {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 12px 0 18px;
+        }
+
+        /* Loading animation */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--light-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @media (max-width: 768px) {
-            .container { padding: 10px; }
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .tool-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .action-buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-buttons-container .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .footer-inner {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <a href="index.html" class="logo">
-                <i class="fas fa-file-pdf"></i>
-                iMasterPDF
-            </a>
+            <nav class="navbar">
+                <a href="/" class="logo">
+                    <i class="fas fa-file-pdf"></i>
+                    iMasterPDF
+                </a>
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/blog">Blog</a>
+                    <a href="/about">About</a>
+                    <a href="/contact">Contact</a>
+                </div>
+            </nav>
         </div>
     </header>
-    
-    <div class="container">
+
+    <main class="container">
         <div class="tool-container">
             <div class="tool-header">
-                <h1><i class="fas fa-file-word"></i> Text to Word Converter</h1>
-                <p>Convert plain text to Word document</p>
+                <h1>Text to Word Converter</h1>
+                <p>Create Word documents from plain text</p>
             </div>
             
-            <div style="margin: 2rem 0;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Enter Text:</label>
-                <textarea id="textInput" class="text-input" placeholder="Enter your text here..."></textarea>
+            <div class="how-to-guide">
+                <h4>How to create Word from text:</h4>
+                <ol>
+                    <li>Paste or type your text in the box below</li>
+                    <li>Click "Create Word Document" to generate</li>
+                    <li>Download Word document (DOCX)</li>
+                </ol>
+                <div class="note">Note: Basic text formatting will be preserved in the Word document.</div>
             </div>
             
-            <div style="text-align: center;">
-                <button class="btn" onclick="convertTextToWord()">
-                    <i class="fas fa-cogs"></i> Convert Text to Word
+            <div class="text-input-area">
+                <div class="input-group">
+                    <label for="textContent">Enter your text:</label>
+                    <textarea id="textContent" placeholder="Type or paste your text here..." required></textarea>
+                    <small style="color: var(--muted); display: block; margin-top: 0.5rem;">Maximum 10,000 characters</small>
+                </div>
+            </div>
+
+            <div class="action-buttons-container">
+                <button class="btn" onclick="processText()">
+                    <i class="fas fa-file-word"></i> Create Word Document
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='/'">
+                    <i class="fas fa-redo"></i> Back to Home
                 </button>
             </div>
-            
+
+            <div class="msg" id="message"></div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="spinner"></div>
+                <h3>Creating Word Document...</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                    <div class="progress-text" id="progress-text">0%</div>
+                </div>
+            </div>
+
             <div class="result-area" id="resultArea">
                 <i class="fas fa-check-circle"></i>
-                <h3>Conversion Complete!</h3>
-                <p>Your text has been converted to Word format.</p>
-                <a href="#" id="downloadLink" class="btn">
-                    <i class="fas fa-download"></i> Download Word File
+                <h3>Document Created!</h3>
+                <p>Your Word document has been successfully created.</p>
+                <a id="downloadLink" class="btn" style="margin-top: 1rem;">
+                    <i class="fas fa-download"></i> Download Word Document
                 </a>
+                <button class="btn btn-secondary" onclick="resetTool()" style="margin-top: 1rem;">
+                    <i class="fas fa-redo"></i> Create Another Document
+                </button>
             </div>
         </div>
-        
-        <div style="margin-top: 2rem; padding: 1.5rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
-            <h3><i class="fas fa-info-circle"></i> About Text to Word Conversion</h3>
-            <p style="margin-top: 1rem; line-height: 1.6;">
-                Convert plain text into editable Word documents.
-                Perfect for creating documents from notes, articles, or any text content.
-            </p>
-            <ul style="margin-top: 1rem; padding-left: 1.5rem; line-height: 1.6;">
-                <li>Convert any text to Word format</li>
-                <li>Creates editable DOCX files</li>
-                <li>Preserves text formatting and line breaks</li>
-                <li>Secure processing - text not stored</li>
-                <li>No file upload required</li>
-            </ul>
-        </div>
-    </div>
-    
+    </main>
+
     <footer>
-        <div class="container">
-            <p>© 2026 iMasterPDF. All rights reserved.</p>
-            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
-                <a href="index.html" style="color: var(--primary-color); text-decoration: none;">Home</a> | 
-                <a href="about.html" style="color: var(--primary-color); text-decoration: none;">About</a> | 
-                <a href="privacy.html" style="color: var(--primary-color); text-decoration: none;">Privacy</a>
-            </p>
+        <div class="footer-inner container">
+            <div>
+                <h4>iMasterPDF</h4>
+                <p class="tagline">Free Online PDF & Document Tools</p>
+                <p class="tagline">Fast, secure, and mobile-friendly.</p>
+            </div>
+            <div>
+                <h4>Links</h4>
+                <p><a href="/">Home</a></p>
+                <p><a href="/blog">Blog</a></p>
+                <p><a href="/about">About</a></p>
+                <p><a href="/contact">Contact</a></p>
+                <p><a href="/privacy">Privacy Policy</a></p>
+                <p><a href="/terms">Terms</a></p>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <p><a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+            </div>
         </div>
+        <div class="copyright">© 2026 iMasterPDF. All rights reserved.</div>
     </footer>
-    
+
     <script>
-        function convertTextToWord() {
-            const textInput = document.getElementById('textInput').value;
+        const MAX_CHARS = 10000;
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function processText() {
+            const textContent = document.getElementById('textContent').value.trim();
             
-            if (!textInput.trim()) {
-                alert('Please enter some text first');
+            if (!textContent) {
+                showMessage('Please enter some text first', 'error');
                 return;
             }
+
+            if (textContent.length > MAX_CHARS) {
+                showMessage(`Text exceeds ${MAX_CHARS.toLocaleString()} character limit. Please shorten your text.`, 'error');
+                return;
+            }
+
+            document.getElementById('action-buttons').style.display = 'none';
+            document.getElementById('progressContainer').classList.add('active');
+            document.getElementById('progress-fill').style.width = '10%';
+            document.getElementById('progress-text').textContent = '10%';
+            document.getElementById('message').style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('text', textContent);
+
+                document.getElementById('progress-fill').style.width = '50%';
+                document.getElementById('progress-text').textContent = '50%';
+
+                const response = await fetch('/api/text-to-word', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                document.getElementById('progress-fill').style.width = '90%';
+                document.getElementById('progress-text').textContent = '90%';
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Word document creation failed');
+                }
+
+                const blob = await response.blob();
+                const filename = getFilenameFromResponse(response, 'text_document', '.docx');
+
+                document.getElementById('progress-fill').style.width = '100%';
+                document.getElementById('progress-text').textContent = '100%';
+
+                setTimeout(() => {
+                    document.getElementById('progressContainer').classList.remove('active');
+                    document.getElementById('resultArea').classList.add('active');
+
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = downloadUrl;
+                    downloadLink.download = filename;
+                    downloadLink.textContent = `Download ${filename}`;
+                    downloadLink.target = '_blank';
+
+                    downloadLink.onclick = () => {
+                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+                    };
+
+                    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+                document.getElementById('progressContainer').classList.remove('active');
+                document.getElementById('action-buttons').style.display = 'flex';
+            }
+        }
+
+        function getFilenameFromResponse(response, defaultName, defaultExt) {
+            const contentDisposition = response.headers.get('Content-Disposition');
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="(.+)"/);
+                if (match) return match[1];
+            }
             
-            document.getElementById('resultArea').classList.add('active');
-            document.getElementById('downloadLink').href = '#';
-            document.getElementById('downloadLink').download = 'text.docx';
+            const timestamp = new Date().getTime();
+            const randomId = Math.random().toString(36).substr(2, 9);
+            return `${defaultName}_${timestamp}_${randomId}${defaultExt}`;
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'msg ' + type;
+            msg.style.display = 'block';
+
+            setTimeout(() => {
+                if (msg.textContent === text) {
+                    msg.style.display = 'none';
+                }
+            }, type === 'error' ? 8000 : 5000);
+        }
+
+        function resetTool() {
+            document.getElementById('textContent').value = '';
+            document.getElementById('resultArea').classList.remove('active');
+            document.getElementById('action-buttons').style.display = 'flex';
         }
     </script>
 </body>
