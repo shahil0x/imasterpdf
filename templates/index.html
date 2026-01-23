@@ -1,0 +1,2551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMasterPDF - Free Online Document Tools</title>
+    <meta name="description" content="iMasterPDF offers free online PDF and document tools: convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly." />
+    <meta name="keywords" content="PDF tools, Word to PDF, PDF to Word, Merge PDF, Rotate PDF, Lock PDF, Unlock PDF, Text to PDF, Image to PDF, PDF guides, document security" />
+    <meta name="author" content="iMasterPDF" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --primary-color: #2d8cff;
+            --secondary-color: #ff4757;
+            --success-color: #2ed573;
+            --dark-color: #2f3542;
+            --light-color: #f1f2f6;
+            --gray-color: #a4b0be;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+            --transition: all 0.3s ease;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #374151;
+            --muted: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--dark-color);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            background: white;
+            margin: 2rem 0;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--gray-color);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Tools Grid */
+        .tools-section {
+            padding: 3rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            color: var(--dark-color);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+        }
+
+        .tool-card i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .tool-card h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .tool-card p {
+            color: var(--gray-color);
+            font-size: 0.9rem;
+        }
+
+        /* Tool Container */
+        .tool-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+            display: none;
+            text-align: center;
+        }
+
+        .upload-area.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .upload-box {
+            border: 3px dashed var(--gray-color);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .upload-box.drag-over {
+            border-color: var(--primary-color);
+            background: rgba(45, 140, 255, 0.05);
+        }
+
+        .upload-box i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin: 1rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: var(--light-color);
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .file-item i {
+            cursor: pointer;
+            color: var(--secondary-color);
+            padding: 5px;
+        }
+
+        .file-item i:hover {
+            background: rgba(255, 71, 87, 0.1);
+            border-radius: 50%;
+        }
+
+        /* Tool Content Header */
+        .tool-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .tool-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .tool-header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        /* Options Panel */
+        .options-panel {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .options-panel.active {
+            display: block;
+        }
+
+        .option-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .option-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .option-group input,
+        .option-group select,
+        .option-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--gray-color);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        /* How-to guide section */
+        .how-to-guide {
+            background: #f8fafc;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
+        }
+        .how-to-guide h4 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: var(--dark-color);
+        }
+        .how-to-guide ol {
+            margin: 0 0 10px 0;
+            padding-left: 20px;
+        }
+        .how-to-guide li {
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        .how-to-guide .note {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            font-style: italic;
+        }
+
+        /* Action Buttons Container - NEW */
+        .action-buttons-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .action-buttons-container .btn {
+            min-width: 180px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Progress Container */
+        .progress-container {
+            display: none;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--light-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Result Area */
+        .result-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            margin-bottom: 2rem;
+        }
+
+        .result-area.active {
+            display: block;
+        }
+
+        .result-area i {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Detailed Tool Content */
+        .tool-detail-content {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .tool-detail-content.active {
+            display: block;
+        }
+
+        .tool-detail-content h2 {
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .tool-detail-content h3 {
+            color: var(--primary-color);
+            margin: 1.5rem 0 1rem;
+            font-size: 1.4rem;
+        }
+
+        .tool-detail-content p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .tool-detail-content ul, .tool-detail-content ol {
+            margin-left: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tool-detail-content li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .tool-detail-content blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .faq-section {
+            background: var(--light-color);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .faq-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .faq-item h4 {
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .faq-item p {
+            color: var(--text);
+            margin: 0;
+        }
+
+        /* Message */
+        .msg {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            display: none;
+            text-align: center;
+        }
+        
+        .msg.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+        
+        .msg.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+        
+        .msg.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            display: block;
+        }
+        
+        .msg.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            display: block;
+        }
+
+        /* Info pages */
+        .info {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px;
+            margin-top: 24px;
+        }
+        .info h2 {
+            margin: 0 0 8px;
+            font-size: 22px;
+        }
+        .info p, .info li {
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        /* Blog Section */
+        .blog-container {
+            margin-top: 30px;
+        }
+
+        .blog-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 18px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .blog-list {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .blog-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px;
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+        
+        .blog-card h3 {
+            margin: 0 0 6px;
+            font-size: 18px;
+            color: var(--dark-color);
+        }
+        
+        .blog-card .meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .blog-card .excerpt {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        
+        .blog-card .read-more {
+            color: var(--primary-color);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .blog-card .read-more:hover {
+            text-decoration: underline;
+        }
+
+        /* Blog Article */
+        .blog-article {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px;
+            margin-top: 24px;
+        }
+        
+        .blog-article h2 {
+            margin: 0 0 8px;
+            font-size: 24px;
+            color: var(--dark-color);
+        }
+        
+        .blog-article .meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .blog-article p {
+            line-height: 1.6;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+        
+        .blog-article h3 {
+            margin: 25px 0 15px;
+            color: var(--dark-color);
+            font-size: 20px;
+        }
+        
+        .blog-article ul, .blog-article ol {
+            margin: 15px 0 15px 20px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .blog-article li {
+            margin-bottom: 8px;
+        }
+        
+        .blog-article blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 15px;
+            margin: 20px 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* Contact */
+        .contact-form {
+            display: grid;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .contact-form .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        @media (max-width: 600px) {
+            .contact-form .row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+        }
+        
+        textarea.input {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding: 20px 0;
+        }
+        
+        .pagination button {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .pagination button:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .pagination button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            border-top: 1px solid var(--border);
+            background: #fafafa;
+        }
+        
+        .footer-inner {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 18px;
+            padding: 18px 24px;
+        }
+        
+        @media (max-width: 800px) {
+            .footer-inner {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .footer-inner h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+        }
+        
+        .footer-inner a {
+            color: var(--muted);
+            font-size: 13px;
+            text-decoration: none;
+        }
+        
+        .footer-inner p {
+            margin: 5px 0;
+        }
+        
+        .tagline {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 5px 0;
+        }
+        
+        .copyright {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 12px 0 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .tools-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .action-buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-buttons-container .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .upload-box {
+                padding: 2rem 1rem;
+            }
+            
+            .tool-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading animation */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--light-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hidden sections */
+        .hidden-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo" onclick="goHome(event)">
+                    <i class="fas fa-file-pdf"></i>
+                    iMasterPDF
+                </a>
+                <div class="nav-links">
+                    <a href="/" data-link class="active">Home</a>
+                    <a href="/blog" data-link>Blog</a>
+                    <a href="/about" data-link>About</a>
+                    <a href="/contact" data-link>Contact</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <h1>iMasterPDF - Free Online Document Tools</h1>
+            <p>Convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly.</p>
+            <button class="btn btn-secondary" onclick="showTool('pdf_to_word')">
+                <i class="fas fa-file-upload"></i> Get Started
+            </button>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Tools Section -->
+        <section id="home">
+            <!-- Tools Grid -->
+            <div class="tools-section">
+                <h2 class="section-title">PDF Tools</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="showTool('pdf_to_word')">
+                        <i class="fas fa-file-word"></i>
+                        <h3>PDF to Word</h3>
+                        <p>Convert PDF into editable DOCX</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('merge_pdf')">
+                        <i class="fas fa-object-group"></i>
+                        <h3>Merge PDF</h3>
+                        <p>Combine multiple PDFs into one</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('rotate_pdf')">
+                        <i class="fas fa-redo"></i>
+                        <h3>Rotate PDF</h3>
+                        <p>Rotate pages by 90°, 180°, or 270°</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('delete_pages_pdf')">
+                        <i class="fas fa-trash-alt"></i>
+                        <h3>Delete Pages in PDF</h3>
+                        <p>Remove selected pages from a PDF</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('lock_pdf')">
+                        <i class="fas fa-lock"></i>
+                        <h3>Lock PDF (PIN)</h3>
+                        <p>Protect PDF with a 4-digit PIN</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('unlock_pdf')">
+                        <i class="fas fa-unlock"></i>
+                        <h3>Unlock PDF</h3>
+                        <p>Remove password protection</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Word Tools Section -->
+            <div class="tools-section">
+                <h2 class="section-title">Word Tools</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="showTool('word_to_pdf')">
+                        <i class="fas fa-file-pdf"></i>
+                        <h3>Word to PDF</h3>
+                        <p>Convert DOCX to PDF</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('merge_word')">
+                        <i class="fas fa-file-word"></i>
+                        <h3>Merge Word</h3>
+                        <p>Combine multiple Word documents</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('word_to_text')">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Word to Text</h3>
+                        <p>Extract text from Word files</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Tools Section -->
+            <div class="tools-section">
+                <h2 class="section-title">Text Tools</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="showTool('text_to_pdf')">
+                        <i class="fas fa-file-pdf"></i>
+                        <h3>Text to PDF</h3>
+                        <p>Convert plain text to PDF</p>
+                    </div>
+                    <div class="tool-card" onclick="showTool('text_to_word')">
+                        <i class="fas fa-file-word"></i>
+                        <h3>Text to Word</h3>
+                        <p>Create a Word document from text</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Tools Section -->
+            <div class="tools-section">
+                <h2 class="section-title">Image Tools</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="showTool('images_to_pdf')">
+                        <i class="fas fa-images"></i>
+                        <h3>Images to PDF</h3>
+                        <p>Convert JPG, PNG, WEBP, BMP, TIFF to PDF</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <section id="features" class="tools-section">
+                <h2 class="section-title">Why Choose iMasterPDF?</h2>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Secure & Private</h3>
+                        <p>Files are deleted automatically after processing</p>
+                    </div>
+                    <div class="tool-card">
+                        <i class="fas fa-bolt"></i>
+                        <h3>Fast Processing</h3>
+                        <p>Process files quickly in the cloud</p>
+                    </div>
+                    <div class="tool-card">
+                        <i class="fas fa-laptop"></i>
+                        <h3>No Installation</h3>
+                        <p>Works directly in your browser</p>
+                    </div>
+                    <div class="tool-card">
+                        <i class="fas fa-globe"></i>
+                        <h3>Cross Platform</h3>
+                        <p>Works on Windows, Mac, Linux, and mobile</p>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- Tool Section -->
+        <section id="tool" class="hidden-section">
+            <div class="tool-container">
+                <!-- Tool Header -->
+                <div class="tool-header">
+                    <h2 id="toolTitle">Select Tool</h2>
+                    <p id="toolDescription">Description will appear here</p>
+                </div>
+                
+                <!-- How-to Guide -->
+                <div class="how-to-guide" id="howToGuide">
+                    <h4>How to use this tool:</h4>
+                    <ol>
+                        <li>Upload your file(s) using the upload area</li>
+                        <li>Configure options if available</li>
+                        <li>Click "Process Files" to start conversion</li>
+                    </ol>
+                    <div class="note">Note: Files are processed securely and deleted automatically after conversion.</div>
+                </div>
+                
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Drag & Drop Files Here</h3>
+                        <p>or click to browse files</p>
+                        <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)">
+                    </div>
+                    
+                    <div class="file-list" id="fileList">
+                        <p style="text-align: center; color: var(--gray-color);">No files selected</p>
+                    </div>
+                </div>
+
+                <!-- Options Panel -->
+                <div class="options-panel" id="optionsPanel">
+                    <h3 style="margin-bottom: 1.5rem; text-align: center;">Options</h3>
+                    <div id="toolOptions"></div>
+                </div>
+
+                <!-- Action Buttons - MOVED HERE -->
+                <div class="action-buttons-container" id="actionButtons">
+                    <button class="btn" onclick="processFiles()">
+                        <i class="fas fa-cogs"></i> Process Files
+                    </button>
+                    <button class="btn btn-secondary" onclick="goHome(event)">
+                        <i class="fas fa-redo"></i> Start Over
+                    </button>
+                </div>
+
+                <!-- Message Area -->
+                <div class="msg" id="message"></div>
+
+                <!-- Progress Container -->
+                <div class="progress-container" id="progressContainer">
+                    <div class="spinner"></div>
+                    <h3>Processing...</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <div class="progress-text" id="progress-text">0%</div>
+                    </div>
+                </div>
+
+                <!-- Result Area -->
+                <div class="result-area" id="resultArea">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Conversion Complete!</h3>
+                    <p>Your file has been processed successfully.</p>
+                    <a id="downloadLink" class="btn" style="margin-top: 1rem;">
+                        <i class="fas fa-download"></i> Download File
+                    </a>
+                    <button class="btn btn-secondary" onclick="goHome(event)" style="margin-top: 1rem;">
+                        <i class="fas fa-redo"></i> Convert Another File
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detailed Tool Content -->
+            <div class="tool-detail-content" id="toolDetailContent">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <!-- Blog List -->
+        <section class="hidden-section" id="blog">
+            <h2 class="section-title">PDF Guides & Tutorials</h2>
+            <p style="text-align: center; margin-bottom: 20px; color: var(--muted);">Expert guides written by Mohammed Shahil</p>
+            <div class="blog-container">
+                <div class="blog-list" id="blog-list"></div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </section>
+
+        <!-- Blog Article -->
+        <section class="hidden-section" id="article">
+            <div class="blog-article">
+                <h2 id="article-title"></h2>
+                <div class="meta" id="article-meta"></div>
+                <div id="article-content"></div>
+                <div style="margin-top:16px;">
+                    <button class="btn btn-secondary" id="back-to-blog"><i class="fas fa-arrow-left"></i> Back to Blog</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- About -->
+        <section class="hidden-section info" id="about">
+            <h2>About iMasterPDF</h2>
+            <p>iMasterPDF is a practical, privacy-first platform built for people who work with documents every day—students, professionals, small businesses, and anyone who needs reliable tools without the friction of installing software. We focus on the essentials: converting, merging, rotating, locking, unlocking, and transforming files quickly and securely.</p>
+            <p>Our mission is to remove the complexity from document workflows. Whether you're preparing a report, sharing a contract, or cleaning up a scanned file, iMasterPDF gives you clean, fast tools that just work. We also publish in-depth guides to help you understand formats, security, and best practices so you can make confident decisions with your files.</p>
+            <p>We believe in transparency and trust. Files are processed automatically and deleted after conversion. No human reviews your documents, and we do not share data with third parties. If you have questions or ideas, reach us at <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a>.</p>
+            <h3>Our Story</h3>
+            <p>Founded in 2023, iMasterPDF started as a simple project to solve everyday document problems. We noticed that people were spending too much time searching for reliable, free tools that actually worked. Many existing solutions were either too complex, required installations, or compromised user privacy with hidden costs.</p>
+            <p>Our team of developers and document specialists came together with a clear goal: create tools that are simple to use, completely free, and respect user privacy. Every feature we add is tested against real-world scenarios to ensure it solves actual problems for our users.</p>
+            <h3>Our Values</h3>
+            <ul>
+                <li><strong>Simplicity:</strong> We believe tools should be intuitive and easy to use</li>
+                <li><strong>Privacy:</strong> Your documents belong to you and are never stored or shared</li>
+                <li><strong>Reliability:</strong> We maintain high uptime and fast processing speeds</li>
+                <li><strong>Accessibility:</strong> Our tools work on any device with a browser</li>
+                <li><strong>Education:</strong> We provide comprehensive guides to help users understand document formats</li>
+            </ul>
+            <h3>Our Technology</h3>
+            <p>iMasterPDF uses modern web technologies and cloud processing to deliver fast, secure conversions. All processing happens in secure cloud environments with automatic file deletion. We use industry-standard encryption for file transfers and maintain strict security protocols to protect user data.</p>
+            <p>Our infrastructure is designed for scalability, ensuring that even during peak times, users experience minimal wait times for their document processing needs.</p>
+        </section>
+
+        <!-- Contact -->
+        <section class="hidden-section info" id="contact">
+            <h2>Contact Us</h2>
+            <p>Questions, feedback, or partnership ideas? We'd love to hear from you. Use the form below or email us at <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a>.</p>
+            <p>Our support team typically responds within 24 hours. For technical issues, please include details about the problem you're experiencing, the tool you're using, and any error messages you see.</p>
+            <form class="contact-form" id="contact-form">
+                <div class="row">
+                    <div>
+                        <label>Name *</label>
+                        <input type="text" id="contact-name" class="input" placeholder="Your name" required />
+                    </div>
+                    <div>
+                        <label>Email *</label>
+                        <input type="email" id="contact-email" class="input" placeholder="you@example.com" required />
+                    </div>
+                </div>
+                <div>
+                    <label>Subject</label>
+                    <input type="text" id="contact-subject" class="input" placeholder="How can we help?" />
+                </div>
+                <div>
+                    <label>Message *</label>
+                    <textarea id="contact-message" class="input" placeholder="Please provide details about your inquiry..." required></textarea>
+                </div>
+                <button class="btn" type="submit"><i class="fas fa-paper-plane"></i> Send message</button>
+                <div class="msg" id="contact-msg"></div>
+            </form>
+            <h3>Other Ways to Reach Us</h3>
+            <ul>
+                <li><strong>Technical Support:</strong> <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></li>
+                <li><strong>Business Inquiries:</strong> <a href="mailto:business@imasterpdf.com">business@imasterpdf.com</a></li>
+                <li><strong>Feedback & Suggestions:</strong> <a href="mailto:feedback@imasterpdf.com">feedback@imasterpdf.com</a></li>
+            </ul>
+            <p><strong>Office Hours:</strong> Monday to Friday, 9:00 AM - 6:00 PM (GMT)</p>
+        </section>
+
+        <!-- Privacy -->
+        <section class="hidden-section info" id="privacy">
+            <h2>Privacy Policy</h2>
+            <p><strong>Last Updated:</strong> January 2026</p>
+            
+            <h3>1. Information We Collect</h3>
+            <p><strong>File Handling:</strong> Uploaded files are processed automatically and deleted after conversion. Temporary files are cleaned regularly. No human access to documents.</p>
+            <p><strong>Usage Data:</strong> We collect anonymous usage statistics to improve our services, including tool usage frequency, conversion success rates, and error logs. This data cannot identify individual users.</p>
+            <p><strong>Contact Information:</strong> When you contact us via email or contact form, we collect your name, email address, and message content to respond to your inquiry.</p>
+            
+            <h3>2. How We Use Your Information</h3>
+            <ul>
+                <li>Process your document conversions as requested</li>
+                <li>Improve our tools and user experience</li>
+                <li>Respond to customer support inquiries</li>
+                <li>Monitor service performance and security</li>
+                <li>Comply with legal obligations</li>
+            </ul>
+            
+            <h3>3. Data Sharing</h3>
+            <p><strong>No File Sharing:</strong> We do not sell, share, or disclose your files or personal data to third parties. Your documents are processed automatically and deleted immediately after conversion.</p>
+            <p><strong>Service Providers:</strong> We use trusted third-party services for hosting and infrastructure. These providers have strict data protection agreements and cannot access your files.</p>
+            <p><strong>Legal Requirements:</strong> We may disclose information if required by law or to protect our rights and safety.</p>
+            
+            <h3>4. Cookies</h3>
+            <p>We use cookies to improve performance, remember preferences, and measure basic analytics. You can control cookies through your browser settings.</p>
+            
+            <h3>5. Advertising (Google AdSense)</h3>
+            <p>We display ads served by Google AdSense. AdSense may use cookies and web beacons to deliver relevant ads and measure performance. These third-party ad servers automatically receive your IP address when this occurs. You can learn more about how Google uses data and manage ad personalization in your Google account.</p>
+            <p><strong>Third-Party Ads:</strong> Third-party advertisers may use technologies such as cookies, JavaScript, or web beacons to measure the effectiveness of their ads and personalize content. We do not control these cookies. Review the privacy policies of these providers for more information.</p>
+            
+            <h3>6. Security</h3>
+            <p>We use secure server-side handling, encryption for file transfers, and limit file sizes to ensure reliability. While we strive to protect your data, no method of transmission or storage is 100% secure.</p>
+            
+            <h3>7. Children's Privacy</h3>
+            <p>Our services are not directed to individuals under 13. We do not knowingly collect personal information from children under 13.</p>
+            
+            <h3>8. Your Rights</h3>
+            <p>You have the right to:</p>
+            <ul>
+                <li>Access any personal data we hold about you</li>
+                <li>Request deletion of your personal data</li>
+                <li>Opt-out of analytics tracking</li>
+                <li>Lodge a complaint with a data protection authority</li>
+            </ul>
+            
+            <h3>9. Changes to This Policy</h3>
+            <p>We may update this privacy policy periodically. We will notify users of any material changes by updating the "Last Updated" date.</p>
+            
+            <h3>10. Contact</h3>
+            <p>For privacy-related questions, email <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a>.</p>
+        </section>
+
+        <!-- Terms -->
+        <section class="hidden-section info" id="terms">
+            <h2>Terms of Service</h2>
+            <p><strong>Last Updated:</strong> January 2026</p>
+            
+            <h3>1. Acceptance of Terms</h3>
+            <p>By accessing and using iMasterPDF, you accept and agree to be bound by these Terms of Service. If you do not agree, you must not use our services.</p>
+            
+            <h3>2. Use of Service</h3>
+            <p>You agree to use iMasterPDF for lawful purposes only. You must not:</p>
+            <ul>
+                <li>Use our services for any illegal activities</li>
+                <li>Upload malicious files, viruses, or malware</li>
+                <li>Attempt to reverse engineer or hack our systems</li>
+                <li>Upload copyrighted material without permission</li>
+                <li>Use automated systems to access our services excessively</li>
+            </ul>
+            
+            <h3>3. File Uploads and Processing</h3>
+            <ul>
+                <li><strong>Ownership:</strong> You retain all rights to your uploaded files</li>
+                <li><strong>Processing:</strong> Files are processed automatically and deleted immediately after conversion</li>
+                <li><strong>Limitations:</strong> Maximum file size: 50MB per file. Maximum files per conversion: 20 files</li>
+                <li><strong>Quality:</strong> We strive for high-quality conversions but do not guarantee perfection</li>
+            </ul>
+            
+            <h3>4. Availability</h3>
+            <p>We strive for high uptime but do not guarantee uninterrupted service. We may perform maintenance, updates, or experience unexpected downtime.</p>
+            
+            <h3>5. Liability</h3>
+            <p>iMasterPDF is provided "as is" without warranties of any kind. We are not liable for:</p>
+            <ul>
+                <li>Data loss or corruption during conversion</li>
+                <li>Damages resulting from service interruptions</li>
+                <li>Accuracy of converted documents</li>
+                <li>Third-party content or links</li>
+            </ul>
+            
+            <h3>6. Content</h3>
+            <p>You retain ownership of your files. We process them automatically and delete them after conversion. You are responsible for the content you upload.</p>
+            
+            <h3>7. Advertising</h3>
+            <p>We display ads via Google AdSense to support free service. See our Privacy Policy for details.</p>
+            
+            <h3>8. Intellectual Property</h3>
+            <p>All iMasterPDF trademarks, logos, and service marks are our property. You may not use them without our written permission.</p>
+            
+            <h3>9. Termination</h3>
+            <p>We reserve the right to terminate or suspend access to our services for violations of these terms or abusive behavior.</p>
+            
+            <h3>10. Changes to Terms</h3>
+            <p>We may update these terms periodically. Continued use indicates acceptance of changes.</p>
+            
+            <h3>11. Governing Law</h3>
+            <p>These terms are governed by applicable laws. Any disputes shall be resolved in the appropriate courts.</p>
+            
+            <h3>12. Contact</h3>
+            <p>For questions about these terms, contact <a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner container">
+            <div>
+                <h4>iMasterPDF</h4>
+                <p class="tagline">Free Online PDF & Document Tools</p>
+                <p class="tagline">Fast, secure, and mobile-friendly.</p>
+            </div>
+            <div>
+                <h4>Links</h4>
+                <p><a href="/" data-link>Home</a></p>
+                <p><a href="/blog" data-link>Blog</a></p>
+                <p><a href="/about" data-link>About</a></p>
+                <p><a href="/contact" data-link>Contact</a></p>
+                <p><a href="/privacy" data-link>Privacy Policy</a></p>
+                <p><a href="/terms" data-link>Terms</a></p>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <p><a href="mailto:support@imasterpdf.com">support@imasterpdf.com</a></p>
+            </div>
+        </div>
+        <div class="copyright">© <span id="year"></span> iMasterPDF. All rights reserved.</div>
+    </footer>
+
+    <!-- Comprehensive Blog Data -->
+    <script type="application/json" id="blog-data">
+    {
+        "articles": [
+            {
+                "slug": "how-to-convert-pdf-to-word-online",
+                "title": "How to Convert PDF to Word Online: A Complete 2026 Guide",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-14",
+                "read_time": "8 min",
+                "category": "PDF Conversion",
+                "summary": "Learn the easiest methods to convert PDF files to editable Word documents online with our step-by-step guide.",
+                "content": "<p>Converting PDF files to Word format is one of the most common document tasks for students, professionals, and businesses. With iMasterPDF, you can convert your PDFs to editable Word documents in just three simple steps: upload your PDF, click convert, and download your DOCX file.</p><p>Our tool preserves formatting, tables, and images as much as possible, making it perfect for resumes, contracts, reports, and academic papers. The conversion happens securely in the cloud, and files are automatically deleted after processing.</p><h3>Why Convert PDF to Word?</h3><p>PDFs are great for sharing finalized documents, but they're not meant for editing. When you need to:</p><ul><li>Update an old resume or contract</li><li>Extract text for translation</li><li>Repurpose content for a new document</li><li>Fix typos or errors in a PDF</li><li>Convert scanned documents to editable text</li></ul><p>...you need a reliable PDF to Word converter.</p><h3>Step-by-Step Conversion Process</h3><ol><li>Upload your PDF file (up to 50MB)</li><li>Select conversion settings if needed</li><li>Click 'Convert' and wait a few seconds</li><li>Download your editable Word document</li></ol><blockquote>Tip: For best results, use PDFs created from digital sources rather than scanned documents, as OCR (Optical Character Recognition) works better on clean text.</blockquote>"
+            },
+            {
+                "slug": "how-to-merge-pdf-files-for-free",
+                "title": "How to Merge PDF Files for Free: Complete 2026 Guide",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-14",
+                "read_time": "10 min",
+                "category": "PDF Editing",
+                "summary": "Discover the best free methods to combine multiple PDF files into one document with perfect formatting.",
+                "content": "<p>Merging PDF files is an essential skill in today's digital workplace. Whether you're combining multiple reports, assembling a portfolio, or creating a single document from scanned pages, iMasterPDF makes it easy.</p><p>Our merge tool supports up to 20 files at once, lets you rearrange pages with drag-and-drop, and maintains the original quality of all documents. The process is completely free and requires no registration.</p><h3>When to Merge PDF Files</h3><ul><li><strong>Academic Projects:</strong> Combine research papers, assignments, and references</li><li><strong>Business Reports:</strong> Merge monthly reports, financial statements, and presentations</li><li><strong>Legal Documents:</strong> Assemble contracts, agreements, and supporting documents</li><li><strong>Personal Use:</strong> Create a single document from scanned family photos or recipes</li><li><strong>Job Applications:</strong> Combine resume, cover letter, and certificates</li></ul><h3>Best Practices for Merging PDFs</h3><ol><li>Organize files in the correct order before uploading</li><li>Check file sizes (our tool supports up to 50MB per file)</li><li>Use consistent page orientation (all portrait or all landscape)</li><li>Consider compressing files first if they're very large</li><li>Preview the merged document before downloading</li></ol><p>Our tool preserves all formatting, hyperlinks, and images, ensuring your merged document looks professional.</p>"
+            },
+            {
+                "slug": "how-to-compress-pdf-without-losing-quality",
+                "title": "How to Compress PDF Without Losing Quality: Expert Techniques",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-14",
+                "read_time": "12 min",
+                "category": "PDF Optimization",
+                "summary": "Learn professional methods to reduce PDF file size while maintaining readability and visual quality.",
+                "content": "<p>PDF file sizes can become unwieldy, especially when they contain high-resolution images or embedded fonts. With iMasterPDF's compression tool, you can reduce file size by up to 80% while keeping documents readable and professional.</p><p>We offer three compression levels: high quality (minimal compression), balanced (recommended), and maximum compression for sharing via email. All compression happens locally for maximum privacy.</p><h3>Why Compress PDF Files?</h3><p>Large PDF files cause several problems:</p><ul><li>Slow email delivery and bounce-backs</li><li>Difficulty sharing via messaging apps</li><li>Long upload/download times</li><li>Storage space issues</li><li>Poor performance on mobile devices</li></ul><h3>Compression Techniques Explained</h3><p>Our tool uses several advanced techniques:</p><ol><li><strong>Image Optimization:</strong> Reduces image resolution and uses efficient compression algorithms</li><li><strong>Font Subsetting:</strong> Includes only used characters from embedded fonts</li><li><strong>Data Deduplication:</strong> Removes redundant data streams</li><li><strong>Object Compression:</strong> Compresses internal PDF objects</li><li><strong>Metadata Removal:</strong> Optional removal of metadata and annotations</li></ol><h3>Step-by-Step Compression Guide</h3><p>Follow these simple steps:</p><ol><li>Upload your PDF file to iMasterPDF</li><li>Choose your compression level</li><li>Select additional options (remove metadata, downsample images)</li><li>Click 'Compress' and wait a few seconds</li><li>Download your optimized PDF</li></ol><blockquote>Pro Tip: For documents with many images, try the 'balanced' setting first. Check the quality, and if acceptable, you can try 'maximum' compression for even smaller file sizes.</blockquote>"
+            },
+            {
+                "slug": "best-free-pdf-tools-for-students",
+                "title": "Best Free PDF Tools for Students: Complete 2026 Guide",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-14",
+                "read_time": "15 min",
+                "category": "Educational",
+                "summary": "Discover essential free PDF tools that every student needs for academic success.",
+                "content": "<p>PDF documents are ubiquitous in academic life - from lecture notes and research papers to assignments and e-books. iMasterPDF offers students a complete suite of tools including PDF to Word conversion for editing assignments, PDF merging for combining research, and PDF compression for email submissions.</p><p>All tools are completely free, work on any device, and require no software installation - perfect for students on a budget.</p><h3>Essential PDF Tools for Students</h3><ul><li><strong>PDF to Word Converter:</strong> Edit lecture notes and assignments</li><li><strong>PDF Merger:</strong> Combine research papers and project documents</li><li><strong>PDF Compressor:</strong> Reduce file sizes for email submission</li><li><strong>PDF Rotator:</strong> Fix sideways scanned documents</li><li><strong>PDF to Text:</strong> Extract quotes and references</li><li><strong>PDF Protector:</strong> Secure sensitive documents with passwords</li></ul><h3>Academic Workflow Optimization</h3><p>Here's how students can optimize their workflow:</p><ol><li><strong>Research Phase:</strong> Convert downloaded PDFs to Word for easy note-taking</li><li><strong>Writing Phase:</strong> Merge multiple sources into a single reference document</li><li><strong>Editing Phase:</strong> Rotate any sideways pages from scanned books</li><li><strong>Submission Phase:</strong> Compress the final document for email</li><li><strong>Storage Phase:</strong> Protect sensitive documents with passwords</li></ol><h3>Time-Saving Tips</h3><ul><li>Use batch processing for multiple files</li><li>Save frequently used settings as presets</li><li>Take advantage of keyboard shortcuts</li><li>Use the mobile version for on-the-go editing</li><li>Bookmark frequently used tools</li></ul>"
+            },
+            {
+                "slug": "how-to-unlock-pdf-legally",
+                "title": "How to Unlock PDF Legally: Ethical Methods and Best Practices",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-14",
+                "read_time": "9 min",
+                "category": "Security",
+                "summary": "Learn legitimate ways to unlock password-protected PDFs when you have the right to access them.",
+                "content": "<p>Password-protected PDFs are common in business, education, and personal use. If you've forgotten a password or received a protected file you need to edit, iMasterPDF can help - legally and ethically.</p><p>Our unlock tool requires you to provide the original password, ensuring it's used only for legitimate purposes like accessing your own documents or files shared with you. We never store passwords and files are deleted immediately after processing.</p><h3>Legitimate Reasons to Unlock PDFs</h3><ul><li>You forgot the password to your own document</li><li>You received a password-protected file from someone who forgot to give you the password</li><li>You need to edit a document you previously protected</li><li>You're accessing documents from a former employee or colleague</li><li>You need to extract content from an old protected file</li></ul><h3>How Our PDF Unlocker Works</h3><ol><li>Upload your password-protected PDF</li><li>Enter the correct password (we don't store or see it)</li><li>Click 'Unlock' - the process takes just seconds</li><li>Download your unlocked PDF</li></ol><h3>Security Best Practices</h3><ul><li>Always use strong, unique passwords</li><li>Store passwords in a secure password manager</li><li>Remove protection when sharing files if possible</li><li>Use different passwords for different documents</li><li>Regularly update passwords for sensitive documents</li></ul><blockquote>Important: Only unlock PDFs that you own or have explicit permission to access. Unauthorized access to protected documents may violate laws and ethical guidelines.</blockquote>"
+            },
+            {
+                "slug": "pdf-vs-word-which-is-better",
+                "title": "PDF vs Word: Which Is Better for Your Needs? Complete Comparison",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-14",
+                "read_time": "11 min",
+                "category": "Comparison",
+                "summary": "Detailed comparison of PDF and Word formats to help you choose the right format for every situation.",
+                "content": "<p>The PDF vs Word debate has been ongoing since both formats became mainstream. PDF is perfect for final documents, printing, and sharing - it preserves formatting across all devices. Word is ideal for editing, collaboration, and documents that need frequent changes.</p><p>With iMasterPDF, you can easily convert between both formats depending on your needs. Convert Word to PDF for sharing final versions, or PDF to Word when you need to make edits.</p><h3>When to Use PDF Format</h3><ul><li><strong>Final Documents:</strong> Resumes, contracts, reports, certificates</li><li><strong>Printing:</strong> Documents that need precise layout control</li><li><strong>Sharing:</strong> When you want formatting to remain unchanged</li><li><strong>Archiving:</strong> Long-term storage of important documents</li><li><strong>Forms:</strong> Documents that need to be filled out but not edited</li></ul><h3>When to Use Word Format</h3><ul><li><strong>Collaboration:</strong> Documents that multiple people need to edit</li><li><strong>Drafting:</strong> Early versions of documents</li><li><strong>Editing:</strong> Documents that need frequent updates</li><li><strong>Templates:</strong> Reusable document formats</li><li><strong>Content Creation:</strong> Articles, essays, and manuscripts</li></ul><h3>Conversion Best Practices</h3><ol><li>Convert Word to PDF for final distribution</li><li>Convert PDF to Word when you need to make edits</li><li>Check formatting after conversion</li><li>Use high-quality source files for best results</li><li>Consider using both formats in your workflow</li></ol><p>Remember: iMasterPDF makes conversion between formats quick and easy, so you can use the right format for each situation.</p>"
+            },
+            {
+                "slug": "how-to-protect-pdf-with-password",
+                "title": "How to Protect PDF with Password: Ultimate Security Guide 2026",
+                "author": "Mohammed Shahil",
+                "date": "2026-01-13",
+                "read_time": "10 min",
+                "category": "Security",
+                "summary": "Learn how to add password protection to your PDF files to keep sensitive information secure.",
+                "content": "<p>PDF password protection is essential for securing sensitive documents like contracts, financial reports, personal information, and confidential business data. iMasterPDF's Lock PDF tool makes it easy to add strong password protection to any PDF file.</p><h3>Why Password Protect PDFs?</h3><ul><li><strong>Confidentiality:</strong> Protect sensitive personal or business information</li><li><strong>Legal Compliance:</strong> Meet data protection regulations</li><li><strong>Access Control:</strong> Restrict who can view or edit documents</li><li><strong>Privacy:</strong> Keep personal documents private</li><li><strong>Security:</strong> Prevent unauthorized copying or printing</li></ul><h3>Types of PDF Password Protection</h3><ol><li><strong>Open Password:</strong> Required to open and view the document</li><li><strong>Permissions Password:</strong> Controls printing, editing, and copying</li><li><strong>Both:</strong> Maximum security with both types of passwords</li></ol><h3>Step-by-Step Protection Guide</h3><p>Follow these simple steps:</p><ol><li>Upload your PDF to iMasterPDF</li><li>Choose 'Lock PDF' tool</li><li>Set a strong password (minimum 4 characters)</li><li>Select permission restrictions if needed</li><li>Click 'Protect PDF'</li><li>Download your secured document</li></ol><h3>Password Best Practices</h3><ul><li>Use at least 8 characters (mix of letters, numbers, symbols)</li><li>Avoid common words or personal information</li><li>Use different passwords for different documents</li><li>Store passwords securely (use a password manager)</li><li>Change passwords periodically for sensitive documents</li></ul><blockquote>Security Tip: For maximum security, use both an open password and permissions password, and restrict printing and editing.</blockquote>"
+            }
+        ]
+    }
+    </script>
+
+    <!-- Detailed Tool Content Data -->
+    <script type="application/json" id="tool-detail-data">
+    {
+        "pdf_to_word": {
+            "title": "PDF to Word Converter",
+            "description": "Transform PDF files into fully editable Word documents while preserving formatting, fonts, and layout.",
+            "sections": [
+                {
+                    "title": "What This Tool Does",
+                    "content": "<p>Our PDF to Word converter transforms static PDF documents into fully editable Microsoft Word (.docx) files. Unlike basic text extractors, our tool preserves:</p><ul><li>Original formatting and layout</li><li>Font styles and sizes</li><li>Tables, columns, and text alignment</li><li>Images and graphics with proper placement</li><li>Hyperlinks and footnotes</li><li>Page headers and footers</li></ul><p>The converter uses advanced algorithms to recognize text elements, maintain document structure, and recreate the original layout as closely as possible in Word format.</p>"
+                },
+                {
+                    "title": "How to Use This Tool",
+                    "content": "<p>Follow these simple steps to convert PDF to Word:</p><ol><li><strong>Upload Your PDF:</strong> Click the upload area or drag and drop your PDF file (max 50MB)</li><li><strong>Automatic Processing:</strong> Our system analyzes the PDF structure and prepares it for conversion</li><li><strong>Conversion Options:</strong> Select any additional settings if needed (most documents work perfectly with default settings)</li><li><strong>Download Word File:</strong> Click download to get your editable DOCX file</li><li><strong>Edit in Word:</strong> Open the file in Microsoft Word, Google Docs, or any compatible word processor</li></ol><p>The entire process typically takes 10-30 seconds depending on file size and complexity.</p>"
+                },
+                {
+                    "title": "Benefits of Using Our PDF to Word Converter",
+                    "content": "<ul><li><strong>Perfect Formatting:</strong> Maintains 95%+ of original formatting for most documents</li><li><strong>No Software Needed:</strong> Works directly in your browser - no installations required</li><li><strong>Privacy Guaranteed:</strong> Files are automatically deleted after processing</li><li><strong>Multi-language Support:</strong> Handles documents in English, Spanish, French, German, and 20+ other languages</li><li><strong>Batch Processing:</strong> Convert multiple PDFs simultaneously</li><li><strong>Mobile Friendly:</strong> Works perfectly on smartphones and tablets</li><li><strong>Free Forever:</strong> No hidden costs or subscription fees</li></ul>"
+                },
+                {
+                    "title": "FAQs",
+                    "content": "<div class='faq-section'><div class='faq-item'><h4>Q: How accurate is the conversion?</h4><p>A: Our converter achieves 95%+ accuracy for digitally created PDFs. Scanned PDFs may require OCR processing first.</p></div><div class='faq-item'><h4>Q: Can I convert scanned PDFs?</h4><p>A: Yes, but for best results with scanned documents, ensure they have clear text and good resolution.</p></div><div class='faq-item'><h4>Q: What file formats are supported?</h4><p>A: We support all standard PDF formats including PDF/A, encrypted PDFs, and image-based PDFs.</p></div><div class='faq-item'><h4>Q: Is there a file size limit?</h4><p>A: Yes, maximum file size is 50MB per document. For larger files, consider splitting first.</p></div><div class='faq-item'><h4>Q: Are my documents secure?</h4><p>A: Absolutely. Files are processed automatically and deleted immediately after conversion.</p></div></div>"
+                }
+            ]
+        },
+        "merge_pdf": {
+            "title": "PDF Merger - Combine PDF Files",
+            "description": "Merge multiple PDF documents into a single, organized file with perfect page order and formatting.",
+            "sections": [
+                {
+                    "title": "What This Tool Does",
+                    "content": "<p>Our PDF merger allows you to combine multiple PDF files into one cohesive document. This tool is perfect for:</p><ul><li>Combining multiple chapters into a single book</li><li>Merging reports from different departments</li><li>Creating portfolios from individual pieces</li><li>Assembling legal documents and contracts</li><li>Organizing scanned documents into proper sequence</li></ul><p>The merger preserves all original formatting, including:</p><ul><li>Page orientation (portrait/landscape)</li><li>Image quality and resolution</li><li>Text formatting and fonts</li><li>Hyperlinks and bookmarks</li><li>Security settings and permissions</li></ul>"
+                },
+                {
+                    "title": "How to Merge PDF Files",
+                    "content": "<p>Merging PDFs is simple with our intuitive interface:</p><ol><li><strong>Upload Files:</strong> Drag and drop or select multiple PDF files (up to 20 files)</li><li><strong>Arrange Order:</strong> Use drag-and-drop to arrange files in your preferred sequence</li><li><strong>Preview:</strong> Check the page order and make adjustments if needed</li><li><strong>Merge:</strong> Click the merge button to combine all files</li><li><strong>Download:</strong> Get your single, merged PDF document</li></ol><p>Additional features include:</p><ul><li>Page-by-page rearrangement within files</li><li>Remove specific pages before merging</li><li>Add page numbers to merged document</li><li>Customize margins and spacing</li><li>Add table of contents automatically</li></ul>"
+                },
+                {
+                    "title": "Benefits of Our PDF Merger",
+                    "content": "<ul><li><strong>Unlimited Merging:</strong> Combine as many files as you need</li><li><strong>Perfect Quality:</strong> No compression or quality loss</li><li><strong>Flexible Organization:</strong> Reorder pages within and between documents</li><li><strong>Fast Processing:</strong> Merge 100 pages in under 10 seconds</li><li><strong>Cross-Platform:</strong> Works on Windows, Mac, Linux, iOS, and Android</li><li><strong>No Watermarks:</strong> Clean output without any branding</li><li><strong>Privacy Focused:</strong> All files deleted after processing</li></ul>"
+                },
+                {
+                    "title": "FAQs",
+                    "content": "<div class='faq-section'><div class='faq-item'><h4>Q: How many PDFs can I merge at once?</h4><p>A: You can merge up to 20 PDF files in a single operation.</p></div><div class='faq-item'><h4>Q: Will the merged file be larger than the sum of individual files?</h4><p>A: Usually slightly smaller due to optimization, but never significantly larger.</p></div><div class='faq-item'><h4>Q: Can I merge password-protected PDFs?</h4><p>A: Yes, but you'll need to unlock them first using our unlock tool.</p></div><div class='faq-item'><h4>Q: What if my PDFs have different page sizes?</h4><p>A: Our tool automatically adjusts to maintain each page's original dimensions.</p></div><div class='faq-item'><h4>Q: Is there a page limit?</h4><p>A: No hard page limit, but extremely large merges may take longer to process.</p></div></div>"
+                }
+            ]
+        },
+        "word_to_pdf": {
+            "title": "Word to PDF Converter",
+            "description": "Convert Word documents to professional PDF format with perfect formatting preservation and universal compatibility.",
+            "sections": [
+                {
+                    "title": "What This Tool Does",
+                    "content": "<p>Our Word to PDF converter transforms Microsoft Word documents (.doc and .docx) into high-quality PDF files that look identical on any device. This tool is essential for:</p><ul><li>Creating final versions of documents for sharing</li><li>Preparing print-ready documents</li><li>Converting resumes and CVs for job applications</li><li>Making contracts and legal documents uneditable</li><li>Archiving important documents in universal format</li></ul><p>The converter preserves:</p><ul><li>All formatting including styles and spacing</li><li>Images, charts, and graphics at original quality</li><li>Hyperlinks and table of contents</li><li>Headers, footers, and page numbers</li><li>Font embedding for consistent appearance</li><li>Document metadata and properties</li></ul>"
+                },
+                {
+                    "title": "How to Convert Word to PDF",
+                    "content": "<p>Converting Word documents to PDF is straightforward:</p><ol><li><strong>Upload Word File:</strong> Select your .doc or .docx file (up to 50MB)</li><li><strong>Automatic Analysis:</strong> Our system reads the document structure</li><li><strong>Conversion Settings:</strong> Choose page size, orientation, and quality options</li><li><strong>Generate PDF:</strong> Click convert to create the PDF version</li><li><strong>Download:</strong> Get your professional PDF document</li></ol><p>Advanced options include:</p><ul><li>Custom page sizes and margins</li><li>Password protection addition</li><li>Quality optimization for email or print</li><li>Watermark addition</li><li>Metadata editing</li></ul>"
+                },
+                {
+                    "title": "Benefits of Converting to PDF",
+                    "content": "<ul><li><strong>Universal Compatibility:</strong> Opens on any device without Word</li><li><strong>Format Locking:</strong> Prevents accidental formatting changes</li><li><strong>Professional Appearance:</strong> Consistent look across all platforms</li><li><strong>Security Options:</strong> Add passwords and permissions</li><li><strong>Smaller File Sizes:</strong> Often creates smaller files than original Word documents</li><li><strong>Better Printing:</strong> Exact page control for professional printing</li><li><strong>Long-term Archiving:</strong> PDF/A format for document preservation</li></ul>"
+                },
+                {
+                    "title": "FAQs",
+                    "content": "<div class='faq-section'><div class='faq-item'><h4>Q: Will my Word formatting be preserved exactly?</h4><p>A: Yes, 99% of formatting is preserved perfectly, including complex layouts.</p></div><div class='faq-item'><h4>Q: Can I convert multiple Word files at once?</h4><p>A: Yes, you can batch convert multiple files simultaneously.</p></div><div class='faq-item'><h4>Q: What versions of Word are supported?</h4><p>A: All versions from Word 97 to the latest Office 365 formats.</p></div><div class='faq-item'><h4>Q: Are macros and ActiveX controls converted?</h4><p>A: No, for security reasons, active content is not preserved in PDF conversion.</p></div><div class='faq-item'><h4>Q: Can I convert Word files with tracked changes?</h4><p>A: The PDF will show the final document state without tracked changes markup.</p></div></div>"
+                }
+            ]
+        },
+        "lock_pdf": {
+            "title": "PDF Password Protection",
+            "description": "Add strong password protection to your PDF documents to control access and prevent unauthorized viewing or editing.",
+            "sections": [
+                {
+                    "title": "What This Tool Does",
+                    "content": "<p>Our PDF lock tool adds robust password protection to your documents, providing multiple layers of security:</p><ul><li><strong>Open Password:</strong> Requires password to open and view the document</li><li><strong>Permissions Password:</strong> Controls what users can do with the document</li><li><strong>Permission Settings:</strong> Restrict printing, editing, copying, or form filling</li><li><strong>Strong Encryption:</strong> Uses 128-bit or 256-bit AES encryption</li><li><strong>Compatibility:</strong> Works with all standard PDF readers including Adobe Acrobat</li></ul><p>This tool is essential for:</p><ul><li>Protecting confidential business documents</li><li>Securing personal information and IDs</li><li>Controlling distribution of sensitive materials</li><li>Meeting compliance requirements for data protection</li><li>Preventing unauthorized modifications to contracts</li></ul>"
+                },
+                {
+                    "title": "How to Lock PDF Files",
+                    "content": "<p>Securing your PDF is a simple three-step process:</p><ol><li><strong>Upload PDF:</strong> Select the document you want to protect</li><li><strong>Set Passwords:</strong> Enter open password and/or permissions password</li><li><strong>Configure Permissions:</strong> Choose what actions to allow or restrict</li><li><strong>Apply Protection:</strong> Click to encrypt the document</li><li><strong>Download:</strong> Get your password-protected PDF</li></ol><p>Permission options include:</p><ul><li>Allow or deny printing (low resolution or high resolution)</li><li>Enable or disable document modification</li><li>Allow or prevent text and image copying</li><li>Enable or disable form filling and signing</li><li>Allow or prevent page extraction</li></ul><p><strong>Important:</strong> Always save your passwords securely. We cannot recover lost passwords.</p>"
+                },
+                {
+                    "title": "Benefits of PDF Password Protection",
+                    "content": "<ul><li><strong>Strong Security:</strong> Military-grade encryption algorithms</li><li><strong>Flexible Control:</strong> Granular permission settings</li><li><strong>Universal Compatibility:</strong> Works with all PDF readers</li><li><strong>Easy Management:</strong> Simple interface for complex security</li><li><strong>No Software Needed:</strong> Browser-based encryption</li><li><strong>Fast Processing:</strong> Encrypt documents in seconds</li><li><strong>Privacy Guaranteed:</strong> We never see or store your passwords</li></ul>"
+                },
+                {
+                    "title": "FAQs",
+                    "content": "<div class='faq-section'><div class='faq-item'><h4>Q: What encryption strength do you use?</h4><p>A: We use 256-bit AES encryption, which is military-grade and extremely secure.</p></div><div class='faq-item'><h4>Q: Can I remove the password later?</h4><p>A: Yes, using our unlock tool if you know the password.</p></div><div class='faq-item'><h4>Q: What happens if I forget the password?</h4><p>A: We cannot recover lost passwords. Always store them securely.</p></div><div class='faq-item'><h4>Q: Are there any file size limits?</h4><p>A: Same as other tools - maximum 50MB per file.</p></div><div class='faq-item'><h4>Q: Can I set different passwords for opening and permissions?</h4><p>A: Yes, you can set separate passwords for different security levels.</p></div></div>"
+                }
+            ]
+        }
+    }
+    </script>
+
+    <script>
+        // Initialize
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Navigation
+        const routes = {
+            '/': () => showSection('home'),
+            '/about': () => showSection('about'),
+            '/privacy': () => showSection('privacy'),
+            '/terms': () => showSection('terms'),
+            '/tool': () => showSection('tool'),
+            '/blog': () => { showSection('blog'); renderBlogList(); },
+            '/contact': () => showSection('contact'),
+        };
+
+        const toolMap = {
+            pdf_to_word: { 
+                title: 'PDF to Word', 
+                desc: 'Convert PDF into editable DOCX.',
+                steps: [
+                    'Upload your PDF file (max 50 MB)',
+                    'Click "Convert" to transform PDF to Word',
+                    'Download your editable DOCX file'
+                ]
+            },
+            merge_pdf: { 
+                title: 'Merge PDF', 
+                desc: 'Combine multiple PDFs into one.',
+                steps: [
+                    'Upload 2+ PDF files (drag and drop supported)',
+                    'Arrange files in your preferred order',
+                    'Click "Merge" to create single PDF'
+                ]
+            },
+            rotate_pdf: { 
+                title: 'Rotate PDF', 
+                desc: 'Rotate pages by 90°, 180°, or 270°.',
+                steps: [
+                    'Upload PDF with sideways pages',
+                    'Select rotation angle and pages',
+                    'Download corrected PDF'
+                ]
+            },
+            delete_pages_pdf: { 
+                title: 'Delete Pages in PDF', 
+                desc: 'Remove selected pages from a PDF.',
+                steps: [
+                    'Upload PDF document',
+                    'Specify pages to remove (e.g., 1,3,5 or 2-4)',
+                    'Download cleaned PDF'
+                ]
+            },
+            lock_pdf: { 
+                title: 'Lock PDF (PIN)', 
+                desc: 'Protect PDF with a 4-digit PIN.',
+                steps: [
+                    'Upload your PDF file',
+                    'Set a 4-digit PIN for protection',
+                    'Download password-protected PDF'
+                ]
+            },
+            unlock_pdf: { 
+                title: 'Unlock PDF', 
+                desc: 'Remove password protection.',
+                steps: [
+                    'Upload password-protected PDF',
+                    'Enter the correct password',
+                    'Download unlocked PDF'
+                ]
+            },
+            word_to_pdf: { 
+                title: 'Word to PDF', 
+                desc: 'Convert Word files (DOCX/DOC) to PDF.',
+                steps: [
+                    'Upload Word document (.doc or .docx)',
+                    'Click "Convert" button',
+                    'Download professional PDF'
+                ]
+            },
+            merge_word: { 
+                title: 'Merge Word', 
+                desc: 'Combine multiple Word documents.',
+                steps: [
+                    'Upload Word files to merge',
+                    'Arrange in preferred order',
+                    'Download combined document'
+                ]
+            },
+            word_to_text: { 
+                title: 'Word to Text', 
+                desc: 'Extract text from Word files.',
+                steps: [
+                    'Upload Word document',
+                    'Click "Extract Text"',
+                    'Download plain text file'
+                ]
+            },
+            text_to_pdf: { 
+                title: 'Text to PDF', 
+                desc: 'Convert plain text to PDF.',
+                steps: [
+                    'Paste or type your text',
+                    'Customize formatting options',
+                    'Download generated PDF'
+                ]
+            },
+            text_to_word: { 
+                title: 'Text to Word', 
+                desc: 'Create a Word document from text.',
+                steps: [
+                    'Enter or paste your text',
+                    'Choose document formatting',
+                    'Download Word document'
+                ]
+            },
+            images_to_pdf: { 
+                title: 'Images to PDF', 
+                desc: 'Convert JPG, PNG, WEBP, BMP, TIFF to PDF.',
+                steps: [
+                    'Upload images (multiple supported)',
+                    'Arrange image order',
+                    'Download combined PDF'
+                ]
+            }
+        };
+
+        // Tool definitions with options
+        const tools = {
+            'pdf_to_word': {
+                title: 'PDF to Word',
+                description: 'Convert PDF into editable DOCX',
+                icon: 'fas fa-file-word',
+                multiple: false,
+                accept: '.pdf',
+                options: []
+            },
+            'merge_pdf': {
+                title: 'Merge PDF',
+                description: 'Combine multiple PDFs into a single document',
+                icon: 'fas fa-object-group',
+                multiple: true,
+                accept: '.pdf',
+                options: []
+            },
+            'rotate_pdf': {
+                title: 'Rotate PDF',
+                description: 'Rotate PDF pages 90°, 180°, or 270°',
+                icon: 'fas fa-redo',
+                multiple: false,
+                accept: '.pdf',
+                options: [
+                    {
+                        type: 'select',
+                        name: 'rotation',
+                        label: 'Rotation Angle',
+                        options: [
+                            { value: '90', label: '90° Clockwise' },
+                            { value: '-90', label: '90° Counter-clockwise' },
+                            { value: '180', label: '180°' }
+                        ]
+                    }
+                ]
+            },
+            'delete_pages_pdf': {
+                title: 'Delete Pages in PDF',
+                description: 'Remove selected pages from a PDF',
+                icon: 'fas fa-trash-alt',
+                multiple: false,
+                accept: '.pdf',
+                options: [
+                    {
+                        type: 'text',
+                        name: 'pages',
+                        label: 'Pages to Remove (e.g., 1,3,5 or 2-4)',
+                        placeholder: 'Enter page numbers or ranges',
+                        required: true
+                    }
+                ]
+            },
+            'lock_pdf': {
+                title: 'Lock PDF (PIN)',
+                description: 'Add password protection with 4-digit PIN',
+                icon: 'fas fa-lock',
+                multiple: false,
+                accept: '.pdf',
+                options: [
+                    {
+                        type: 'password',
+                        name: 'pin',
+                        label: 'Set 4-digit PIN',
+                        placeholder: 'Enter 4-digit PIN',
+                        required: true,
+                        pattern: '[0-9]{4}'
+                    }
+                ]
+            },
+            'unlock_pdf': {
+                title: 'Unlock PDF',
+                description: 'Remove password protection from PDF',
+                icon: 'fas fa-unlock',
+                multiple: false,
+                accept: '.pdf',
+                options: [
+                    {
+                        type: 'password',
+                        name: 'password',
+                        label: 'PDF Password',
+                        placeholder: 'Enter current password',
+                        required: true
+                    }
+                ]
+            },
+            'word_to_pdf': {
+                title: 'Word to PDF',
+                description: 'Convert Word documents to PDF format',
+                icon: 'fas fa-file-pdf',
+                multiple: true,
+                accept: '.doc,.docx',
+                options: []
+            },
+            'merge_word': {
+                title: 'Merge Word',
+                description: 'Combine multiple Word documents',
+                icon: 'fas fa-file-word',
+                multiple: true,
+                accept: '.doc,.docx',
+                options: []
+            },
+            'word_to_text': {
+                title: 'Word to Text',
+                description: 'Convert Word documents to plain text',
+                icon: 'fas fa-file-alt',
+                multiple: false,
+                accept: '.doc,.docx',
+                options: []
+            },
+            'text_to_pdf': {
+                title: 'Text to PDF',
+                description: 'Convert text to PDF',
+                icon: 'fas fa-file-pdf',
+                multiple: false,
+                accept: '',
+                options: [
+                    {
+                        type: 'textarea',
+                        name: 'text',
+                        label: 'Text Content',
+                        placeholder: 'Enter your text here...',
+                        required: true
+                    }
+                ]
+            },
+            'text_to_word': {
+                title: 'Text to Word',
+                description: 'Convert text to Word document',
+                icon: 'fas fa-file-word',
+                multiple: false,
+                accept: '',
+                options: [
+                    {
+                        type: 'textarea',
+                        name: 'text',
+                        label: 'Text Content',
+                        placeholder: 'Enter your text here...',
+                        required: true
+                    }
+                ]
+            },
+            'images_to_pdf': {
+                title: 'Images to PDF',
+                description: 'Convert multiple images to a single PDF',
+                icon: 'fas fa-images',
+                multiple: true,
+                accept: 'image/*',
+                options: []
+            }
+        };
+
+        // Global variables
+        let currentTool = null;
+        let uploadedFiles = [];
+        const MAX_SIZE = 50 * 1024 * 1024;
+
+        // Blog pagination
+        let currentPage = 1;
+        const articlesPerPage = 6;
+
+        // API Endpoints mapping
+        const apiEndpoints = {
+            'pdf_to_word': '/api/pdf-to-word',
+            'merge_pdf': '/api/merge-pdf',
+            'rotate_pdf': '/api/rotate-pdf',
+            'delete_pages_pdf': '/api/delete-pages-pdf',
+            'lock_pdf': '/api/lock-pdf',
+            'unlock_pdf': '/api/unlock-pdf',
+            'word_to_pdf': '/api/word-to-pdf',
+            'merge_word': '/api/merge-word',
+            'word_to_text': '/api/word-to-text',
+            'text_to_pdf': '/api/text-to-pdf',
+            'text_to_word': '/api/text-to-word',
+            'images_to_pdf': '/api/images-to-pdf'
+        };
+
+        // Navigation functions
+        function showSection(id) {
+            // Hide all sections
+            document.querySelectorAll('.hidden-section, #home, #hero').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Show the requested section
+            if (id === 'home') {
+                document.getElementById('home').style.display = 'block';
+                document.getElementById('hero').style.display = 'block';
+            } else {
+                document.getElementById(id).style.display = 'block';
+            }
+            
+            // Update active nav links
+            document.querySelectorAll('.nav-links a[data-link]').forEach(a => {
+                const path = a.getAttribute('href');
+                a.classList.toggle('active', path === `/${id}` || (id === 'home' && path === '/'));
+            });
+            
+            // Reset tool state if not in tool section
+            if (id !== 'tool') {
+                resetTool();
+            }
+            
+            // If showing blog, render it immediately
+            if (id === 'blog') {
+                renderBlogList();
+            }
+        }
+
+        function goHome(e) {
+            if (e) e.preventDefault();
+            showSection('home');
+            window.history.pushState({}, '', '/');
+        }
+
+        function showTool(tool) {
+            currentTool = tool;
+            const toolInfo = tools[tool];
+            const toolGuide = toolMap[tool];
+            
+            // Update UI
+            document.getElementById('toolTitle').textContent = toolInfo.title;
+            document.getElementById('toolDescription').textContent = toolInfo.description;
+            
+            // Clear any previous messages
+            document.getElementById('message').style.display = 'none';
+            
+            // Show how-to guide with tool-specific steps
+            const guideHtml = `
+                <h4>How to ${toolInfo.title}:</h4>
+                <ol>
+                    ${toolGuide.steps.map(step => `<li>${step}</li>`).join('')}
+                </ol>
+                <div class="note">Note: Files are processed securely and deleted automatically after conversion.</div>
+            `;
+            document.getElementById('howToGuide').innerHTML = guideHtml;
+            
+            // Show detailed tool content
+            renderToolDetailContent(tool);
+            
+            // Reset file input
+            const fileInput = document.getElementById('fileInput');
+            fileInput.value = '';
+            fileInput.accept = toolInfo.accept;
+            if (toolInfo.multiple) {
+                fileInput.setAttribute('multiple', '');
+            } else {
+                fileInput.removeAttribute('multiple');
+            }
+            
+            // Clear previous files
+            uploadedFiles = [];
+            updateFileList();
+            
+            // Show/hide options panel
+            if (toolInfo.options && toolInfo.options.length > 0) {
+                renderOptions(toolInfo.options);
+                document.getElementById('optionsPanel').classList.add('active');
+            } else {
+                document.getElementById('optionsPanel').classList.remove('active');
+            }
+            
+            // Show upload area
+            document.getElementById('uploadArea').classList.add('active');
+            
+            // Show action buttons
+            document.getElementById('actionButtons').style.display = 'flex';
+            
+            // Hide result and progress areas
+            document.getElementById('resultArea').classList.remove('active');
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('message').style.display = 'none';
+            
+            // Show tool section
+            showSection('tool');
+            window.history.pushState({}, '', '/tool');
+            
+            // Scroll to tool section
+            document.getElementById('tool').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Render detailed tool content
+        function renderToolDetailContent(tool) {
+            const detailData = JSON.parse(document.getElementById('tool-detail-data').textContent);
+            const toolDetail = detailData[tool];
+            const container = document.getElementById('toolDetailContent');
+            
+            if (toolDetail) {
+                let html = `<h2>${toolDetail.title}</h2>`;
+                html += `<p class='tool-description'>${toolDetail.description}</p>`;
+                
+                toolDetail.sections.forEach(section => {
+                    html += `<h3>${section.title}</h3>`;
+                    html += section.content;
+                });
+                
+                container.innerHTML = html;
+                container.classList.add('active');
+            } else {
+                // Default content if no detailed info available
+                const toolInfo = tools[tool];
+                container.innerHTML = `
+                    <h2>${toolInfo.title}</h2>
+                    <p class='tool-description'>${toolInfo.description}</p>
+                    
+                    <h3>What This Tool Does</h3>
+                    <p>This tool helps you ${toolInfo.description.toLowerCase()} quickly and securely. Whether you're working with documents for business, education, or personal use, our tool provides reliable conversion with perfect quality preservation.</p>
+                    
+                    <h3>How to Use This Tool</h3>
+                    <ol>
+                        <li>Upload your file(s) using the upload area above</li>
+                        <li>Configure any options if available</li>
+                        <li>Click the "Process Files" button</li>
+                        <li>Download your converted file</li>
+                        <li>Files are automatically deleted after processing for your privacy</li>
+                    </ol>
+                    
+                    <h3>Benefits</h3>
+                    <ul>
+                        <li><strong>Free to Use:</strong> No registration or payment required</li>
+                        <li><strong>Secure Processing:</strong> Files are deleted immediately after conversion</li>
+                        <li><strong>High Quality:</strong> Preserves formatting and quality</li>
+                        <li><strong>Fast Processing:</strong> Most conversions take under 30 seconds</li>
+                        <li><strong>Browser-Based:</strong> Works on any device with a modern browser</li>
+                        <li><strong>No Installation:</strong> No software downloads required</li>
+                    </ul>
+                    
+                    <div class='faq-section'>
+                        <h3>FAQs</h3>
+                        <div class='faq-item'>
+                            <h4>Q: Is this tool really free?</h4>
+                            <p>A: Yes, completely free with no hidden costs or watermarks.</p>
+                        </div>
+                        <div class='faq-item'>
+                            <h4>Q: Are my files secure?</h4>
+                            <p>A: Absolutely. Files are processed automatically and deleted immediately after conversion.</p>
+                        </div>
+                        <div class='faq-item'>
+                            <h4>Q: What file sizes are supported?</h4>
+                            <p>A: Maximum 50MB per file for optimal performance.</p>
+                        </div>
+                        <div class='faq-item'>
+                            <h4>Q: Can I use this on mobile?</h4>
+                            <p>A: Yes, our tools work perfectly on smartphones and tablets.</p>
+                        </div>
+                        <div class='faq-item'>
+                            <h4>Q: How many files can I process?</h4>
+                            <p>A: You can process unlimited files, one at a time.</p>
+                        </div>
+                    </div>
+                `;
+                container.classList.add('active');
+            }
+        }
+
+        // File handling functions
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            addFiles(files);
+        }
+
+        function addFiles(files) {
+            const toolInfo = tools[currentTool];
+            let validFilesAdded = 0;
+            let hasError = false;
+            
+            // Clear previous error messages
+            const errorMsg = document.getElementById('message');
+            errorMsg.style.display = 'none';
+            
+            files.forEach(file => {
+                // Check file type
+                if (toolInfo.accept && toolInfo.accept !== '') {
+                    // Convert accept string to array of extensions
+                    const acceptedExtensions = toolInfo.accept.split(',').map(ext => ext.trim().toLowerCase());
+                    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                    
+                    // Check if file matches any accepted extension
+                    let isValidType = false;
+                    
+                    if (acceptedExtensions.includes('image/*')) {
+                        // For image tools, check MIME type
+                        if (file.type.startsWith('image/')) {
+                            isValidType = true;
+                        }
+                    } else {
+                        // For specific extensions
+                        isValidType = acceptedExtensions.some(ext => {
+                            if (ext.startsWith('.')) {
+                                return fileExtension === ext;
+                            }
+                            return false;
+                        });
+                    }
+                    
+                    if (!isValidType) {
+                        showMessage(`"${file.name}" is not a supported file type. Please select ${toolInfo.accept} files.`, 'error');
+                        hasError = true;
+                        return; // Skip this file
+                    }
+                }
+                
+                // Check file size
+                if (file.size > MAX_SIZE) {
+                    showMessage(`"${file.name}" exceeds 50MB limit. Please choose a smaller file.`, 'error');
+                    hasError = true;
+                    return; // Skip this file
+                }
+                
+                // Check if file already exists
+                const existingFile = uploadedFiles.find(f => f.name === file.name && f.size === file.size);
+                if (!existingFile) {
+                    uploadedFiles.push(file);
+                    validFilesAdded++;
+                } else {
+                    showMessage(`"${file.name}" is already in the list.`, 'warning');
+                }
+            });
+            
+            // Only update file list if we added valid files
+            if (validFilesAdded > 0) {
+                updateFileList();
+                
+                // Show success message if we added files without errors
+                if (!hasError && validFilesAdded === files.length) {
+                    // Don't show success message for single file
+                    if (validFilesAdded > 1) {
+                        showMessage(`Successfully added ${validFilesAdded} file(s).`, 'success');
+                    }
+                }
+            }
+            
+            // If no valid files were added and we had errors, ensure message is visible
+            if (validFilesAdded === 0 && hasError) {
+                // Error message already shown in the loop
+            }
+        }
+
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">No files selected</p>';
+                return;
+            }
+            
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${file.name}</strong>
+                        <br>
+                        <small>${formatFileSize(file.size)}</small>
+                    </div>
+                    <i class="fas fa-times" onclick="removeFile(${index})" title="Remove file"></i>
+                `;
+                fileList.appendChild(div);
+            });
+        }
+
+        function removeFile(index) {
+            const removedFile = uploadedFiles[index];
+            uploadedFiles.splice(index, 1);
+            updateFileList();
+            
+            // Show removal confirmation
+            showMessage(`Removed "${removedFile.name}" from the list.`, 'info');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Options rendering
+        function renderOptions(options) {
+            const container = document.getElementById('toolOptions');
+            container.innerHTML = '';
+            
+            options.forEach(option => {
+                const div = document.createElement('div');
+                div.className = 'option-group';
+                div.dataset.optionName = option.name;
+                
+                let inputHtml = '';
+                switch (option.type) {
+                    case 'select':
+                        inputHtml = `
+                            <select id="option_${option.name}" name="${option.name}" ${option.required ? 'required' : ''}>
+                                ${option.options.map(opt => 
+                                    `<option value="${opt.value}">${opt.label}</option>`
+                                ).join('')}
+                            </select>
+                        `;
+                        break;
+                    case 'password':
+                    case 'text':
+                        inputHtml = `
+                            <input type="${option.type}" id="option_${option.name}" name="${option.name}" 
+                                   placeholder="${option.placeholder || ''}" 
+                                   ${option.pattern ? `pattern="${option.pattern}"` : ''}
+                                   ${option.required ? 'required' : ''} class="input">
+                        `;
+                        break;
+                    case 'textarea':
+                        inputHtml = `
+                            <textarea id="option_${option.name}" name="${option.name}" 
+                                      placeholder="${option.placeholder || ''}" 
+                                      ${option.required ? 'required' : ''} class="input"
+                                      style="min-height: 150px;"></textarea>
+                        `;
+                        break;
+                }
+                
+                div.innerHTML = `
+                    <label for="option_${option.name}">${option.label}</label>
+                    ${inputHtml}
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+
+        function getOptions() {
+            const options = {};
+            const toolInfo = tools[currentTool];
+            
+            if (!toolInfo.options) return options;
+            
+            toolInfo.options.forEach(option => {
+                const element = document.getElementById('option_' + option.name);
+                if (element) {
+                    options[option.name] = element.value;
+                }
+            });
+            
+            return options;
+        }
+
+        // File processing
+        async function processFiles() {
+            // Validate text-based tools
+            if (['text_to_pdf', 'text_to_word'].includes(currentTool)) {
+                const textElement = document.getElementById('option_text');
+                if (textElement && !textElement.value.trim()) {
+                    showMessage('Please enter text content', 'error');
+                    textElement.focus();
+                    return;
+                }
+            } else if (uploadedFiles.length === 0) {
+                showMessage('Please select files first', 'error');
+                return;
+            }
+            
+            // Validate required options
+            const toolInfo = tools[currentTool];
+            if (toolInfo.options) {
+                for (const option of toolInfo.options) {
+                    if (option.required) {
+                        const element = document.getElementById('option_' + option.name);
+                        if (element && !element.value.trim()) {
+                            showMessage(`Please fill in "${option.label}"`, 'error');
+                            element.focus();
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            // Hide action buttons during processing
+            document.getElementById('actionButtons').style.display = 'none';
+            
+            // Show progress
+            document.getElementById('progressContainer').classList.add('active');
+            document.getElementById('progress-fill').style.width = '10%';
+            document.getElementById('progress-text').textContent = '10%';
+            document.getElementById('message').style.display = 'none';
+            
+            try {
+                // Create FormData
+                const formData = new FormData();
+                const options = getOptions();
+                
+                // Add options to FormData
+                Object.keys(options).forEach(key => {
+                    formData.append(key, options[key]);
+                });
+                
+                // Get the correct API endpoint
+                const endpoint = apiEndpoints[currentTool];
+                if (!endpoint) {
+                    throw new Error('Tool not supported yet');
+                }
+                
+                // Add files to FormData (for file-based tools)
+                if (!['text_to_pdf', 'text_to_word'].includes(currentTool)) {
+                    uploadedFiles.forEach(file => {
+                        formData.append('files', file);
+                    });
+                } else {
+                    // For text tools, add text content
+                    const textElement = document.getElementById('option_text');
+                    if (textElement) {
+                        formData.append('text', textElement.value);
+                    }
+                }
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '50%';
+                document.getElementById('progress-text').textContent = '50%';
+                
+                // Make the API call
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '90%';
+                document.getElementById('progress-text').textContent = '90%';
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Processing failed');
+                }
+                
+                // Get the blob from response
+                const blob = await response.blob();
+                
+                // Generate a filename with UUID
+                let filename = `imasterpdf_${generateUUID()}`;
+                if (response.headers.get('Content-Disposition')) {
+                    const match = response.headers.get('Content-Disposition').match(/filename="(.+)"/);
+                    if (match) filename = match[1];
+                } else {
+                    // Default filename based on tool
+                    const extMap = {
+                        'pdf_to_word': '.docx',
+                        'merge_pdf': '.pdf',
+                        'rotate_pdf': '.pdf',
+                        'delete_pages_pdf': '.pdf',
+                        'lock_pdf': '.pdf',
+                        'unlock_pdf': '.pdf',
+                        'word_to_pdf': '.pdf',
+                        'merge_word': '.docx',
+                        'word_to_text': '.txt',
+                        'text_to_pdf': '.pdf',
+                        'text_to_word': '.docx',
+                        'images_to_pdf': '.pdf'
+                    };
+                    filename = `${filename}${extMap[currentTool] || '.pdf'}`;
+                }
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '100%';
+                document.getElementById('progress-text').textContent = '100%';
+                
+                // Show result
+                setTimeout(() => {
+                    document.getElementById('progressContainer').classList.remove('active');
+                    document.getElementById('resultArea').classList.add('active');
+                    
+                    // Create download link
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = downloadUrl;
+                    downloadLink.download = filename;
+                    downloadLink.textContent = `Download ${filename}`;
+                    downloadLink.target = '_blank';
+                    
+                    // Clean up URL object when link is clicked
+                    downloadLink.onclick = () => {
+                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+                    };
+                    
+                    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+                
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+                document.getElementById('progressContainer').classList.remove('active');
+                // Show action buttons again
+                document.getElementById('actionButtons').style.display = 'flex';
+                console.error('Processing error:', error);
+            }
+        }
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'msg ' + type;
+            msg.style.display = 'block';
+            
+            // Auto-hide messages after some time
+            setTimeout(() => {
+                if (msg.textContent === text) {
+                    msg.style.display = 'none';
+                }
+            }, type === 'error' ? 8000 : 5000);
+        }
+
+        function resetTool() {
+            currentTool = null;
+            uploadedFiles = [];
+            
+            // Clear file input
+            const fileInput = document.getElementById('fileInput');
+            fileInput.value = '';
+            
+            document.getElementById('uploadArea').classList.remove('active');
+            document.getElementById('optionsPanel').classList.remove('active');
+            document.getElementById('actionButtons').style.display = 'none';
+            document.getElementById('resultArea').classList.remove('active');
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('toolDetailContent').classList.remove('active');
+            document.getElementById('message').style.display = 'none';
+            
+            updateFileList();
+        }
+
+        function renderBlogList(page = 1) {
+            const blogList = document.getElementById('blog-list');
+            try {
+                const blogDataScript = document.getElementById('blog-data');
+                if (!blogDataScript) {
+                    blogList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">Blog data not found</p>';
+                    return;
+                }
+                
+                const blogData = JSON.parse(blogDataScript.textContent);
+                const articles = blogData.articles;
+                
+                // Calculate pagination
+                const totalPages = Math.ceil(articles.length / articlesPerPage);
+                currentPage = Math.max(1, Math.min(page, totalPages));
+                const startIndex = (currentPage - 1) * articlesPerPage;
+                const endIndex = startIndex + articlesPerPage;
+                const pageArticles = articles.slice(startIndex, endIndex);
+                
+                if (pageArticles.length === 0) {
+                    blogList.innerHTML = '<p style="text-align: center; color: var(--gray-color);">No blog articles found</p>';
+                    return;
+                }
+                
+                // Render articles
+                blogList.innerHTML = pageArticles.map(article => `
+                    <div class="blog-card" onclick="showArticle('${article.slug}')">
+                        <h3>${article.title}</h3>
+                        <div class="meta">
+                            <span><i class="fas fa-user"></i> ${article.author}</span>
+                            <span><i class="fas fa-calendar"></i> ${article.date}</span>
+                            <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
+                            <span><i class="fas fa-tag"></i> ${article.category}</span>
+                        </div>
+                        <p class="excerpt">${article.summary}</p>
+                        <a href="#" onclick="event.stopPropagation(); showArticle('${article.slug}'); return false;" class="read-more">
+                            Read Full Article <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                `).join('');
+                
+                // Render pagination
+                renderPagination(totalPages);
+            } catch (error) {
+                console.error('Error rendering blog:', error);
+                blogList.innerHTML = '<p style="text-align: center; color: var(--gray-color); padding: 20px;">Error loading blog articles. Please try again later.</p>';
+                document.getElementById('pagination').innerHTML = '';
+            }
+        }
+
+        function renderPagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let paginationHtml = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                paginationHtml += `<button onclick="renderBlogList(${currentPage - 1})"><i class="fas fa-chevron-left"></i> Previous</button>`;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    paginationHtml += `<button class="active">${i}</button>`;
+                } else if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    paginationHtml += `<button onclick="renderBlogList(${i})">${i}</button>`;
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    paginationHtml += `<span>...</span>`;
+                }
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                paginationHtml += `<button onclick="renderBlogList(${currentPage + 1})">Next <i class="fas fa-chevron-right"></i></button>`;
+            }
+            
+            pagination.innerHTML = paginationHtml;
+        }
+
+        function showArticle(slug) {
+            try {
+                const blogDataScript = document.getElementById('blog-data');
+                if (!blogDataScript) {
+                    showMessage('Blog data not found', 'error');
+                    return;
+                }
+                
+                const blogData = JSON.parse(blogDataScript.textContent);
+                const article = blogData.articles.find(a => a.slug === slug);
+                
+                if (article) {
+                    document.getElementById('article-title').textContent = article.title;
+                    document.getElementById('article-meta').innerHTML = `
+                        <span><i class="fas fa-user"></i> ${article.author}</span>
+                        <span><i class="fas fa-calendar"></i> ${article.date}</span>
+                        <span><i class="fas fa-clock"></i> ${article.read_time} read</span>
+                        <span><i class="fas fa-tag"></i> ${article.category}</span>
+                    `;
+                    document.getElementById('article-content').innerHTML = article.content;
+                    showSection('article');
+                    window.history.pushState({}, '', `/blog/${slug}`);
+                } else {
+                    showMessage('Article not found', 'error');
+                    showSection('blog');
+                }
+            } catch (error) {
+                console.error('Error showing article:', error);
+                showMessage('Error loading article', 'error');
+                showSection('blog');
+            }
+        }
+
+        // Drag and drop
+        const dropZone = document.getElementById('dropZone');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            
+            const files = Array.from(e.dataTransfer.files);
+            addFiles(files);
+        });
+
+        // Contact form
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const msg = document.getElementById('contact-msg');
+            msg.textContent = 'Thank you for your message! We\'ll get back to you soon.';
+            msg.className = 'msg success';
+            this.reset();
+        });
+
+        // Back to blog button
+        document.getElementById('back-to-blog').addEventListener('click', function(e) {
+            e.preventDefault();
+            showSection('blog');
+            window.history.pushState({}, '', '/blog');
+        });
+
+        // Navigation links
+        document.querySelectorAll('.nav-links a[data-link], .footer-inner a[data-link]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const path = this.getAttribute('href');
+                if (routes[path]) {
+                    routes[path]();
+                    window.history.pushState({}, '', path);
+                }
+            });
+        });
+
+        // Handle browser back/forward
+        window.addEventListener('popstate', () => {
+            const path = window.location.pathname;
+            if (routes[path]) {
+                routes[path]();
+            } else if (path.startsWith('/blog/')) {
+                const slug = path.split('/blog/')[1];
+                showArticle(slug);
+            } else {
+                goHome();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set current year
+            document.getElementById('year').textContent = new Date().getFullYear();
+            
+            // Initialize navigation
+            const path = window.location.pathname;
+            if (routes[path]) {
+                routes[path]();
+            } else if (path.startsWith('/blog/')) {
+                const slug = path.split('/blog/')[1];
+                showArticle(slug);
+            } else {
+                showSection('home');
+            }
+        });
+    </script>
+</body>
+</html>
