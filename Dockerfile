@@ -26,16 +26,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements first (better Docker cache)
 COPY requirements.txt .
 
-# Install Python dependencies
 RUN pip install --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
-
-# Create necessary directories
-RUN mkdir -p /tmp/imasterpdf_uploads /tmp/imasterpdf_outputs \
-    && chmod 755 /tmp/imasterpdf_uploads /tmp/imasterpdf_outputs
 
 # Expose port (optional but recommended)
 EXPOSE 10000
