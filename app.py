@@ -1111,6 +1111,9 @@ def serve_static(filename):
 @app.route('/<path:path>')
 def catch_all(path):
     """Catch-all route to handle all client-side routes"""
+    # Skip API routes - let them be handled by their specific routes
+    if path.startswith('api/'):
+        abort(404)  # Let the 404 handler deal with it
     return render_template('index.html')
 
 # -----------------------------------------------------------------------------
