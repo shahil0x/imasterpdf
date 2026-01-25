@@ -7,40 +7,37 @@ ENV PORT=10000
 
 WORKDIR /app
 
-# Minimal system dependencies for Render
+# Minimal system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
-    g++ \
     libjpeg-dev \
     zlib1g-dev \
     libfreetype6-dev \
-    libtiff-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (better Docker cache)
 COPY requirements.txt .
 
-RUN pip install --upgrade pip setuptools wheel \
+RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
-# Create directories for uploads (Render needs specific path)
-RUN mkdir -p /opt/render/project/src/temp/uploads \
-    /opt/render/project/src/temp/outputs \
-    && chmod -R 755 /opt/render/project/src/temp
+# Create temp directories
+RUN mkdir -p /tmp/imasterpdf_uploads /tmp/imasterpdf_outputs
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser \
-    && chown -R appuser:appuser /app
-
-USER appuser
+# Create start script that handles $PORT
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'PORT=${PORT:-10000}' >> /app/start.sh && \
+    echo 'echo "Starting iMasterPDF on port: $PORT"' >> /app/start.sh && \
+    echo 'exec gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile -' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
 # Expose port
 EXPOSE 10000
 
-# Start app with Gunicorn (Render uses $PORT environment variable)
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:$PORT", "--workers", "2", "--threads", "2", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-"]
+# Use the start script
+CMD ["/app/start.sh"]
