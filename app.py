@@ -134,6 +134,29 @@ def safe_remove(path):
         pass
 
 # -----------------------------------------------------------------------------
+# Helper function for sending files with proper headers
+# -----------------------------------------------------------------------------
+def send_file_with_headers(buffer, filename, mimetype):
+    """Send file with proper headers for download"""
+    from flask import Response as FlaskResponse
+    from werkzeug.datastructures import Headers
+    
+    headers = Headers()
+    headers.set('Content-Type', mimetype)
+    headers.set('Content-Disposition', 'attachment', filename=filename)
+    headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    headers.set('Pragma', 'no-cache')
+    headers.set('Expires', '0')
+    
+    response = FlaskResponse(
+        buffer.getvalue(),
+        mimetype=mimetype,
+        headers=headers
+    )
+    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+# -----------------------------------------------------------------------------
 # SPA Routes for each tool page
 # -----------------------------------------------------------------------------
 
@@ -223,7 +246,7 @@ def images_to_pdf():
     return render_template('imagestopdf.html')
 
 # -----------------------------------------------------------------------------
-# Catch-all route for other .html files (NEW ADDITION)
+# Catch-all route for other .html files
 # -----------------------------------------------------------------------------
 @app.route('/<path:filename>.html')
 def serve_html(filename):
@@ -243,7 +266,7 @@ def api_contact():
     email = (data.get('email') or '').strip()
     message = (data.get('message') or '').strip()
     if not name or not email or not message:
-        return Response("Please provide name, email, and message.", status=400)
+        return jsonify({"error": "Please provide name, email, and message."}), 400
     return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
 
 # -----------------------------------------------------------------------------
@@ -255,11 +278,14 @@ def api_merge_pdf():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) < 2:
-        abort(Response("Upload at least two PDFs.", status=400))
+        return jsonify({"error": "Upload at least two PDFs."}), 400
+    
     paths = save_uploads(files)
     for p in paths:
         if ext_of(p) not in ALLOWED_PDF_EXT:
-            abort(Response("Only PDF files are allowed.", status=400))
+            for path in paths:
+                safe_remove(path)
+            return jsonify({"error": "Only PDF files are allowed."}), 400
 
     merger = PdfMerger()
     try:
@@ -274,18 +300,23 @@ def api_merge_pdf():
         merger.write(buffer)
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
+        # Use helper function with proper headers
+        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        
+        # Cleanup after response
+        @response.call_on_close
+        def cleanup():
+            for p in paths:
+                safe_remove(p)
+            merger.close()
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Merging failed: {str(e)}", status=500))
-    finally:
         for p in paths:
             safe_remove(p)
         merger.close()
+        return jsonify({"error": f"Merging failed: {str(e)}"}), 500
 
 @app.route('/api/split-pdf', methods=['POST'])
 def api_split_pdf():
@@ -293,16 +324,17 @@ def api_split_pdf():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
+        return jsonify({"error": "Upload exactly one PDF."}), 400
     
     ranges_str = request.form.get('ranges', '').strip()
     if not ranges_str:
-        abort(Response("Page ranges are required.", status=400))
+        return jsonify({"error": "Page ranges are required."}), 400
     
     paths = save_uploads(files)
     pdf_path = paths[0]
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+        safe_remove(pdf_path)
+        return jsonify({"error": "Only PDF files are allowed."}), 400
     
     try:
         reader = PdfReader(pdf_path)
@@ -319,18 +351,22 @@ def api_split_pdf():
                     if 1 <= start <= total_pages and 1 <= end <= total_pages:
                         ranges.append((min(start, end)-1, max(start, end)))
                     else:
-                        abort(Response(f"Page range out of bounds (1-{total_pages}).", status=400))
+                        safe_remove(pdf_path)
+                        return jsonify({"error": f"Page range out of bounds (1-{total_pages})."}), 400
                 except ValueError:
-                    abort(Response("Invalid page range format.", status=400))
+                    safe_remove(pdf_path)
+                    return jsonify({"error": "Invalid page range format."}), 400
             else:
                 try:
                     page = int(part)
                     if 1 <= page <= total_pages:
                         ranges.append((page-1, page))
                     else:
-                        abort(Response(f"Page out of bounds (1-{total_pages}).", status=400))
+                        safe_remove(pdf_path)
+                        return jsonify({"error": f"Page out of bounds (1-{total_pages})."}), 400
                 except ValueError:
-                    abort(Response("Invalid page number.", status=400))
+                    safe_remove(pdf_path)
+                    return jsonify({"error": "Invalid page number."}), 400
         
         # Create ZIP file with all split PDFs
         zip_buffer = io.BytesIO()
@@ -356,16 +392,18 @@ def api_split_pdf():
         zip_name = generate_unique_filename(original_name, "split_parts")
         zip_name = os.path.splitext(zip_name)[0] + ".zip"
         
-        return send_file(
-            zip_buffer,
-            as_attachment=True,
-            download_name=zip_name,
-            mimetype='application/zip'
-        )
+        # Use helper function with proper headers
+        response = send_file_with_headers(zip_buffer, zip_name, 'application/zip')
+        
+        @response.call_on_close
+        def cleanup():
+            safe_remove(pdf_path)
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Splitting failed: {str(e)}", status=500))
-    finally:
         safe_remove(pdf_path)
+        return jsonify({"error": f"Splitting failed: {str(e)}"}), 500
 
 @app.route('/api/delete-pages-pdf', methods=['POST'])
 def api_delete_pages_pdf():
@@ -373,17 +411,19 @@ def api_delete_pages_pdf():
     pages_str = request.form.get('pages', '').strip()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
+        return jsonify({"error": "Upload exactly one PDF."}), 400
     if not pages_str:
-        abort(Response("Pages to remove are required.", status=400))
+        return jsonify({"error": "Pages to remove are required."}), 400
+    
     paths = save_uploads(files)
     pdf_path = paths[0]
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+        safe_remove(pdf_path)
+        return jsonify({"error": "Only PDF files are allowed."}), 400
 
     pages_to_remove = parse_pages(pages_str)
-
     writer = PdfWriter()
+    
     try:
         reader = PdfReader(pdf_path)
         total = len(reader.pages)
@@ -400,16 +440,20 @@ def api_delete_pages_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
+        # Use helper function with proper headers
+        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        
+        @response.call_on_close
+        def cleanup():
+            safe_remove(pdf_path)
+            writer.close()
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Page removal failed: {str(e)}", status=500))
-    finally:
         safe_remove(pdf_path)
+        writer.close()
+        return jsonify({"error": f"Page removal failed: {str(e)}"}), 500
 
 @app.route('/api/rotate-pdf', methods=['POST'])
 def api_rotate_pdf():
@@ -417,11 +461,13 @@ def api_rotate_pdf():
     rotation = int(request.form.get('rotation', '90'))
     files = request.files.getlist('files')
     if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
+        return jsonify({"error": "Upload exactly one PDF."}), 400
+    
     paths = save_uploads(files)
     pdf_path = paths[0]
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+        safe_remove(pdf_path)
+        return jsonify({"error": "Only PDF files are allowed."}), 400
 
     writer = PdfWriter()
     try:
@@ -439,30 +485,37 @@ def api_rotate_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
+        # Use helper function with proper headers
+        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        
+        @response.call_on_close
+        def cleanup():
+            safe_remove(pdf_path)
+            writer.close()
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Rotation failed: {str(e)}", status=500))
-    finally:
         safe_remove(pdf_path)
+        writer.close()
+        return jsonify({"error": f"Rotation failed: {str(e)}"}), 500
 
 @app.route('/api/lock-pdf', methods=['POST'])
 def api_lock_pdf():
     cleanup_temp()
     pin = request.form.get('pin', '').strip()
     if not pin or len(pin) != 4 or not pin.isdigit():
-        abort(Response("PIN must be exactly 4 digits.", status=400))
+        return jsonify({"error": "PIN must be exactly 4 digits."}), 400
+    
     files = request.files.getlist('files')
     if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
+        return jsonify({"error": "Upload exactly one PDF."}), 400
+    
     paths = save_uploads(files)
     pdf_path = paths[0]
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+        safe_remove(pdf_path)
+        return jsonify({"error": "Only PDF files are allowed."}), 400
 
     writer = PdfWriter()
     try:
@@ -480,16 +533,20 @@ def api_lock_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
+        # Use helper function with proper headers
+        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        
+        @response.call_on_close
+        def cleanup():
+            safe_remove(pdf_path)
+            writer.close()
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Locking failed: {str(e)}", status=500))
-    finally:
         safe_remove(pdf_path)
+        writer.close()
+        return jsonify({"error": f"Locking failed: {str(e)}"}), 500
 
 @app.route('/api/unlock-pdf', methods=['POST'])
 def api_unlock_pdf():
@@ -497,13 +554,15 @@ def api_unlock_pdf():
     password = request.form.get('password', '').strip()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
+        return jsonify({"error": "Upload exactly one PDF."}), 400
     if not password:
-        abort(Response("Password is required.", status=400))
+        return jsonify({"error": "Password is required."}), 400
+    
     paths = save_uploads(files)
     pdf_path = paths[0]
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+        safe_remove(pdf_path)
+        return jsonify({"error": "Only PDF files are allowed."}), 400
 
     writer = PdfWriter()
     try:
@@ -515,7 +574,9 @@ def api_unlock_pdf():
         
         if reader.is_encrypted:
             if not reader.decrypt(password):
-                abort(Response("Incorrect password.", status=400))
+                safe_remove(pdf_path)
+                writer.close()
+                return jsonify({"error": "Incorrect password."}), 400
         for page in reader.pages:
             writer.add_page(page)
         
@@ -523,16 +584,20 @@ def api_unlock_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
+        # Use helper function with proper headers
+        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        
+        @response.call_on_close
+        def cleanup():
+            safe_remove(pdf_path)
+            writer.close()
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Unlocking failed: {str(e)}", status=500))
-    finally:
         safe_remove(pdf_path)
+        writer.close()
+        return jsonify({"error": f"Unlocking failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
 # Tool APIs - PDF to Word
@@ -543,11 +608,13 @@ def api_pdf_to_word():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
+        return jsonify({"error": "Upload exactly one PDF."}), 400
+    
     paths = save_uploads(files)
     pdf_path = paths[0]
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
+        safe_remove(pdf_path)
+        return jsonify({"error": "Only PDF files are allowed."}), 400
 
     try:
         original_name = secure_filename(files[0].filename)
@@ -566,16 +633,22 @@ def api_pdf_to_word():
         doc.save(buffer)
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        # Use helper function with proper headers for Word
+        response = send_file_with_headers(
+            buffer, 
+            output_name, 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
+        
+        @response.call_on_close
+        def cleanup():
+            safe_remove(pdf_path)
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Conversion failed: {str(e)}", status=500))
-    finally:
         safe_remove(pdf_path)
+        return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
 # Tool APIs - Word Operations
@@ -586,13 +659,14 @@ def api_word_to_pdf():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
-        abort(Response("Upload exactly one Word file.", status=400))
+        return jsonify({"error": "Upload exactly one Word file."}), 400
 
     paths = save_uploads(files)
     doc_path = paths[0]
 
     if ext_of(doc_path) not in ALLOWED_WORD_EXT:
-        abort(Response("Only DOC/DOCX files are supported.", status=400))
+        safe_remove(doc_path)
+        return jsonify({"error": "Only DOC/DOCX files are supported."}), 400
 
     try:
         original_name = secure_filename(files[0].filename)
@@ -625,27 +699,32 @@ def api_word_to_pdf():
         c.save()
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
+        # Use helper function with proper headers
+        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        
+        @response.call_on_close
+        def cleanup():
+            safe_remove(doc_path)
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Conversion failed: {str(e)}", status=500))
-    finally:
         safe_remove(doc_path)
+        return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
 
 @app.route('/api/merge-word', methods=['POST'])
 def api_merge_word():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) < 2:
-        abort(Response("Upload at least two Word files.", status=400))
+        return jsonify({"error": "Upload at least two Word files."}), 400
+    
     paths = save_uploads(files)
     for p in paths:
         if ext_of(p) not in ALLOWED_WORD_EXT:
-            abort(Response("Only DOC/DOCX files are allowed.", status=400))
+            for path in paths:
+                safe_remove(path)
+            return jsonify({"error": "Only DOC/DOCX files are allowed."}), 400
 
     try:
         merged = Document()
@@ -665,28 +744,37 @@ def api_merge_word():
         merged.save(buffer)
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        # Use helper function with proper headers for Word
+        response = send_file_with_headers(
+            buffer, 
+            output_name, 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
+        
+        @response.call_on_close
+        def cleanup():
+            for p in paths:
+                safe_remove(p)
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Merging failed: {str(e)}", status=500))
-    finally:
         for p in paths:
             safe_remove(p)
+        return jsonify({"error": f"Merging failed: {str(e)}"}), 500
 
 @app.route('/api/word-to-text', methods=['POST'])
 def api_word_to_text():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
-        abort(Response("Upload exactly one Word file.", status=400))
+        return jsonify({"error": "Upload exactly one Word file."}), 400
+    
     paths = save_uploads(files)
     doc_path = paths[0]
     if ext_of(doc_path) not in ALLOWED_WORD_EXT:
-        abort(Response("Only DOC/DOCX files are allowed.", status=400))
+        safe_remove(doc_path)
+        return jsonify({"error": "Only DOC/DOCX files are allowed."}), 400
 
     try:
         original_name = secure_filename(files[0].filename)
@@ -702,16 +790,18 @@ def api_word_to_text():
         buffer = io.BytesIO('\n'.join(text_content).encode('utf-8'))
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='text/plain'
-        )
+        # Use helper function with proper headers for text
+        response = send_file_with_headers(buffer, output_name, 'text/plain')
+        
+        @response.call_on_close
+        def cleanup():
+            safe_remove(doc_path)
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Conversion failed: {str(e)}", status=500))
-    finally:
         safe_remove(doc_path)
+        return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
 # Tool APIs - Text Operations
@@ -722,7 +812,7 @@ def api_text_to_pdf():
     cleanup_temp()
     text = (request.form.get('text') or '').strip()
     if not text:
-        abort(Response("Text content is required.", status=400))
+        return jsonify({"error": "Text content is required."}), 400
 
     unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -753,19 +843,15 @@ def api_text_to_pdf():
     c.save()
     buffer.seek(0)
     
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=output_name,
-        mimetype='application/pdf'
-    )
+    # Use helper function with proper headers
+    return send_file_with_headers(buffer, output_name, 'application/pdf')
 
 @app.route('/api/text-to-word', methods=['POST'])
 def api_text_to_word():
     cleanup_temp()
     text = (request.form.get('text') or '').strip()
     if not text:
-        abort(Response("Text content is required.", status=400))
+        return jsonify({"error": "Text content is required."}), 400
     
     unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -781,11 +867,11 @@ def api_text_to_word():
     doc.save(buffer)
     buffer.seek(0)
     
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=output_name,
-        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    # Use helper function with proper headers for Word
+    return send_file_with_headers(
+        buffer, 
+        output_name, 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
 
 # -----------------------------------------------------------------------------
@@ -797,11 +883,14 @@ def api_images_to_pdf():
     cleanup_temp()
     files = request.files.getlist('files')
     if not files or len(files) < 1:
-        abort(Response("Upload at least one image.", status=400))
+        return jsonify({"error": "Upload at least one image."}), 400
+    
     paths = save_uploads(files)
     for p in paths:
         if ext_of(p) not in ALLOWED_IMAGE_EXT:
-            abort(Response("Only image files (JPG, PNG, WEBP, BMP, TIFF) are allowed.", status=400))
+            for path in paths:
+                safe_remove(path)
+            return jsonify({"error": "Only image files (JPG, PNG, WEBP, BMP, TIFF) are allowed."}), 400
 
     try:
         original_name = secure_filename(files[0].filename)
@@ -822,17 +911,20 @@ def api_images_to_pdf():
         
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
+        # Use helper function with proper headers
+        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        
+        @response.call_on_close
+        def cleanup():
+            for p in paths:
+                safe_remove(p)
+        
+        return response
+        
     except Exception as e:
-        abort(Response(f"Conversion failed: {str(e)}", status=500))
-    finally:
         for p in paths:
             safe_remove(p)
+        return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
 # Health check endpoint
@@ -868,7 +960,19 @@ def serve_static(filename):
     return send_from_directory('static', filename)
 
 # -----------------------------------------------------------------------------
-# Run the application
+# CORS Configuration for Render
+# -----------------------------------------------------------------------------
+@app.after_request
+def after_request(response):
+    """Add CORS headers for Render deployment"""
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
+
+# -----------------------------------------------------------------------------
+# Run the application (for local development only)
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True) 
+    # This block only runs when executed directly (not in production)
+    app.run(host='0.0.0.0', port=8000, debug=False)
