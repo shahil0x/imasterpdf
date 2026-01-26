@@ -871,4 +871,4 @@ def serve_static(filename):
 # Run the application
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True) add that and give whole coding
+    app.run(host='0.0.0.0', port=8000, debug=True) 
