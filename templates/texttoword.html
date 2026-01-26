@@ -555,13 +555,13 @@
             return true;
         }
 
-        // Text processing - Connects to Flask backend for Word conversion
+        // Text processing - FIXED VERSION
         async function processText() {
             if (!validateText()) {
                 return;
             }
             
-            const text = document.getElementById('textInput').value;
+            const text = document.getElementById('textInput').value.trim();
             
             // Hide action buttons during processing
             document.querySelector('.action-buttons').style.display = 'none';
@@ -573,22 +573,19 @@
             document.getElementById('message').style.display = 'none';
             
             try {
-                // Prepare data for Flask backend
-                const requestData = {
-                    text: text
-                };
+                // IMPORTANT: Your Flask backend expects FORM DATA, not JSON
+                // Create FormData object with 'text' field
+                const formData = new FormData();
+                formData.append('text', text);
                 
                 // Update progress
                 document.getElementById('progress-fill').style.width = '30%';
                 document.getElementById('progress-text').textContent = '30%';
                 
-                // Send request to Flask backend - Using your example site endpoint pattern
+                // Send request to Flask backend - Using FormData instead of JSON
                 const response = await fetch('/api/text-to-word', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestData)
+                    body: formData  // This sends as multipart/form-data
                 });
                 
                 // Check if request was successful
@@ -618,39 +615,43 @@
                 if (!isWordDoc) {
                     // Try to read as text to see error message
                     const textResponse = await blob.text();
-                    if (textResponse.startsWith('{') || textResponse.startsWith('<')) {
+                    if (textResponse.includes('error') || textResponse.includes('Error')) {
                         try {
-                            const errorObj = JSON.parse(textResponse);
-                            throw new Error(errorObj.error || errorObj.message || 'Server returned non-Word response');
+                            const errorMatch = textResponse.match(/"error":\s*"([^"]+)"/) ||
+                                             textResponse.match(/<title>([^<]+)<\/title>/);
+                            if (errorMatch && errorMatch[1]) {
+                                throw new Error(errorMatch[1]);
+                            } else if (textResponse.includes('{')) {
+                                const errorObj = JSON.parse(textResponse);
+                                throw new Error(errorObj.error || errorObj.message || 'Server error');
+                            }
                         } catch {
-                            throw new Error('Server returned non-Word document response');
+                            // If can't parse as JSON, show first 100 chars
+                            throw new Error(textResponse.substring(0, 100) + '...');
                         }
                     }
+                    throw new Error('Server returned non-Word document. Check server logs.');
                 }
                 
                 // Complete progress
                 document.getElementById('progress-fill').style.width = '100%';
                 document.getElementById('progress-text').textContent = '100%';
                 
-                // Generate filename with timestamp
-                const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-                const downloadFilename = `text_to_word_${timestamp}.docx`;
-                
                 // Extract filename from headers if available
                 const contentDisposition = response.headers.get('content-disposition');
-                let finalFilename = downloadFilename;
+                let filename = 'document.docx';
                 
                 if (contentDisposition) {
                     const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
                                         contentDisposition.match(/filename=([^;]+)/);
                     if (filenameMatch && filenameMatch[1]) {
-                        finalFilename = filenameMatch[1].trim();
+                        filename = filenameMatch[1].trim();
                     }
                 }
                 
                 // Ensure filename has .docx extension
-                if (!finalFilename.toLowerCase().endsWith('.docx') && !finalFilename.toLowerCase().endsWith('.doc')) {
-                    finalFilename += '.docx';
+                if (!filename.toLowerCase().endsWith('.docx') && !filename.toLowerCase().endsWith('.doc')) {
+                    filename += '.docx';
                 }
                 
                 // Show result after short delay
@@ -662,7 +663,7 @@
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = downloadUrl;
-                    downloadLink.download = finalFilename;
+                    downloadLink.download = filename;
                     
                     // Add click handler to clean up URL object
                     downloadLink.onclick = () => {
@@ -714,14 +715,17 @@
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
-            showMessage('Tool has been reset. Enter your text to create a new Word document.', 'info');
+            // Don't show info message on reset - it's annoying
+            // showMessage('Tool has been reset. Enter your text to create a new Word document.', 'info');
         }
 
         // Handle Enter key in textarea (Ctrl+Enter to submit)
         document.getElementById('textInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && e.ctrlKey) {
                 e.preventDefault();
-                processText();
+                if (document.getElementById('textInput').value.trim().length >= 10) {
+                    processText();
+                }
             }
         });
 
@@ -752,6 +756,9 @@ Try it now with your own content!`;
             
             document.getElementById('textInput').value = sampleText;
             updateTextStats();
+            
+            // Focus the textarea for better UX
+            document.getElementById('textInput').focus();
         });
         
         // Add paste event listener for better UX
@@ -781,7 +788,8 @@ Try it now with your own content!`;
             const textFile = files.find(file => 
                 file.type === 'text/plain' || 
                 file.name.endsWith('.txt') ||
-                file.name.endsWith('.md')
+                file.name.endsWith('.md') ||
+                file.name.endsWith('.html')
             );
             
             if (textFile) {
@@ -794,7 +802,7 @@ Try it now with your own content!`;
                     showMessage(`Failed to read text file: ${error.message}`, 'error');
                 }
             } else if (files.length > 0) {
-                showMessage('Please drop a text file (.txt, .md) or enter text directly.', 'warning');
+                showMessage('Please drop a text file (.txt, .md, .html) or enter text directly.', 'warning');
             }
         });
         
@@ -806,6 +814,8 @@ Try it now with your own content!`;
                 const text = document.getElementById('textInput').value.trim();
                 if (text.length >= 10) {
                     processText();
+                } else {
+                    showMessage('Please enter at least 10 characters of text', 'error');
                 }
             }
             
@@ -815,6 +825,55 @@ Try it now with your own content!`;
                 resetTool();
             }
         });
+        
+        // Add auto-save to localStorage
+        const TEXT_KEY = 'imasterpdf_text_to_word_content';
+        let saveTimeout = null;
+        
+        document.getElementById('textInput').addEventListener('input', () => {
+            // Clear previous timeout
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
+            
+            // Set new timeout to save after 2 seconds of inactivity
+            saveTimeout = setTimeout(() => {
+                const text = document.getElementById('textInput').value;
+                if (text.trim().length > 0) {
+                    localStorage.setItem(TEXT_KEY, text);
+                    console.log('Text auto-saved to localStorage');
+                }
+            }, 2000);
+        });
+        
+        // Load saved text on page load
+        window.addEventListener('load', () => {
+            const savedText = localStorage.getItem(TEXT_KEY);
+            if (savedText) {
+                // Only load if textarea is empty or has default sample text
+                const currentText = document.getElementById('textInput').value;
+                if (currentText === '' || currentText.includes('Welcome to iMasterPDF')) {
+                    document.getElementById('textInput').value = savedText;
+                    updateTextStats();
+                    showMessage('Previous text restored from auto-save', 'info');
+                    
+                    // Auto-hide the info message after 3 seconds
+                    setTimeout(() => {
+                        const msg = document.getElementById('message');
+                        if (msg.textContent.includes('Previous text restored')) {
+                            msg.style.display = 'none';
+                        }
+                    }, 3000);
+                }
+            }
+        });
+        
+        // Clear saved text when resetting
+        const originalReset = resetTool;
+        resetTool = function() {
+            localStorage.removeItem(TEXT_KEY);
+            originalReset();
+        };
     </script>
 </body>
 </html>

@@ -704,9 +704,9 @@
             document.getElementById('message').style.display = 'none';
             
             try {
-                // Create FormData to send file
+                // Create FormData to send file - IMPORTANT: Use 'files' not 'file' to match Flask backend
                 const formData = new FormData();
-                formData.append('file', file);
+                formData.append('files', file); // <-- KEY FIX: Use 'files' to match Flask's request.files.getlist('files')
                 
                 // Update progress
                 document.getElementById('progress-fill').style.width = '30%';
@@ -720,8 +720,15 @@
                 
                 // Check if request was successful
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                    const contentType = response.headers.get('content-type');
+                    
+                    // Try to get error message as text first
+                    try {
+                        const errorText = await response.text();
+                        throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
+                    } catch (e) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
                 }
                 
                 // Update progress
@@ -731,23 +738,22 @@
                 // Get response as blob (binary data - PDF file)
                 const blob = await response.blob();
                 
-                // Check if we got a PDF
+                // Check if we got a valid blob
                 if (blob.size === 0) {
-                    throw new Error('Server returned empty PDF file');
+                    throw new Error('Server returned empty file');
                 }
                 
-                // Check content type (PDF or octet-stream)
-                const contentType = response.headers.get('content-type') || blob.type;
-                if (!contentType.includes('application/pdf') && !contentType.includes('application/octet-stream')) {
-                    // Try to read as text to see error message
-                    const textResponse = await blob.text();
-                    if (textResponse.startsWith('{') || textResponse.startsWith('<')) {
-                        try {
-                            const errorObj = JSON.parse(textResponse);
-                            throw new Error(errorObj.error || errorObj.message || 'Server returned non-PDF response');
-                        } catch {
-                            throw new Error('Server returned non-PDF response');
-                        }
+                // Check content type
+                const contentType = response.headers.get('content-type') || '';
+                
+                // If server returns JSON (error), handle it
+                if (contentType.includes('application/json')) {
+                    try {
+                        const text = await blob.text();
+                        const data = JSON.parse(text);
+                        throw new Error(data.error || 'Server returned error');
+                    } catch (e) {
+                        throw new Error('Server returned invalid response');
                     }
                 }
                 
@@ -764,10 +770,16 @@
                 let finalFilename = downloadFilename;
                 
                 if (contentDisposition) {
-                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
-                                        contentDisposition.match(/filename=([^;]+)/);
+                    // Try to extract filename from Content-Disposition header
+                    const filenameMatch = contentDisposition.match(/filename\*?=["']?([^"';]+)/i);
                     if (filenameMatch && filenameMatch[1]) {
                         finalFilename = filenameMatch[1].trim();
+                    } else {
+                        // Try simpler match
+                        const simpleMatch = contentDisposition.match(/filename=["']?([^"';]+)/i);
+                        if (simpleMatch && simpleMatch[1]) {
+                            finalFilename = simpleMatch[1].trim();
+                        }
                     }
                 }
                 
@@ -784,13 +796,17 @@
                     // Create download link with the actual PDF from backend
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
+                    
+                    // Set up the download link
                     downloadLink.href = downloadUrl;
                     downloadLink.download = finalFilename;
                     
-                    // Add click handler to clean up URL object
-                    downloadLink.onclick = () => {
-                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
-                    };
+                    // Clean up the URL object after some time
+                    setTimeout(() => {
+                        if (downloadLink.href === downloadUrl) {
+                            URL.revokeObjectURL(downloadUrl);
+                        }
+                    }, 60000); // Clean up after 60 seconds
                     
                     // Scroll to result
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });

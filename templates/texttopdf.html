@@ -555,13 +555,13 @@
             return true;
         }
 
-        // Text processing - Connects to Flask backend
+        // Text processing - FIXED VERSION for Flask backend
         async function processText() {
             if (!validateText()) {
                 return;
             }
             
-            const text = document.getElementById('textInput').value;
+            const text = document.getElementById('textInput').value.trim();
             
             // Hide action buttons during processing
             document.querySelector('.action-buttons').style.display = 'none';
@@ -573,22 +573,19 @@
             document.getElementById('message').style.display = 'none';
             
             try {
-                // Prepare data for Flask backend
-                const requestData = {
-                    text: text
-                };
-                
                 // Update progress
                 document.getElementById('progress-fill').style.width = '30%';
                 document.getElementById('progress-text').textContent = '30%';
                 
-                // Send request to Flask backend - Updated endpoint based on your example site
+                // IMPORTANT: Your Flask backend expects form data, not JSON
+                // Create FormData object instead of JSON
+                const formData = new FormData();
+                formData.append('text', text);
+                
+                // Send request to Flask backend - Using FormData as your backend expects
                 const response = await fetch('/api/text-to-pdf', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestData)
+                    body: formData  // Using FormData, not JSON
                 });
                 
                 // Check if request was successful
@@ -609,18 +606,27 @@
                     throw new Error('Server returned empty PDF file');
                 }
                 
-                // Check content type (PDF or octet-stream)
+                // Check content type
                 const contentType = response.headers.get('content-type') || blob.type;
-                if (!contentType.includes('application/pdf') && !contentType.includes('application/octet-stream')) {
+                const isPdf = contentType.includes('application/pdf') || 
+                             contentType.includes('application/octet-stream');
+                
+                if (!isPdf) {
                     // Try to read as text to see error message
                     const textResponse = await blob.text();
-                    if (textResponse.startsWith('{') || textResponse.startsWith('<')) {
+                    console.error('Non-PDF response:', textResponse);
+                    
+                    // Check if it's a JSON error response
+                    if (textResponse.startsWith('{') || textResponse.includes('error')) {
                         try {
                             const errorObj = JSON.parse(textResponse);
-                            throw new Error(errorObj.error || errorObj.message || 'Server returned non-PDF response');
+                            throw new Error(errorObj.error || errorObj.message || 'Server returned an error');
                         } catch {
-                            throw new Error('Server returned non-PDF response');
+                            // If not JSON, show the text response
+                            throw new Error('Server error: ' + textResponse.substring(0, 200));
                         }
+                    } else {
+                        throw new Error('Server returned non-PDF response. Content-Type: ' + contentType);
                     }
                 }
                 
@@ -628,25 +634,21 @@
                 document.getElementById('progress-fill').style.width = '100%';
                 document.getElementById('progress-text').textContent = '100%';
                 
-                // Generate filename with timestamp
-                const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-                const downloadFilename = `text_to_pdf_${timestamp}.pdf`;
-                
                 // Extract filename from headers if available
                 const contentDisposition = response.headers.get('content-disposition');
-                let finalFilename = downloadFilename;
+                let filename = 'text_document.pdf';
                 
                 if (contentDisposition) {
                     const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
                                         contentDisposition.match(/filename=([^;]+)/);
                     if (filenameMatch && filenameMatch[1]) {
-                        finalFilename = filenameMatch[1].trim();
+                        filename = filenameMatch[1].trim();
                     }
                 }
                 
                 // Ensure filename has .pdf extension
-                if (!finalFilename.toLowerCase().endsWith('.pdf')) {
-                    finalFilename += '.pdf';
+                if (!filename.toLowerCase().endsWith('.pdf')) {
+                    filename += '.pdf';
                 }
                 
                 // Show result after short delay
@@ -658,7 +660,7 @@
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = downloadUrl;
-                    downloadLink.download = finalFilename;
+                    downloadLink.download = filename;
                     
                     // Add click handler to clean up URL object
                     downloadLink.onclick = () => {
@@ -670,7 +672,8 @@
                     
                     // Show success message
                     const wordCount = text.trim().split(/\s+/).length;
-                    showMessage(`PDF created successfully! ${wordCount} words converted to PDF format.`, 'success');
+                    const charCount = text.length;
+                    showMessage(`PDF created successfully! ${wordCount} words (${charCount} characters) converted to PDF.`, 'success');
                     
                 }, 500);
                 
@@ -710,7 +713,8 @@
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
-            showMessage('Tool has been reset. Enter your text to create a new PDF.', 'info');
+            // Optionally show reset message
+            // showMessage('Tool has been reset. Enter your text to create a new PDF.', 'info');
         }
 
         // Handle Enter key in textarea (Ctrl+Enter to submit)
@@ -738,10 +742,15 @@ Features:
 - Fast and reliable conversion
 - High-quality PDF output
 
+Your text is securely processed on our servers and deleted immediately after conversion. No data is stored or shared with third parties.
+
 Try it now with your own content!`;
             
             document.getElementById('textInput').value = sampleText;
             updateTextStats();
+            
+            // Focus the textarea
+            document.getElementById('textInput').focus();
         });
         
         // Add paste event listener for better UX
@@ -751,24 +760,30 @@ Try it now with your own content!`;
         });
         
         // Add drag and drop for text files
-        document.getElementById('textInput').addEventListener('dragover', (e) => {
+        const textInput = document.getElementById('textInput');
+        
+        textInput.addEventListener('dragover', (e) => {
             e.preventDefault();
-            e.currentTarget.style.borderColor = 'var(--primary-color)';
-            e.currentTarget.style.backgroundColor = 'rgba(45, 140, 255, 0.05)';
+            textInput.style.borderColor = 'var(--primary-color)';
+            textInput.style.backgroundColor = 'rgba(45, 140, 255, 0.05)';
         });
         
-        document.getElementById('textInput').addEventListener('dragleave', (e) => {
-            e.currentTarget.style.borderColor = 'var(--border)';
-            e.currentTarget.style.backgroundColor = 'var(--light-color)';
+        textInput.addEventListener('dragleave', (e) => {
+            textInput.style.borderColor = 'var(--border)';
+            textInput.style.backgroundColor = 'var(--light-color)';
         });
         
-        document.getElementById('textInput').addEventListener('drop', async (e) => {
+        textInput.addEventListener('drop', async (e) => {
             e.preventDefault();
-            e.currentTarget.style.borderColor = 'var(--border)';
-            e.currentTarget.style.backgroundColor = 'var(--light-color)';
+            textInput.style.borderColor = 'var(--border)';
+            textInput.style.backgroundColor = 'var(--light-color)';
             
             const files = Array.from(e.dataTransfer.files);
-            const textFile = files.find(file => file.type === 'text/plain' || file.name.endsWith('.txt'));
+            const textFile = files.find(file => 
+                file.type === 'text/plain' || 
+                file.name.endsWith('.txt') ||
+                file.type.startsWith('text/')
+            );
             
             if (textFile) {
                 try {
@@ -781,6 +796,17 @@ Try it now with your own content!`;
                 }
             } else if (files.length > 0) {
                 showMessage('Please drop a text file (.txt) or enter text directly.', 'warning');
+            }
+        });
+        
+        // Add keyboard shortcut for accessibility
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + S to create PDF
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (document.getElementById('textInput').value.trim().length >= 10) {
+                    processText();
+                }
             }
         });
     </script>

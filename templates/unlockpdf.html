@@ -790,7 +790,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // File processing - Connects to Flask backend
+        // File processing - FIXED VERSION
         async function processFiles() {
             if (!validateInputs()) {
                 return;
@@ -810,8 +810,13 @@
             
             try {
                 // Create FormData to send file and password
+                // MUST match Flask backend: request.files.getlist('files') and request.form.get('password')
                 const formData = new FormData();
-                formData.append('file', file);
+                
+                // CORRECT: Use 'files' (plural) to match backend's request.files.getlist('files')
+                formData.append('files', file);
+                
+                // CORRECT: Use 'password' to match backend's request.form.get('password')
                 formData.append('password', password);
                 
                 // Update progress
@@ -826,13 +831,27 @@
                 
                 // Check if request was successful
                 if (!response.ok) {
-                    // Check if it's a password error
-                    if (response.status === 401 || response.status === 403) {
+                    // Try to get error message from response
+                    let errorMessage = `Server error: ${response.status}`;
+                    
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.error) {
+                            errorMessage = errorData.error;
+                        }
+                    } catch (e) {
+                        const errorText = await response.text();
+                        if (errorText) {
+                            errorMessage = errorText;
+                        }
+                    }
+                    
+                    // Check for specific error cases
+                    if (response.status === 400 && errorMessage.includes('Incorrect password')) {
                         throw new Error('Incorrect password. Please check the password and try again.');
                     }
                     
-                    const errorText = await response.text();
-                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                    throw new Error(errorMessage);
                 }
                 
                 // Update progress
@@ -842,23 +861,28 @@
                 // Get response as blob (binary data - PDF file)
                 const blob = await response.blob();
                 
-                // Check if we got a PDF
-                if (blob.size === 0) {
-                    throw new Error('Server returned empty PDF file');
+                // Check if we got a valid PDF (minimum size for empty PDF is around 500 bytes)
+                if (blob.size < 100) {
+                    throw new Error('Server returned an empty or invalid PDF file');
                 }
                 
-                // Check content type (PDF or octet-stream)
-                const contentType = response.headers.get('content-type') || blob.type;
-                if (!contentType.includes('application/pdf') && !contentType.includes('application/octet-stream')) {
-                    // Try to read as text to see error message
-                    const textResponse = await blob.text();
-                    if (textResponse.startsWith('{') || textResponse.startsWith('<')) {
-                        try {
-                            const errorObj = JSON.parse(textResponse);
-                            throw new Error(errorObj.error || errorObj.message || 'Server returned non-PDF response');
-                        } catch {
-                            throw new Error('Server returned non-PDF response');
-                        }
+                // Check content type
+                const contentType = response.headers.get('content-type');
+                
+                // Acceptable content types for PDF
+                const acceptableTypes = ['application/pdf', 'application/octet-stream'];
+                const isAcceptableType = acceptableTypes.some(type => 
+                    contentType && contentType.includes(type)
+                );
+                
+                if (!isAcceptableType && contentType !== null) {
+                    // Might be an error message in JSON
+                    try {
+                        const textResponse = await blob.text();
+                        const errorObj = JSON.parse(textResponse);
+                        throw new Error(errorObj.error || errorObj.message || 'Server returned error response');
+                    } catch (parseError) {
+                        throw new Error(`Server returned unexpected content type: ${contentType}`);
                     }
                 }
                 
@@ -867,7 +891,7 @@
                 document.getElementById('progress-text').textContent = '100%';
                 
                 // Generate filename for unlocked PDF
-                const originalName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                const originalName = file.name.replace(/\.pdf$/i, ""); // Remove .pdf extension
                 const downloadFilename = `${originalName}_unlocked.pdf`;
                 
                 // Extract filename from headers if available
@@ -875,10 +899,21 @@
                 let finalFilename = downloadFilename;
                 
                 if (contentDisposition) {
-                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
-                                        contentDisposition.match(/filename=([^;]+)/);
+                    // Try different patterns for filename extraction
+                    let filenameMatch = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?/i);
+                    
+                    if (!filenameMatch) {
+                        filenameMatch = contentDisposition.match(/filename=['"]?([^;\r\n"']*)['"]?/i);
+                    }
+                    
                     if (filenameMatch && filenameMatch[1]) {
                         finalFilename = filenameMatch[1].trim();
+                        // Decode URI encoded filenames
+                        try {
+                            finalFilename = decodeURIComponent(finalFilename);
+                        } catch (e) {
+                            // Keep original if decoding fails
+                        }
                     }
                 }
                 
@@ -913,7 +948,18 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                showMessage('Failed to unlock PDF: ' + error.message, 'error');
+                
+                // Specific error messages for common cases
+                let userMessage = error.message;
+                if (error.message.includes('Incorrect password')) {
+                    userMessage = '❌ Incorrect password. Please check the password and try again.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    userMessage = '🔌 Connection failed. Please check your internet connection and try again.';
+                } else if (error.message.includes('timeout') || error.message.includes('Timeout')) {
+                    userMessage = '⏱️ Request timed out. Please try again or use a smaller file.';
+                }
+                
+                showMessage('Failed to unlock PDF: ' + userMessage, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
                 document.querySelector('.action-buttons').style.display = 'flex';
             }

@@ -685,7 +685,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // File processing - Connects to Flask backend
+        // File processing - FIXED VERSION
         async function processFiles() {
             if (uploadedFiles.length === 0) {
                 showMessage('Please select a Word file first', 'error');
@@ -720,36 +720,36 @@
                 
                 // Check if request was successful
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                    // Try to get error message
+                    try {
+                        const errorData = await response.json();
+                        throw new Error(`Server error: ${errorData.error || response.statusText}`);
+                    } catch (e) {
+                        throw new Error(`Server error: ${response.status} - ${response.statusText}`);
+                    }
                 }
                 
                 // Update progress
                 document.getElementById('progress-fill').style.width = '70%';
                 document.getElementById('progress-text').textContent = '70%';
                 
-                // Get response as blob (binary data - text file)
+                // Get response as blob (binary data)
                 const blob = await response.blob();
                 
-                // Check if we got a text file
+                // Check if blob is empty
                 if (blob.size === 0) {
-                    throw new Error('Server returned empty text file');
+                    throw new Error('Server returned empty file');
                 }
                 
-                // Check content type (text/plain or octet-stream)
-                const contentType = response.headers.get('content-type') || blob.type;
-                const isTextFile = contentType.includes('text/plain') || contentType.includes('application/octet-stream');
-                
-                if (!isTextFile) {
-                    // Try to read as text to see error message
-                    const textResponse = await blob.text();
-                    if (textResponse.startsWith('{') || textResponse.startsWith('<')) {
-                        try {
-                            const errorObj = JSON.parse(textResponse);
-                            throw new Error(errorObj.error || errorObj.message || 'Server returned non-text response');
-                        } catch {
-                            throw new Error('Server returned non-text response');
-                        }
+                // Check if response is JSON error
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    const errorData = await blob.text();
+                    try {
+                        const jsonError = JSON.parse(errorData);
+                        throw new Error(jsonError.error || 'Server returned error response');
+                    } catch (e) {
+                        throw new Error('Server returned error: ' + errorData.substring(0, 100));
                     }
                 }
                 
@@ -757,54 +757,75 @@
                 document.getElementById('progress-fill').style.width = '100%';
                 document.getElementById('progress-text').textContent = '100%';
                 
-                // Generate filename for text file
+                // Generate filename
                 const originalName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
-                const downloadFilename = `${originalName}.txt`;
+                let downloadFilename = `${originalName}_extracted.txt`;
                 
                 // Extract filename from headers if available
                 const contentDisposition = response.headers.get('content-disposition');
-                let finalFilename = downloadFilename;
-                
                 if (contentDisposition) {
-                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
-                                        contentDisposition.match(/filename=([^;]+)/);
-                    if (filenameMatch && filenameMatch[1]) {
-                        finalFilename = filenameMatch[1].trim();
+                    // Try different patterns for filename extraction
+                    const patterns = [
+                        /filename\*?=["']?(?:UTF-8''|utf-8'')?([^"';]+)["']?/i,
+                        /filename=["']?([^"';]+)["']?/i
+                    ];
+                    
+                    for (const pattern of patterns) {
+                        const match = contentDisposition.match(pattern);
+                        if (match && match[1]) {
+                            // Decode URI encoded filenames
+                            downloadFilename = decodeURIComponent(match[1].trim());
+                            break;
+                        }
                     }
                 }
                 
                 // Ensure filename has .txt extension
-                if (!finalFilename.toLowerCase().endsWith('.txt')) {
-                    finalFilename += '.txt';
+                if (!downloadFilename.toLowerCase().endsWith('.txt')) {
+                    downloadFilename += '.txt';
                 }
+                
+                // Clean up filename (remove any problematic characters)
+                downloadFilename = downloadFilename.replace(/[<>:"/\\|?*]/g, '_');
                 
                 // Show result after short delay
                 setTimeout(() => {
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('resultArea').classList.add('active');
                     
-                    // Create download link with the actual text from backend
+                    // Create download link
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = downloadUrl;
-                    downloadLink.download = finalFilename;
+                    downloadLink.download = downloadFilename;
                     
-                    // Add click handler to clean up URL object
-                    downloadLink.onclick = () => {
-                        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+                    // Set up click handler to trigger download
+                    downloadLink.onclick = function() {
+                        // This will trigger the download
+                        setTimeout(() => {
+                            URL.revokeObjectURL(downloadUrl);
+                            // Auto-click the link after a moment to ensure download starts
+                            this.click();
+                        }, 100);
+                        return true;
                     };
+                    
+                    // Also auto-trigger download immediately (optional - uncomment if you want automatic download)
+                    // setTimeout(() => {
+                    //     downloadLink.click();
+                    // }, 500);
                     
                     // Scroll to result
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
                     
                     // Show success message
-                    showMessage(`Text successfully extracted from Word document!`, 'success');
+                    showMessage(`Text successfully extracted! Ready to download "${downloadFilename}"`, 'success');
                     
                 }, 500);
                 
             } catch (error) {
                 console.error('Error:', error);
-                showMessage('Failed to extract text from Word: ' + error.message, 'error');
+                showMessage('Failed to extract text: ' + error.message, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
                 document.querySelector('.action-buttons').style.display = 'flex';
             }
@@ -905,13 +926,6 @@
                 resetTool();
             }
         });
-        
-        // Preview extracted text option (optional feature)
-        function previewText(text) {
-            // This function could be used to show a preview of extracted text
-            // before downloading, but for now we'll just download directly
-            console.log('Text extracted:', text.substring(0, 500) + '...');
-        }
     </script>
 </body>
 </html>
