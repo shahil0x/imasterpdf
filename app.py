@@ -5,7 +5,7 @@ import tempfile
 import uuid
 from datetime import datetime, timedelta
 
-from flask import Flask, render_template, send_file, request, abort, Response, jsonify, send_from_directory
+from flask import Flask, render_template, send_file, request, abort, Response, jsonify, send_from_directory, after_this_request
 from werkzeug.utils import secure_filename
 
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
@@ -132,29 +132,6 @@ def safe_remove(path):
             os.remove(path)
     except Exception:
         pass
-
-# -----------------------------------------------------------------------------
-# Helper function for sending files with proper headers
-# -----------------------------------------------------------------------------
-def send_file_with_headers(buffer, filename, mimetype):
-    """Send file with proper headers for download"""
-    from flask import Response as FlaskResponse
-    from werkzeug.datastructures import Headers
-    
-    headers = Headers()
-    headers.set('Content-Type', mimetype)
-    headers.set('Content-Disposition', 'attachment', filename=filename)
-    headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
-    headers.set('Pragma', 'no-cache')
-    headers.set('Expires', '0')
-    
-    response = FlaskResponse(
-        buffer.getvalue(),
-        mimetype=mimetype,
-        headers=headers
-    )
-    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
-    return response
 
 # -----------------------------------------------------------------------------
 # SPA Routes for each tool page
@@ -300,15 +277,21 @@ def api_merge_pdf():
         merger.write(buffer)
         buffer.seek(0)
         
-        # Use helper function with proper headers
-        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        # CORRECT WAY: Use send_file with proper parameters
+        response = send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=output_name
+        )
         
         # Cleanup after response
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             for p in paths:
                 safe_remove(p)
             merger.close()
+            return response
         
         return response
         
@@ -392,12 +375,18 @@ def api_split_pdf():
         zip_name = generate_unique_filename(original_name, "split_parts")
         zip_name = os.path.splitext(zip_name)[0] + ".zip"
         
-        # Use helper function with proper headers
-        response = send_file_with_headers(zip_buffer, zip_name, 'application/zip')
+        # CORRECT WAY: Use send_file with proper parameters
+        response = send_file(
+            zip_buffer,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=zip_name
+        )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             safe_remove(pdf_path)
+            return response
         
         return response
         
@@ -440,13 +429,19 @@ def api_delete_pages_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        # Use helper function with proper headers
-        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        # CORRECT WAY: Use send_file with proper parameters
+        response = send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=output_name
+        )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             safe_remove(pdf_path)
             writer.close()
+            return response
         
         return response
         
@@ -485,13 +480,19 @@ def api_rotate_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        # Use helper function with proper headers
-        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        # CORRECT WAY: Use send_file with proper parameters
+        response = send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=output_name
+        )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             safe_remove(pdf_path)
             writer.close()
+            return response
         
         return response
         
@@ -533,13 +534,19 @@ def api_lock_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        # Use helper function with proper headers
-        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        # CORRECT WAY: Use send_file with proper parameters
+        response = send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=output_name
+        )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             safe_remove(pdf_path)
             writer.close()
+            return response
         
         return response
         
@@ -584,13 +591,19 @@ def api_unlock_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        # Use helper function with proper headers
-        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        # CORRECT WAY: Use send_file with proper parameters
+        response = send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=output_name
+        )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             safe_remove(pdf_path)
             writer.close()
+            return response
         
         return response
         
@@ -633,16 +646,18 @@ def api_pdf_to_word():
         doc.save(buffer)
         buffer.seek(0)
         
-        # Use helper function with proper headers for Word
-        response = send_file_with_headers(
-            buffer, 
-            output_name, 
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        # CORRECT WAY: Use send_file with proper parameters for Word
+        response = send_file(
+            buffer,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name=output_name
         )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             safe_remove(pdf_path)
+            return response
         
         return response
         
@@ -699,12 +714,18 @@ def api_word_to_pdf():
         c.save()
         buffer.seek(0)
         
-        # Use helper function with proper headers
-        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        # CORRECT WAY: Use send_file with proper parameters
+        response = send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=output_name
+        )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             safe_remove(doc_path)
+            return response
         
         return response
         
@@ -744,17 +765,19 @@ def api_merge_word():
         merged.save(buffer)
         buffer.seek(0)
         
-        # Use helper function with proper headers for Word
-        response = send_file_with_headers(
-            buffer, 
-            output_name, 
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        # CORRECT WAY: Use send_file with proper parameters for Word
+        response = send_file(
+            buffer,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            as_attachment=True,
+            download_name=output_name
         )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             for p in paths:
                 safe_remove(p)
+            return response
         
         return response
         
@@ -790,12 +813,18 @@ def api_word_to_text():
         buffer = io.BytesIO('\n'.join(text_content).encode('utf-8'))
         buffer.seek(0)
         
-        # Use helper function with proper headers for text
-        response = send_file_with_headers(buffer, output_name, 'text/plain')
+        # CORRECT WAY: Use send_file with proper parameters for text
+        response = send_file(
+            buffer,
+            mimetype='text/plain',
+            as_attachment=True,
+            download_name=output_name
+        )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             safe_remove(doc_path)
+            return response
         
         return response
         
@@ -843,8 +872,13 @@ def api_text_to_pdf():
     c.save()
     buffer.seek(0)
     
-    # Use helper function with proper headers
-    return send_file_with_headers(buffer, output_name, 'application/pdf')
+    # CORRECT WAY: Use send_file with proper parameters
+    return send_file(
+        buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=output_name
+    )
 
 @app.route('/api/text-to-word', methods=['POST'])
 def api_text_to_word():
@@ -867,11 +901,12 @@ def api_text_to_word():
     doc.save(buffer)
     buffer.seek(0)
     
-    # Use helper function with proper headers for Word
-    return send_file_with_headers(
-        buffer, 
-        output_name, 
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    # CORRECT WAY: Use send_file with proper parameters for Word
+    return send_file(
+        buffer,
+        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        as_attachment=True,
+        download_name=output_name
     )
 
 # -----------------------------------------------------------------------------
@@ -911,13 +946,19 @@ def api_images_to_pdf():
         
         buffer.seek(0)
         
-        # Use helper function with proper headers
-        response = send_file_with_headers(buffer, output_name, 'application/pdf')
+        # CORRECT WAY: Use send_file with proper parameters
+        response = send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=output_name
+        )
         
-        @response.call_on_close
-        def cleanup():
+        @after_this_request
+        def cleanup(response):
             for p in paths:
                 safe_remove(p)
+            return response
         
         return response
         
