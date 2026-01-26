@@ -3,6 +3,7 @@ import io
 import shutil
 import tempfile
 import uuid
+import re
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, send_file, request, abort, Response, jsonify, send_from_directory, after_this_request
@@ -34,6 +35,84 @@ ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
 ALLOWED_PDF_EXT = {'.pdf'}
 ALLOWED_WORD_EXT = {'.docx', '.doc'}
 ALLOWED_TEXT_EXT = {'.txt'}
+
+# -----------------------------------------------------------------------------
+# NEW: Text cleaning utilities for XML compatibility
+# -----------------------------------------------------------------------------
+def clean_text_for_xml(text):
+    """
+    Clean text to make it XML compatible.
+    Removes NULL bytes, control characters, and other problematic chars.
+    """
+    if not text:
+        return ""
+    
+    # Remove NULL bytes
+    text = text.replace('\x00', '')
+    
+    # Remove other control characters (except common whitespace: \n, \t, \r)
+    # This regex removes control characters except \n, \t, \r
+    text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', text)
+    
+    # Replace other problematic Unicode characters with safe alternatives
+    replacements = {
+        '\u2028': ' ',  # Line separator
+        '\u2029': ' ',  # Paragraph separator
+        '\uFEFF': '',   # Zero-width no-break space
+    }
+    
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    
+    # Ensure valid UTF-8
+    try:
+        text = text.encode('utf-8', 'ignore').decode('utf-8')
+    except:
+        text = text.encode('ascii', 'ignore').decode('ascii')
+    
+    return text
+
+def safe_add_paragraph(doc, text):
+    """
+    Safely add a paragraph to a Word document, handling any XML errors.
+    """
+    try:
+        cleaned_text = clean_text_for_xml(text)
+        if cleaned_text.strip():
+            doc.add_paragraph(cleaned_text.strip())
+    except Exception:
+        # If even cleaned text fails, add a placeholder
+        try:
+            doc.add_paragraph("[Text contains unsupported characters]")
+        except:
+            pass  # Skip if even placeholder fails
+
+def safe_extract_pdf_text(pdf_path):
+    """
+    Extract text from PDF with robust error handling.
+    """
+    try:
+        text = extract_text(pdf_path) or ""
+        return clean_text_for_xml(text)
+    except Exception as e:
+        print(f"Warning: PDF text extraction failed: {e}")
+        return ""
+
+def safe_extract_word_text(doc_path):
+    """
+    Extract text from Word document with robust error handling.
+    """
+    try:
+        doc = Document(doc_path)
+        text_content = []
+        for para in doc.paragraphs:
+            cleaned = clean_text_for_xml(para.text)
+            if cleaned.strip():
+                text_content.append(cleaned.strip())
+        return "\n".join(text_content)
+    except Exception as e:
+        print(f"Warning: Word text extraction failed: {e}")
+        return ""
 
 # -----------------------------------------------------------------------------
 # Utility helpers
@@ -277,7 +356,6 @@ def api_merge_pdf():
         merger.write(buffer)
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters
         response = send_file(
             buffer,
             mimetype='application/pdf',
@@ -285,7 +363,6 @@ def api_merge_pdf():
             download_name=output_name
         )
         
-        # Cleanup after response
         @after_this_request
         def cleanup(response):
             for p in paths:
@@ -323,7 +400,6 @@ def api_split_pdf():
         reader = PdfReader(pdf_path)
         total_pages = len(reader.pages)
         
-        # Parse page ranges (e.g., "1-3,5,7-9")
         ranges = []
         parts = [p.strip() for p in ranges_str.split(',') if p.strip()]
         for part in parts:
@@ -351,7 +427,6 @@ def api_split_pdf():
                     safe_remove(pdf_path)
                     return jsonify({"error": "Invalid page number."}), 400
         
-        # Create ZIP file with all split PDFs
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for i, (start_idx, end_page) in enumerate(ranges):
@@ -375,7 +450,6 @@ def api_split_pdf():
         zip_name = generate_unique_filename(original_name, "split_parts")
         zip_name = os.path.splitext(zip_name)[0] + ".zip"
         
-        # CORRECT WAY: Use send_file with proper parameters
         response = send_file(
             zip_buffer,
             mimetype='application/zip',
@@ -429,7 +503,6 @@ def api_delete_pages_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters
         response = send_file(
             buffer,
             mimetype='application/pdf',
@@ -480,7 +553,6 @@ def api_rotate_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters
         response = send_file(
             buffer,
             mimetype='application/pdf',
@@ -534,7 +606,6 @@ def api_lock_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters
         response = send_file(
             buffer,
             mimetype='application/pdf',
@@ -591,7 +662,6 @@ def api_unlock_pdf():
         writer.write(buffer)
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters
         response = send_file(
             buffer,
             mimetype='application/pdf',
@@ -613,7 +683,7 @@ def api_unlock_pdf():
         return jsonify({"error": f"Unlocking failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
-# Tool APIs - PDF to Word
+# Tool APIs - PDF to Word (FIXED with text cleaning)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/pdf-to-word', methods=['POST'])
@@ -634,19 +704,24 @@ def api_pdf_to_word():
         output_name = generate_unique_filename(original_name, "converted_to_word")
         output_name = os.path.splitext(output_name)[0] + ".docx"
         
-        text = extract_text(pdf_path) or ""
+        # Use the safe text extraction function
+        text = safe_extract_pdf_text(pdf_path)
         doc = Document()
         
-        paragraphs = text.split('\n\n')
-        for para in paragraphs:
-            if para.strip():
-                doc.add_paragraph(para.strip())
+        if text:
+            paragraphs = text.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    # Use the safe paragraph adding function
+                    safe_add_paragraph(doc, para)
+        else:
+            # If no text extracted, add a message
+            doc.add_paragraph("No text could be extracted from this PDF.")
         
         buffer = io.BytesIO()
         doc.save(buffer)
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters for Word
         response = send_file(
             buffer,
             mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -666,7 +741,7 @@ def api_pdf_to_word():
         return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
-# Tool APIs - Word Operations
+# Tool APIs - Word Operations (FIXED with text cleaning)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/word-to-pdf', methods=['POST'])
@@ -688,7 +763,8 @@ def api_word_to_pdf():
         output_name = generate_unique_filename(original_name, "converted_to_pdf")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
-        doc = Document(doc_path)
+        # Use safe text extraction
+        text = safe_extract_word_text(doc_path)
         
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=letter)
@@ -697,24 +773,27 @@ def api_word_to_pdf():
         top = height - 50
         line_height = 14
         
-        for para in doc.paragraphs:
-            if para.text.strip():
-                lines = wrap_text(para.text, max_chars=95)
-                for line in lines:
-                    c.drawString(left_margin, top, line)
-                    top -= line_height
+        if text:
+            paragraphs = text.split('\n\n')
+            for para in paragraphs:
+                if para.strip():
+                    lines = wrap_text(para, max_chars=95)
+                    for line in lines:
+                        c.drawString(left_margin, top, line)
+                        top -= line_height
+                        if top < 50:
+                            c.showPage()
+                            top = height - 50
+                    top -= line_height / 2
                     if top < 50:
                         c.showPage()
                         top = height - 50
-                top -= line_height / 2
-                if top < 50:
-                    c.showPage()
-                    top = height - 50
+        else:
+            c.drawString(left_margin, top, "No text content found.")
         
         c.save()
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters
         response = send_file(
             buffer,
             mimetype='application/pdf',
@@ -750,10 +829,14 @@ def api_merge_word():
     try:
         merged = Document()
         for idx, dp in enumerate(paths):
-            d = Document(dp)
-            for para in d.paragraphs:
-                if para.text.strip():
-                    merged.add_paragraph(para.text)
+            # Use safe text extraction for each document
+            text = safe_extract_word_text(dp)
+            if text:
+                paragraphs = text.split('\n\n')
+                for para in paragraphs:
+                    if para.strip():
+                        safe_add_paragraph(merged, para)
+            
             if idx < len(paths) - 1:
                 merged.add_paragraph("\n--- End of Document ---\n")
         
@@ -765,7 +848,6 @@ def api_merge_word():
         merged.save(buffer)
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters for Word
         response = send_file(
             buffer,
             mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -804,16 +886,12 @@ def api_word_to_text():
         output_name = generate_unique_filename(original_name, "extracted_text")
         output_name = os.path.splitext(output_name)[0] + ".txt"
         
-        doc = Document(doc_path)
-        text_content = []
-        for para in doc.paragraphs:
-            if para.text.strip():
-                text_content.append(para.text)
+        # Use safe text extraction
+        text = safe_extract_word_text(doc_path)
         
-        buffer = io.BytesIO('\n'.join(text_content).encode('utf-8'))
+        buffer = io.BytesIO(text.encode('utf-8'))
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters for text
         response = send_file(
             buffer,
             mimetype='text/plain',
@@ -833,7 +911,7 @@ def api_word_to_text():
         return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
-# Tool APIs - Text Operations
+# Tool APIs - Text Operations (FIXED with text cleaning)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/text-to-pdf', methods=['POST'])
@@ -843,6 +921,9 @@ def api_text_to_pdf():
     if not text:
         return jsonify({"error": "Text content is required."}), 400
 
+    # Clean the input text
+    cleaned_text = clean_text_for_xml(text)
+    
     unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_name = f"text_converted_{timestamp}_{unique_id}.pdf"
@@ -854,7 +935,7 @@ def api_text_to_pdf():
     top = height - 50
     line_height = 14
     
-    lines = text.splitlines()
+    lines = cleaned_text.splitlines()
     for line in lines:
         if line.strip():
             for chunk in wrap_text(line, max_chars=95):
@@ -872,7 +953,6 @@ def api_text_to_pdf():
     c.save()
     buffer.seek(0)
     
-    # CORRECT WAY: Use send_file with proper parameters
     return send_file(
         buffer,
         mimetype='application/pdf',
@@ -887,21 +967,27 @@ def api_text_to_word():
     if not text:
         return jsonify({"error": "Text content is required."}), 400
     
+    # Clean the input text
+    cleaned_text = clean_text_for_xml(text)
+    
     unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_name = f"text_converted_{timestamp}_{unique_id}.docx"
     
     doc = Document()
-    lines = text.splitlines()
-    for line in lines:
-        if line.strip():
-            doc.add_paragraph(line)
+    
+    if cleaned_text:
+        lines = cleaned_text.splitlines()
+        for line in lines:
+            if line.strip():
+                safe_add_paragraph(doc, line)
+    else:
+        doc.add_paragraph("No text content provided.")
     
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     
-    # CORRECT WAY: Use send_file with proper parameters for Word
     return send_file(
         buffer,
         mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -946,7 +1032,6 @@ def api_images_to_pdf():
         
         buffer.seek(0)
         
-        # CORRECT WAY: Use send_file with proper parameters
         response = send_file(
             buffer,
             mimetype='application/pdf',
