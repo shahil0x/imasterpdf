@@ -776,7 +776,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // File processing
+        // File processing - FIXED VERSION
         async function processFiles() {
             if (uploadedFiles.length === 0) {
                 showMessage('Please select a PDF file first', 'error');
@@ -799,54 +799,92 @@
             document.getElementById('message').style.display = 'none';
             
             try {
-                // Simulate processing
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                document.getElementById('progress-fill').style.width = '50%';
-                document.getElementById('progress-text').textContent = '50%';
+                // Create FormData to send files and PIN
+                const formData = new FormData();
+                formData.append('pin', pin);
                 
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // Add files to FormData
+                uploadedFiles.forEach((file, index) => {
+                    formData.append('files', file);
+                });
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '30%';
+                document.getElementById('progress-text').textContent = '30%';
+                
+                // Send request to Flask backend
+                const response = await fetch('/api/lock-pdf', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Check if request was successful
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '70%';
+                document.getElementById('progress-text').textContent = '70%';
+                
+                // Get response as blob (binary data)
+                const blob = await response.blob();
+                
+                // Check if we got a PDF
+                if (blob.size === 0) {
+                    throw new Error('Server returned empty PDF file');
+                }
+                
+                if (blob.type !== 'application/pdf') {
+                    console.warn('Expected application/pdf but got:', blob.type);
+                }
+                
+                // Extract filename from headers
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = 'locked_document.pdf';
+                
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
+                                        contentDisposition.match(/filename=([^;]+)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1].trim();
+                    }
+                }
+                
+                // Complete progress
                 document.getElementById('progress-fill').style.width = '100%';
                 document.getElementById('progress-text').textContent = '100%';
                 
-                // Generate UUID for filename
-                const uuid = generateUUID();
-                const filename = `imasterpdf_${uuid}.pdf`;
-                
-                // Create mock locked PDF
-                const mockContent = `This is a sample PDF protected with PIN: ${pin}. In production, this would be the actual PDF content encrypted with the PIN.`;
-                const blob = new Blob([mockContent], { type: 'application/pdf' });
-                
-                // Show result
+                // Show result after short delay
                 setTimeout(() => {
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('resultArea').classList.add('active');
                     
-                    // Create download link
+                    // Create download link with the actual PDF from backend
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = downloadUrl;
                     downloadLink.download = filename;
                     
-                    // Clean up URL object
+                    // Add click handler to clean up URL object
                     downloadLink.onclick = () => {
                         setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
                     };
                     
+                    // Scroll to result
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                    
+                    showMessage(`PDF successfully locked with PIN! Remember your PIN: ${pin}`, 'success');
+                    
                 }, 500);
                 
             } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
+                console.error('Error:', error);
+                showMessage('Failed to lock PDF: ' + error.message, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
                 document.querySelector('.action-buttons').style.display = 'flex';
             }
-        }
-
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
         }
 
         function showMessage(text, type) {
@@ -855,11 +893,14 @@
             msg.className = 'msg ' + type;
             msg.style.display = 'block';
             
-            setTimeout(() => {
-                if (msg.textContent === text) {
-                    msg.style.display = 'none';
-                }
-            }, type === 'error' ? 8000 : 5000);
+            // Auto-hide non-error messages after 5 seconds
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (msg.textContent === text) {
+                        msg.style.display = 'none';
+                    }
+                }, 5000);
+            }
         }
 
         function resetTool() {
@@ -878,6 +919,9 @@
             document.getElementById('message').style.display = 'none';
             document.querySelector('.action-buttons').style.display = 'flex';
             updateFileList();
+            
+            // Focus first PIN input
+            document.querySelector('.pin-digit').focus();
         }
 
         // Drag and drop
@@ -902,6 +946,29 @@
         // Focus first PIN input on load
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('.pin-digit').focus();
+        });
+        
+        // Add keyboard shortcuts for PIN input
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                // When Enter is pressed, trigger the processFiles function
+                if (uploadedFiles.length > 0 && getPIN().length === 4) {
+                    processFiles();
+                }
+            }
+            
+            // Allow navigation between PIN inputs with arrow keys
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                const currentInput = document.activeElement;
+                if (currentInput.classList.contains('pin-digit')) {
+                    const currentIndex = Array.from(document.querySelectorAll('.pin-digit')).indexOf(currentInput);
+                    if (e.key === 'ArrowRight' && currentIndex < 3) {
+                        document.querySelectorAll('.pin-digit')[currentIndex + 1].focus();
+                    } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                        document.querySelectorAll('.pin-digit')[currentIndex - 1].focus();
+                    }
+                }
+            }
         });
     </script>
 </body>

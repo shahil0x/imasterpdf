@@ -653,7 +653,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // File processing
+        // File processing - FIXED VERSION
         async function processFiles() {
             if (uploadedFiles.length < 2) {
                 showMessage('Please select at least 2 PDF files to merge', 'error');
@@ -670,54 +670,91 @@
             document.getElementById('message').style.display = 'none';
             
             try {
-                // Simulate processing
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                document.getElementById('progress-fill').style.width = '50%';
-                document.getElementById('progress-text').textContent = '50%';
+                // Create FormData to send files
+                const formData = new FormData();
                 
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // Add files to FormData in the order they appear
+                uploadedFiles.forEach((file, index) => {
+                    formData.append('files', file);
+                });
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '30%';
+                document.getElementById('progress-text').textContent = '30%';
+                
+                // Send request to Flask backend
+                const response = await fetch('/api/merge-pdf', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Check if request was successful
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '70%';
+                document.getElementById('progress-text').textContent = '70%';
+                
+                // Get response as blob (binary data)
+                const blob = await response.blob();
+                
+                // Check if we got a PDF
+                if (blob.size === 0) {
+                    throw new Error('Server returned empty PDF file');
+                }
+                
+                if (blob.type !== 'application/pdf') {
+                    console.warn('Expected application/pdf but got:', blob.type);
+                }
+                
+                // Extract filename from headers
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = 'merged_document.pdf';
+                
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
+                                        contentDisposition.match(/filename=([^;]+)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1].trim();
+                    }
+                }
+                
+                // Complete progress
                 document.getElementById('progress-fill').style.width = '100%';
                 document.getElementById('progress-text').textContent = '100%';
                 
-                // Generate UUID for filename
-                const uuid = generateUUID();
-                const filename = `imasterpdf_${uuid}.pdf`;
-                
-                // Create mock merged PDF
-                const mockContent = "This is a sample merged PDF document. In production, this would contain the actual merged PDF content.";
-                const blob = new Blob([mockContent], { type: 'application/pdf' });
-                
-                // Show result
+                // Show result after short delay
                 setTimeout(() => {
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('resultArea').classList.add('active');
                     
-                    // Create download link
+                    // Create download link with the actual PDF from backend
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = downloadUrl;
                     downloadLink.download = filename;
                     
-                    // Clean up URL object
+                    // Add click handler to clean up URL object
                     downloadLink.onclick = () => {
                         setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
                     };
                     
+                    // Scroll to result
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                    
+                    showMessage(`Successfully merged ${uploadedFiles.length} PDF files!`, 'success');
+                    
                 }, 500);
                 
             } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
+                console.error('Error:', error);
+                showMessage('Failed to merge PDF files: ' + error.message, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
                 document.querySelector('.action-buttons').style.display = 'flex';
             }
-        }
-
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
         }
 
         function showMessage(text, type) {
@@ -726,11 +763,14 @@
             msg.className = 'msg ' + type;
             msg.style.display = 'block';
             
-            setTimeout(() => {
-                if (msg.textContent === text) {
-                    msg.style.display = 'none';
-                }
-            }, type === 'error' ? 8000 : 5000);
+            // Auto-hide non-error messages after 5 seconds
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (msg.textContent === text) {
+                        msg.style.display = 'none';
+                    }
+                }, 5000);
+            }
         }
 
         function resetTool() {
@@ -761,6 +801,83 @@
             const files = Array.from(e.dataTransfer.files);
             addFiles(files);
         });
+        
+        // Add file reordering functionality
+        let dragStartIndex;
+        
+        function createSortableList() {
+            const listItems = document.querySelectorAll('.file-item');
+            
+            listItems.forEach((item, index) => {
+                // Make items draggable
+                item.setAttribute('draggable', 'true');
+                
+                // Remove existing event listeners
+                item.removeEventListener('dragstart', handleDragStart);
+                item.removeEventListener('dragover', handleDragOver);
+                item.removeEventListener('drop', handleDrop);
+                item.removeEventListener('dragend', handleDragEnd);
+                
+                // Add new event listeners
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragend', handleDragEnd);
+                
+                // Add drag handle icon
+                const dragHandle = document.createElement('i');
+                dragHandle.className = 'fas fa-grip-vertical';
+                dragHandle.style.cursor = 'grab';
+                dragHandle.style.color = 'var(--gray-color)';
+                dragHandle.style.marginRight = '10px';
+                dragHandle.style.padding = '5px';
+                
+                // Insert drag handle at the beginning
+                const contentDiv = item.querySelector('div');
+                if (contentDiv && !item.querySelector('.fa-grip-vertical')) {
+                    item.insertBefore(dragHandle, contentDiv);
+                }
+            });
+        }
+        
+        function handleDragStart(e) {
+            dragStartIndex = Array.from(document.querySelectorAll('.file-item')).indexOf(this);
+            this.classList.add('dragging');
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            const dragEndIndex = Array.from(document.querySelectorAll('.file-item')).indexOf(this);
+            
+            // Reorder uploadedFiles array
+            if (dragStartIndex !== dragEndIndex) {
+                const movedFile = uploadedFiles.splice(dragStartIndex, 1)[0];
+                uploadedFiles.splice(dragEndIndex, 0, movedFile);
+                
+                // Update UI
+                updateFileList();
+                createSortableList();
+                
+                showMessage('File order updated. Files will be merged in this order.', 'info');
+            }
+        }
+        
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+        }
+        
+        // Initialize sortable list after file list updates
+        const originalUpdateFileList = updateFileList;
+        updateFileList = function() {
+            originalUpdateFileList();
+            if (uploadedFiles.length > 0) {
+                createSortableList();
+            }
+        };
     </script>
 </body>
 </html>

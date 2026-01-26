@@ -252,6 +252,7 @@
             border: 1px solid var(--border);
             border-radius: var(--radius);
             font-size: 1rem;
+            transition: var(--transition);
         }
 
         .password-field input:focus {
@@ -269,12 +270,23 @@
             border: none;
             color: var(--gray-color);
             cursor: pointer;
+            padding: 5px;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary-color);
         }
 
         .password-warning {
             text-align: center;
             color: var(--muted);
             font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .password-warning i {
+            color: #ffa502;
+            margin-right: 5px;
         }
 
         /* Action Buttons */
@@ -309,6 +321,13 @@
 
         .btn-secondary {
             background: var(--secondary-color);
+        }
+
+        .btn:disabled {
+            background: var(--gray-color);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         /* Message */
@@ -534,11 +553,12 @@
         <div class="how-to-guide">
             <h3>How to unlock PDF:</h3>
             <ol>
-                <li>Upload password-protected PDF</li>
+                <li>Upload password-protected PDF file</li>
                 <li>Enter the correct password</li>
-                <li>Download unlocked PDF</li>
+                <li>Download unlocked PDF document</li>
             </ol>
-            <div class="note">Note: Files are processed securely and deleted automatically after conversion.</div>
+            <div class="note">Note: All files are processed securely on our servers and deleted after conversion.</div>
+            <div class="note">⚠️ <strong>Important:</strong> This tool requires the correct password. It cannot break or guess passwords.</div>
         </div>
 
         <!-- Upload Area -->
@@ -565,13 +585,14 @@
                 </button>
             </div>
             <div class="password-warning">
-                ⚠️ This tool only works if you know the correct password.
+                <i class="fas fa-exclamation-triangle"></i>
+                This tool requires the exact password. It cannot bypass or crack passwords.
             </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button class="btn" onclick="processFiles()">
+            <button class="btn" id="unlockBtn" onclick="processFiles()">
                 <i class="fas fa-unlock"></i> Unlock PDF
             </button>
             <button class="btn btn-secondary" onclick="resetTool()">
@@ -595,8 +616,8 @@
         <!-- Result Area -->
         <div class="result-area" id="resultArea">
             <i class="fas fa-check-circle"></i>
-            <h3>PDF Unlocked!</h3>
-            <p>Your PDF is now accessible without password.</p>
+            <h3>PDF Successfully Unlocked!</h3>
+            <p>Your PDF document is now accessible without password protection.</p>
             <a id="downloadLink" class="btn" style="margin-top: 1rem;">
                 <i class="fas fa-download"></i> Download Unlocked PDF
             </a>
@@ -661,23 +682,24 @@
                     return;
                 }
                 
-                // Check if file already exists
-                const existingFile = uploadedFiles.find(f => f.name === file.name && f.size === file.size);
-                if (!existingFile) {
-                    uploadedFiles.push(file);
-                    validFilesAdded++;
-                } else {
-                    showMessage(`"${file.name}" is already in the list.`, 'warning');
+                // Check if file already exists (only one file allowed)
+                if (uploadedFiles.length > 0) {
+                    showMessage('Only one file can be unlocked at a time. Please remove the existing file first.', 'warning');
+                    hasError = true;
+                    return;
                 }
+                
+                uploadedFiles.push(file);
+                validFilesAdded++;
             });
             
             // Only update file list if we added valid files
             if (validFilesAdded > 0) {
                 updateFileList();
+                updateUnlockButtonState();
                 
-                // Show success message if we added files without errors
-                if (!hasError && validFilesAdded === files.length) {
-                    showMessage(`Successfully added ${validFilesAdded} file(s).`, 'success');
+                if (!hasError) {
+                    showMessage(`PDF file added successfully. Please enter the password to unlock.`, 'success');
                 }
             }
         }
@@ -689,22 +711,35 @@
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleButton.className = 'fas fa-eye-slash';
+                toggleButton.title = 'Hide password';
             } else {
                 passwordInput.type = 'password';
                 toggleButton.className = 'fas fa-eye';
+                toggleButton.title = 'Show password';
             }
+            
+            // Update button state when password changes
+            updateUnlockButtonState();
         }
 
         function getPassword() {
             return document.getElementById('passwordInput').value.trim();
         }
 
-        function validatePassword() {
+        function validateInputs() {
+            if (uploadedFiles.length === 0) {
+                showMessage('Please select a PDF file first', 'error');
+                document.getElementById('fileInput').focus();
+                return false;
+            }
+            
             const password = getPassword();
             if (!password) {
                 showMessage('Please enter the PDF password', 'error');
+                document.getElementById('passwordInput').focus();
                 return false;
             }
+            
             return true;
         }
 
@@ -732,9 +767,19 @@
             });
         }
 
+        function updateUnlockButtonState() {
+            const unlockBtn = document.getElementById('unlockBtn');
+            const hasFile = uploadedFiles.length > 0;
+            const hasPassword = getPassword().length > 0;
+            
+            unlockBtn.disabled = !(hasFile && hasPassword);
+        }
+
         function removeFile(index) {
             uploadedFiles.splice(index, 1);
             updateFileList();
+            updateUnlockButtonState();
+            showMessage('File removed. Please upload a new PDF file.', 'info');
         }
 
         function formatFileSize(bytes) {
@@ -745,17 +790,13 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // File processing
+        // File processing - Connects to Flask backend
         async function processFiles() {
-            if (uploadedFiles.length === 0) {
-                showMessage('Please select a PDF file first', 'error');
+            if (!validateInputs()) {
                 return;
             }
             
-            if (!validatePassword()) {
-                return;
-            }
-            
+            const file = uploadedFiles[0];
             const password = getPassword();
             
             // Hide action buttons during processing
@@ -768,54 +809,114 @@
             document.getElementById('message').style.display = 'none';
             
             try {
-                // Simulate processing
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                document.getElementById('progress-fill').style.width = '50%';
-                document.getElementById('progress-text').textContent = '50%';
+                // Create FormData to send file and password
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('password', password);
                 
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // Update progress
+                document.getElementById('progress-fill').style.width = '30%';
+                document.getElementById('progress-text').textContent = '30%';
+                
+                // Send request to Flask backend
+                const response = await fetch('/api/unlock-pdf', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Check if request was successful
+                if (!response.ok) {
+                    // Check if it's a password error
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error('Incorrect password. Please check the password and try again.');
+                    }
+                    
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '70%';
+                document.getElementById('progress-text').textContent = '70%';
+                
+                // Get response as blob (binary data - PDF file)
+                const blob = await response.blob();
+                
+                // Check if we got a PDF
+                if (blob.size === 0) {
+                    throw new Error('Server returned empty PDF file');
+                }
+                
+                // Check content type (PDF or octet-stream)
+                const contentType = response.headers.get('content-type') || blob.type;
+                if (!contentType.includes('application/pdf') && !contentType.includes('application/octet-stream')) {
+                    // Try to read as text to see error message
+                    const textResponse = await blob.text();
+                    if (textResponse.startsWith('{') || textResponse.startsWith('<')) {
+                        try {
+                            const errorObj = JSON.parse(textResponse);
+                            throw new Error(errorObj.error || errorObj.message || 'Server returned non-PDF response');
+                        } catch {
+                            throw new Error('Server returned non-PDF response');
+                        }
+                    }
+                }
+                
+                // Complete progress
                 document.getElementById('progress-fill').style.width = '100%';
                 document.getElementById('progress-text').textContent = '100%';
                 
-                // Generate UUID for filename
-                const uuid = generateUUID();
-                const filename = `imasterpdf_${uuid}.pdf`;
+                // Generate filename for unlocked PDF
+                const originalName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                const downloadFilename = `${originalName}_unlocked.pdf`;
                 
-                // Create mock unlocked PDF
-                const mockContent = `This is a sample PDF that was unlocked using password: ${password}. In production, this would be the actual PDF content with password protection removed.`;
-                const blob = new Blob([mockContent], { type: 'application/pdf' });
+                // Extract filename from headers if available
+                const contentDisposition = response.headers.get('content-disposition');
+                let finalFilename = downloadFilename;
                 
-                // Show result
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
+                                        contentDisposition.match(/filename=([^;]+)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        finalFilename = filenameMatch[1].trim();
+                    }
+                }
+                
+                // Ensure filename has .pdf extension
+                if (!finalFilename.toLowerCase().endsWith('.pdf')) {
+                    finalFilename += '.pdf';
+                }
+                
+                // Show result after short delay
                 setTimeout(() => {
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('resultArea').classList.add('active');
                     
-                    // Create download link
+                    // Create download link with the actual PDF from backend
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = downloadUrl;
-                    downloadLink.download = filename;
+                    downloadLink.download = finalFilename;
                     
-                    // Clean up URL object
+                    // Add click handler to clean up URL object
                     downloadLink.onclick = () => {
                         setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
                     };
                     
+                    // Scroll to result
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Show success message
+                    showMessage(`PDF successfully unlocked! File is now accessible without password protection.`, 'success');
+                    
                 }, 500);
                 
             } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
+                console.error('Error:', error);
+                showMessage('Failed to unlock PDF: ' + error.message, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
                 document.querySelector('.action-buttons').style.display = 'flex';
             }
-        }
-
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
         }
 
         function showMessage(text, type) {
@@ -824,11 +925,14 @@
             msg.className = 'msg ' + type;
             msg.style.display = 'block';
             
-            setTimeout(() => {
-                if (msg.textContent === text) {
-                    msg.style.display = 'none';
-                }
-            }, type === 'error' ? 8000 : 5000);
+            // Auto-hide non-error messages after 5 seconds
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (msg.textContent === text) {
+                        msg.style.display = 'none';
+                    }
+                }, 5000);
+            }
         }
 
         function resetTool() {
@@ -840,6 +944,12 @@
             document.getElementById('message').style.display = 'none';
             document.querySelector('.action-buttons').style.display = 'flex';
             updateFileList();
+            updateUnlockButtonState();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            showMessage('Tool has been reset. Upload a new PDF file to unlock.', 'info');
         }
 
         // Drag and drop
@@ -858,7 +968,39 @@
             e.preventDefault();
             dropZone.classList.remove('drag-over');
             const files = Array.from(e.dataTransfer.files);
-            addFiles(files);
+            
+            // Only accept one file
+            if (files.length > 1) {
+                showMessage('Only one file can be unlocked at a time. Using the first PDF file.', 'warning');
+                addFiles([files[0]]);
+            } else {
+                addFiles(files);
+            }
+        });
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update unlock button when password changes
+            document.getElementById('passwordInput').addEventListener('input', updateUnlockButtonState);
+            
+            // Handle Enter key to unlock
+            document.getElementById('passwordInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && uploadedFiles.length > 0 && getPassword().length > 0) {
+                    e.preventDefault();
+                    processFiles();
+                }
+            });
+            
+            // Add note about password requirements
+            const noteElement = document.querySelector('.note:last-child');
+            if (noteElement) {
+                const quickNote = document.createElement('div');
+                quickNote.className = 'note';
+                quickNote.style.marginTop = '10px';
+                quickNote.style.fontSize = '0.8rem';
+                quickNote.innerHTML = '🔒 <strong>Tip:</strong> Press Enter after typing password to unlock quickly';
+                noteElement.parentNode.insertBefore(quickNote, noteElement.nextSibling);
+            }
         });
     </script>
 </body>

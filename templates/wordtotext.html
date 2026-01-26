@@ -259,6 +259,13 @@
             background: var(--secondary-color);
         }
 
+        .btn:disabled {
+            background: var(--gray-color);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         /* Message */
         .msg {
             padding: 12px 16px;
@@ -480,13 +487,14 @@
 
         <!-- How-to Guide -->
         <div class="how-to-guide">
-            <h3>How to convert Word to text:</h3>
+            <h3>How to extract text from Word documents:</h3>
             <ol>
-                <li>Upload Word document</li>
-                <li>Click "Extract Text"</li>
+                <li>Upload Word document (.doc or .docx)</li>
+                <li>Click "Extract Text" button</li>
                 <li>Download plain text file</li>
             </ol>
-            <div class="note">Note: Files are processed securely and deleted automatically after conversion.</div>
+            <div class="note">Note: All files are processed securely on our servers and deleted after conversion.</div>
+            <div class="note">📄 <strong>Supported formats:</strong> .doc, .docx (Microsoft Word documents)</div>
         </div>
 
         <!-- Upload Area -->
@@ -495,7 +503,7 @@
                 <i class="fas fa-cloud-upload-alt"></i>
                 <h3>Drag & Drop Word File Here</h3>
                 <p>or click to browse files (supports .doc and .docx)</p>
-                <input type="file" id="fileInput" class="file-input" accept=".doc,.docx" onchange="handleFileSelect(event)">
+                <input type="file" id="fileInput" class="file-input" accept=".doc,.docx,.application/msword,.application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="handleFileSelect(event)">
             </div>
             
             <div class="file-list" id="fileList">
@@ -505,7 +513,7 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button class="btn" onclick="processFiles()">
+            <button class="btn" id="extractBtn" onclick="processFiles()">
                 <i class="fas fa-file-alt"></i> Extract Text
             </button>
             <button class="btn btn-secondary" onclick="resetTool()">
@@ -563,7 +571,7 @@
 
         // Global variables
         let uploadedFiles = [];
-        const MAX_SIZE = 50 * 1024 * 1024;
+        const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 
         // File handling functions
         function handleFileSelect(event) {
@@ -580,12 +588,19 @@
             errorMsg.style.display = 'none';
             
             files.forEach(file => {
-                // Check file type
+                // Check file type by extension and MIME type
                 const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
                 const validExtensions = ['.doc', '.docx'];
+                const validMimeTypes = [
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                ];
                 
-                if (!validExtensions.includes(fileExtension)) {
-                    showMessage(`"${file.name}" is not a Word file. Please select .doc or .docx files only.`, 'error');
+                const isExtensionValid = validExtensions.includes(fileExtension);
+                const isMimeTypeValid = validMimeTypes.includes(file.type);
+                
+                if (!isExtensionValid && !isMimeTypeValid) {
+                    showMessage(`"${file.name}" is not a supported Word file. Please select .doc or .docx files only.`, 'error');
                     hasError = true;
                     return;
                 }
@@ -597,23 +612,24 @@
                     return;
                 }
                 
-                // Check if file already exists
-                const existingFile = uploadedFiles.find(f => f.name === file.name && f.size === file.size);
-                if (!existingFile) {
-                    uploadedFiles.push(file);
-                    validFilesAdded++;
-                } else {
-                    showMessage(`"${file.name}" is already in the list.`, 'warning');
+                // Only one file allowed for this tool
+                if (uploadedFiles.length > 0) {
+                    showMessage('Only one file can be processed at a time. Please remove the existing file first.', 'warning');
+                    hasError = true;
+                    return;
                 }
+                
+                uploadedFiles.push(file);
+                validFilesAdded++;
             });
             
             // Only update file list if we added valid files
             if (validFilesAdded > 0) {
                 updateFileList();
+                updateExtractButtonState();
                 
-                // Show success message if we added files without errors
-                if (!hasError && validFilesAdded === files.length) {
-                    showMessage(`Successfully added ${validFilesAdded} file(s).`, 'success');
+                if (!hasError) {
+                    showMessage(`Word document added successfully. Ready to extract text.`, 'success');
                 }
             }
         }
@@ -634,7 +650,7 @@
                     <div>
                         <strong>${file.name}</strong>
                         <br>
-                        <small>${formatFileSize(file.size)}</small>
+                        <small>${formatFileSize(file.size)} • ${getFileType(file)}</small>
                     </div>
                     <i class="fas fa-times" onclick="removeFile(${index})" title="Remove file"></i>
                 `;
@@ -642,9 +658,23 @@
             });
         }
 
+        function getFileType(file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            if (extension === 'docx') return 'DOCX Document';
+            if (extension === 'doc') return 'DOC Document';
+            return 'Word Document';
+        }
+
+        function updateExtractButtonState() {
+            const extractBtn = document.getElementById('extractBtn');
+            extractBtn.disabled = uploadedFiles.length === 0;
+        }
+
         function removeFile(index) {
             uploadedFiles.splice(index, 1);
             updateFileList();
+            updateExtractButtonState();
+            showMessage('File removed. Please upload a new Word document.', 'info');
         }
 
         function formatFileSize(bytes) {
@@ -655,12 +685,14 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // File processing
+        // File processing - Connects to Flask backend
         async function processFiles() {
             if (uploadedFiles.length === 0) {
                 showMessage('Please select a Word file first', 'error');
                 return;
             }
+            
+            const file = uploadedFiles[0];
             
             // Hide action buttons during processing
             document.querySelector('.action-buttons').style.display = 'none';
@@ -672,54 +704,110 @@
             document.getElementById('message').style.display = 'none';
             
             try {
-                // Simulate processing
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                document.getElementById('progress-fill').style.width = '50%';
-                document.getElementById('progress-text').textContent = '50%';
+                // Create FormData to send file
+                const formData = new FormData();
+                formData.append('file', file);
                 
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // Update progress
+                document.getElementById('progress-fill').style.width = '30%';
+                document.getElementById('progress-text').textContent = '30%';
+                
+                // Send request to Flask backend
+                const response = await fetch('/api/word-to-text', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Check if request was successful
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '70%';
+                document.getElementById('progress-text').textContent = '70%';
+                
+                // Get response as blob (binary data - text file)
+                const blob = await response.blob();
+                
+                // Check if we got a text file
+                if (blob.size === 0) {
+                    throw new Error('Server returned empty text file');
+                }
+                
+                // Check content type (text/plain or octet-stream)
+                const contentType = response.headers.get('content-type') || blob.type;
+                const isTextFile = contentType.includes('text/plain') || contentType.includes('application/octet-stream');
+                
+                if (!isTextFile) {
+                    // Try to read as text to see error message
+                    const textResponse = await blob.text();
+                    if (textResponse.startsWith('{') || textResponse.startsWith('<')) {
+                        try {
+                            const errorObj = JSON.parse(textResponse);
+                            throw new Error(errorObj.error || errorObj.message || 'Server returned non-text response');
+                        } catch {
+                            throw new Error('Server returned non-text response');
+                        }
+                    }
+                }
+                
+                // Complete progress
                 document.getElementById('progress-fill').style.width = '100%';
                 document.getElementById('progress-text').textContent = '100%';
                 
-                // Generate UUID for filename
-                const uuid = generateUUID();
-                const filename = `imasterpdf_${uuid}.txt`;
+                // Generate filename for text file
+                const originalName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                const downloadFilename = `${originalName}.txt`;
                 
-                // Create mock text file
-                const mockContent = `This is sample text extracted from a Word document.\n\nIn production, this would contain the actual text content extracted from the uploaded Word file.\n\nText extraction preserves:\n- Paragraph structure\n- Basic formatting\n- Text content\n\nAll images and complex formatting are removed during extraction.`;
-                const blob = new Blob([mockContent], { type: 'text/plain' });
+                // Extract filename from headers if available
+                const contentDisposition = response.headers.get('content-disposition');
+                let finalFilename = downloadFilename;
                 
-                // Show result
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
+                                        contentDisposition.match(/filename=([^;]+)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        finalFilename = filenameMatch[1].trim();
+                    }
+                }
+                
+                // Ensure filename has .txt extension
+                if (!finalFilename.toLowerCase().endsWith('.txt')) {
+                    finalFilename += '.txt';
+                }
+                
+                // Show result after short delay
                 setTimeout(() => {
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('resultArea').classList.add('active');
                     
-                    // Create download link
+                    // Create download link with the actual text from backend
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = downloadUrl;
-                    downloadLink.download = filename;
+                    downloadLink.download = finalFilename;
                     
-                    // Clean up URL object
+                    // Add click handler to clean up URL object
                     downloadLink.onclick = () => {
                         setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
                     };
                     
+                    // Scroll to result
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Show success message
+                    showMessage(`Text successfully extracted from Word document!`, 'success');
+                    
                 }, 500);
                 
             } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
+                console.error('Error:', error);
+                showMessage('Failed to extract text from Word: ' + error.message, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
                 document.querySelector('.action-buttons').style.display = 'flex';
             }
-        }
-
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
         }
 
         function showMessage(text, type) {
@@ -728,11 +816,14 @@
             msg.className = 'msg ' + type;
             msg.style.display = 'block';
             
-            setTimeout(() => {
-                if (msg.textContent === text) {
-                    msg.style.display = 'none';
-                }
-            }, type === 'error' ? 8000 : 5000);
+            // Auto-hide non-error messages after 5 seconds
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (msg.textContent === text) {
+                        msg.style.display = 'none';
+                    }
+                }, 5000);
+            }
         }
 
         function resetTool() {
@@ -743,6 +834,12 @@
             document.getElementById('message').style.display = 'none';
             document.querySelector('.action-buttons').style.display = 'flex';
             updateFileList();
+            updateExtractButtonState();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            showMessage('Tool has been reset. Upload a new Word document to extract text.', 'info');
         }
 
         // Drag and drop
@@ -761,8 +858,60 @@
             e.preventDefault();
             dropZone.classList.remove('drag-over');
             const files = Array.from(e.dataTransfer.files);
-            addFiles(files);
+            
+            // Only accept one file
+            if (files.length > 1) {
+                showMessage('Only one file can be processed at a time. Using the first Word document.', 'warning');
+                addFiles([files[0]]);
+            } else {
+                addFiles(files);
+            }
         });
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add sample note about text extraction
+            const noteElement = document.querySelector('.note:last-child');
+            if (noteElement) {
+                const quickNote = document.createElement('div');
+                quickNote.className = 'note';
+                quickNote.style.marginTop = '10px';
+                quickNote.style.fontSize = '0.8rem';
+                quickNote.innerHTML = '📝 <strong>Extraction preserves:</strong> Paragraph structure, basic formatting, and all text content';
+                noteElement.parentNode.insertBefore(quickNote, noteElement.nextSibling);
+            }
+            
+            // Add file validation on page load
+            updateExtractButtonState();
+        });
+        
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + U to upload file
+            if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+                e.preventDefault();
+                document.getElementById('fileInput').click();
+            }
+            
+            // Ctrl/Cmd + E to extract text when file is selected
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e' && uploadedFiles.length > 0) {
+                e.preventDefault();
+                processFiles();
+            }
+            
+            // Esc key to reset
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                resetTool();
+            }
+        });
+        
+        // Preview extracted text option (optional feature)
+        function previewText(text) {
+            // This function could be used to show a preview of extracted text
+            // before downloading, but for now we'll just download directly
+            console.log('Text extracted:', text.substring(0, 500) + '...');
+        }
     </script>
 </body>
 </html>

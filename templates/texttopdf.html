@@ -170,17 +170,21 @@
             width: 100%;
             min-height: 200px;
             padding: 15px;
-            border: 1px solid var(--border);
+            border: 2px dashed var(--border);
             border-radius: var(--radius);
             font-size: 1rem;
             font-family: inherit;
             line-height: 1.6;
             resize: vertical;
+            background: var(--light-color);
+            transition: var(--transition);
         }
 
         .text-input:focus {
             outline: none;
             border-color: var(--primary-color);
+            border-style: solid;
+            background: white;
             box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.1);
         }
 
@@ -223,6 +227,13 @@
 
         .btn-secondary {
             background: var(--secondary-color);
+        }
+
+        .btn:disabled {
+            background: var(--gray-color);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         /* Message */
@@ -444,11 +455,12 @@
         <div class="how-to-guide">
             <h3>How to convert text to PDF:</h3>
             <ol>
-                <li>Paste or type your text</li>
-                <li>Customize formatting options</li>
-                <li>Download generated PDF</li>
+                <li>Paste or type your text in the text area below</li>
+                <li>Click "Create PDF" to generate your document</li>
+                <li>Download the generated PDF file</li>
             </ol>
-            <div class="note">Note: Files are processed securely and deleted automatically after conversion.</div>
+            <div class="note">Note: All text is processed securely on our servers and deleted after conversion.</div>
+            <div class="note">🔄 <strong>Quick keys:</strong> Press Ctrl+Enter to create PDF</div>
         </div>
 
         <!-- Text Input Area -->
@@ -462,7 +474,7 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button class="btn" onclick="processText()">
+            <button class="btn" id="createPdfBtn" onclick="processText()">
                 <i class="fas fa-file-pdf"></i> Create PDF
             </button>
             <button class="btn btn-secondary" onclick="resetTool()">
@@ -486,7 +498,7 @@
         <!-- Result Area -->
         <div class="result-area" id="resultArea">
             <i class="fas fa-check-circle"></i>
-            <h3>PDF Created!</h3>
+            <h3>PDF Created Successfully!</h3>
             <p>Your PDF document has been generated successfully.</p>
             <a id="downloadLink" class="btn" style="margin-top: 1rem;">
                 <i class="fas fa-download"></i> Download PDF
@@ -526,6 +538,10 @@
             
             document.getElementById('charCount').textContent = charCount;
             document.getElementById('wordCount').textContent = wordCount;
+            
+            // Enable/disable create button based on text length
+            const createBtn = document.getElementById('createPdfBtn');
+            createBtn.disabled = text.trim().length < 10;
         }
 
         // Validate text input
@@ -539,7 +555,7 @@
             return true;
         }
 
-        // Text processing
+        // Text processing - Connects to Flask backend
         async function processText() {
             if (!validateText()) {
                 return;
@@ -557,65 +573,113 @@
             document.getElementById('message').style.display = 'none';
             
             try {
-                // Simulate processing
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                document.getElementById('progress-fill').style.width = '50%';
-                document.getElementById('progress-text').textContent = '50%';
+                // Prepare data for Flask backend
+                const requestData = {
+                    text: text
+                };
                 
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // Update progress
+                document.getElementById('progress-fill').style.width = '30%';
+                document.getElementById('progress-text').textContent = '30%';
+                
+                // Send request to Flask backend - Updated endpoint based on your example site
+                const response = await fetch('/api/text-to-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                // Check if request was successful
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+                
+                // Update progress
+                document.getElementById('progress-fill').style.width = '70%';
+                document.getElementById('progress-text').textContent = '70%';
+                
+                // Get response as blob (binary data - PDF file)
+                const blob = await response.blob();
+                
+                // Check if we got a PDF
+                if (blob.size === 0) {
+                    throw new Error('Server returned empty PDF file');
+                }
+                
+                // Check content type (PDF or octet-stream)
+                const contentType = response.headers.get('content-type') || blob.type;
+                if (!contentType.includes('application/pdf') && !contentType.includes('application/octet-stream')) {
+                    // Try to read as text to see error message
+                    const textResponse = await blob.text();
+                    if (textResponse.startsWith('{') || textResponse.startsWith('<')) {
+                        try {
+                            const errorObj = JSON.parse(textResponse);
+                            throw new Error(errorObj.error || errorObj.message || 'Server returned non-PDF response');
+                        } catch {
+                            throw new Error('Server returned non-PDF response');
+                        }
+                    }
+                }
+                
+                // Complete progress
                 document.getElementById('progress-fill').style.width = '100%';
                 document.getElementById('progress-text').textContent = '100%';
                 
-                // Generate UUID for filename
-                const uuid = generateUUID();
-                const filename = `imasterpdf_${uuid}.pdf`;
+                // Generate filename with timestamp
+                const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                const downloadFilename = `text_to_pdf_${timestamp}.pdf`;
                 
-                // Create PDF content
-                const words = text.trim().split(/\s+/).length;
-                const chars = text.length;
-                const pdfContent = `PDF Document Generated from Text\n\n
-Document Information:
-- Generated: ${new Date().toLocaleString()}
-- Source: Text input
-- Words: ${words}
-- Characters: ${chars}
-
-Content:\n\n${text}\n\n
---- End of Document ---`;
+                // Extract filename from headers if available
+                const contentDisposition = response.headers.get('content-disposition');
+                let finalFilename = downloadFilename;
                 
-                const blob = new Blob([pdfContent], { type: 'application/pdf' });
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/) || 
+                                        contentDisposition.match(/filename=([^;]+)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        finalFilename = filenameMatch[1].trim();
+                    }
+                }
                 
-                // Show result
+                // Ensure filename has .pdf extension
+                if (!finalFilename.toLowerCase().endsWith('.pdf')) {
+                    finalFilename += '.pdf';
+                }
+                
+                // Show result after short delay
                 setTimeout(() => {
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('resultArea').classList.add('active');
                     
-                    // Create download link
+                    // Create download link with the actual PDF from backend
                     const downloadUrl = URL.createObjectURL(blob);
                     const downloadLink = document.getElementById('downloadLink');
                     downloadLink.href = downloadUrl;
-                    downloadLink.download = filename;
+                    downloadLink.download = finalFilename;
                     
-                    // Clean up URL object
+                    // Add click handler to clean up URL object
                     downloadLink.onclick = () => {
                         setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
                     };
                     
+                    // Scroll to result
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Show success message
+                    const wordCount = text.trim().split(/\s+/).length;
+                    showMessage(`PDF created successfully! ${wordCount} words converted to PDF format.`, 'success');
+                    
                 }, 500);
                 
             } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
+                console.error('Error:', error);
+                showMessage('Failed to create PDF: ' + error.message, 'error');
                 document.getElementById('progressContainer').classList.remove('active');
                 document.querySelector('.action-buttons').style.display = 'flex';
             }
-        }
-
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
         }
 
         function showMessage(text, type) {
@@ -624,11 +688,14 @@ Content:\n\n${text}\n\n
             msg.className = 'msg ' + type;
             msg.style.display = 'block';
             
-            setTimeout(() => {
-                if (msg.textContent === text) {
-                    msg.style.display = 'none';
-                }
-            }, type === 'error' ? 8000 : 5000);
+            // Auto-hide non-error messages after 5 seconds
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (msg.textContent === text) {
+                        msg.style.display = 'none';
+                    }
+                }, 5000);
+            }
         }
 
         function resetTool() {
@@ -637,12 +704,84 @@ Content:\n\n${text}\n\n
             document.getElementById('progressContainer').classList.remove('active');
             document.getElementById('message').style.display = 'none';
             document.querySelector('.action-buttons').style.display = 'flex';
+            
             updateTextStats();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            showMessage('Tool has been reset. Enter your text to create a new PDF.', 'info');
         }
 
-        // Initialize text stats
+        // Handle Enter key in textarea (Ctrl+Enter to submit)
+        document.getElementById('textInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                processText();
+            }
+        });
+
+        // Initialize text stats and button state
         document.addEventListener('DOMContentLoaded', () => {
             updateTextStats();
+            
+            // Add sample text for testing
+            const sampleText = `Welcome to iMasterPDF Text to PDF Converter!
+
+This tool allows you to convert any text content into a professional PDF document.
+
+Simply enter or paste your text above and click "Create PDF" to generate your document.
+
+Features:
+- Preserves line breaks and paragraphs
+- Secure server-side processing
+- Fast and reliable conversion
+- High-quality PDF output
+
+Try it now with your own content!`;
+            
+            document.getElementById('textInput').value = sampleText;
+            updateTextStats();
+        });
+        
+        // Add paste event listener for better UX
+        document.getElementById('textInput').addEventListener('paste', (e) => {
+            // Give a small delay for the paste to complete
+            setTimeout(updateTextStats, 10);
+        });
+        
+        // Add drag and drop for text files
+        document.getElementById('textInput').addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.currentTarget.style.borderColor = 'var(--primary-color)';
+            e.currentTarget.style.backgroundColor = 'rgba(45, 140, 255, 0.05)';
+        });
+        
+        document.getElementById('textInput').addEventListener('dragleave', (e) => {
+            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.backgroundColor = 'var(--light-color)';
+        });
+        
+        document.getElementById('textInput').addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.backgroundColor = 'var(--light-color)';
+            
+            const files = Array.from(e.dataTransfer.files);
+            const textFile = files.find(file => file.type === 'text/plain' || file.name.endsWith('.txt'));
+            
+            if (textFile) {
+                try {
+                    const text = await textFile.text();
+                    document.getElementById('textInput').value = text;
+                    updateTextStats();
+                    showMessage(`Text file "${textFile.name}" loaded successfully.`, 'success');
+                } catch (error) {
+                    showMessage(`Failed to read text file: ${error.message}`, 'error');
+                }
+            } else if (files.length > 0) {
+                showMessage('Please drop a text file (.txt) or enter text directly.', 'warning');
+            }
         });
     </script>
 </body>
