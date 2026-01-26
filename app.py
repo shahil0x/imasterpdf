@@ -3,12 +3,10 @@ import io
 import shutil
 import tempfile
 import uuid
-import logging
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, send_file, request, abort, Response, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
-from flask_cors import CORS
 
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from docx import Document
@@ -22,11 +20,6 @@ import zipfile
 # Flask app configuration
 # -----------------------------------------------------------------------------
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
-
-# Enable debug logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
@@ -36,9 +29,8 @@ CLEANUP_AGE_MINUTES = 30
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
-app.config['SECRET_KEY'] = 'your-secret-key-here'  # Add a secret key
 
-ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif', '.gif'}
+ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
 ALLOWED_PDF_EXT = {'.pdf'}
 ALLOWED_WORD_EXT = {'.docx', '.doc'}
 ALLOWED_TEXT_EXT = {'.txt'}
@@ -66,8 +58,8 @@ def generate_unique_filename(original_filename, suffix=""):
     safe_name = secure_filename(name)
     
     if suffix:
-        return f"imasterpdf_{suffix}_{timestamp}_{unique_id}{ext}"
-    return f"imasterpdf_{timestamp}_{unique_id}{ext}"
+        return f"{safe_name}_{suffix}_{timestamp}_{unique_id}{ext}"
+    return f"{safe_name}_{timestamp}_{unique_id}{ext}"
 
 def save_uploads(files):
     saved = []
@@ -230,20 +222,8 @@ def images_to_pdf():
     """Images to PDF converter page"""
     return render_template('imagestopdf.html')
 
-@app.route('/pdftotext')
-@app.route('/pdftotext.html')
-def pdf_to_text():
-    """PDF to Text converter page"""
-    return render_template('pdftotext.html')
-
-@app.route('/imagetopdf')
-@app.route('/imagetopdf.html')
-def image_to_pdf():
-    """Single Image to PDF converter page"""
-    return render_template('imagetopdf.html')
-
 # -----------------------------------------------------------------------------
-# Catch-all route for other .html files
+# Catch-all route for other .html files (NEW ADDITION)
 # -----------------------------------------------------------------------------
 @app.route('/<path:filename>.html')
 def serve_html(filename):
@@ -598,42 +578,6 @@ def api_pdf_to_word():
         safe_remove(pdf_path)
 
 # -----------------------------------------------------------------------------
-# Tool APIs - PDF to Text
-# -----------------------------------------------------------------------------
-
-@app.route('/api/pdf-to-text', methods=['POST'])
-def api_pdf_to_text():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one PDF.", status=400))
-    paths = save_uploads(files)
-    pdf_path = paths[0]
-    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
-        abort(Response("Only PDF files are allowed.", status=400))
-
-    try:
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "extracted_text")
-        output_name = os.path.splitext(output_name)[0] + ".txt"
-        
-        text = extract_text(pdf_path) or ""
-        
-        buffer = io.BytesIO(text.encode('utf-8'))
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='text/plain'
-        )
-    except Exception as e:
-        abort(Response(f"Conversion failed: {str(e)}", status=500))
-    finally:
-        safe_remove(pdf_path)
-
-# -----------------------------------------------------------------------------
 # Tool APIs - Word Operations
 # -----------------------------------------------------------------------------
 
@@ -845,7 +789,7 @@ def api_text_to_word():
     )
 
 # -----------------------------------------------------------------------------
-# Tool APIs - Images to PDF (Multiple Images)
+# Tool APIs - Images to PDF
 # -----------------------------------------------------------------------------
 
 @app.route('/api/images-to-pdf', methods=['POST'])
@@ -857,7 +801,7 @@ def api_images_to_pdf():
     paths = save_uploads(files)
     for p in paths:
         if ext_of(p) not in ALLOWED_IMAGE_EXT:
-            abort(Response("Only image files (JPG, PNG, WEBP, BMP, TIFF, GIF) are allowed.", status=400))
+            abort(Response("Only image files (JPG, PNG, WEBP, BMP, TIFF) are allowed.", status=400))
 
     try:
         original_name = secure_filename(files[0].filename)
@@ -889,43 +833,6 @@ def api_images_to_pdf():
     finally:
         for p in paths:
             safe_remove(p)
-
-# -----------------------------------------------------------------------------
-# Tool APIs - Image to PDF (Single Image)
-# -----------------------------------------------------------------------------
-
-@app.route('/api/image-to-pdf', methods=['POST'])
-def api_image_to_pdf():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        abort(Response("Upload exactly one image.", status=400))
-    paths = save_uploads(files)
-    image_path = paths[0]
-    if ext_of(image_path) not in ALLOWED_IMAGE_EXT:
-        abort(Response("Only image files (JPG, PNG, WEBP, BMP, TIFF, GIF) are allowed.", status=400))
-
-    try:
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "image_to_pdf")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        img = Image.open(image_path).convert('RGB')
-        
-        buffer = io.BytesIO()
-        img.save(buffer, format='PDF')
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=output_name,
-            mimetype='application/pdf'
-        )
-    except Exception as e:
-        abort(Response(f"Conversion failed: {str(e)}", status=500))
-    finally:
-        safe_remove(image_path)
 
 # -----------------------------------------------------------------------------
 # Health check endpoint
@@ -964,4 +871,4 @@ def serve_static(filename):
 # Run the application
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True) add that and give whole coding
