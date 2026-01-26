@@ -869,6 +869,149 @@
         .hidden-section {
             display: none;
         }
+
+        /* View All Tools Section Styles */
+        .all-tools-section {
+            padding: 3rem 0;
+        }
+
+        .all-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .all-tool-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-left: 4px solid var(--primary-color);
+            cursor: pointer;
+        }
+
+        .all-tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            border-left-color: var(--secondary-color);
+        }
+
+        .all-tool-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .all-tool-card-header i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(45, 140, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .all-tool-card-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: var(--dark-color);
+        }
+
+        .all-tool-card p {
+            color: var(--muted);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .all-tool-card .tool-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .all-tool-card .tool-cta:hover {
+            color: var(--secondary-color);
+        }
+
+        .tools-category {
+            margin: 3rem 0;
+        }
+
+        .tools-category h3 {
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .view-all-tools-btn {
+            background: linear-gradient(135deg, var(--primary-color), #6c5ce7);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 2rem 0;
+        }
+
+        .view-all-tools-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(45, 140, 255, 0.3);
+        }
+
+        .back-to-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .back-to-home:hover {
+            color: var(--secondary-color);
+            transform: translateX(-5px);
+        }
+
+        .all-tools-hero {
+            text-align: center;
+            padding: 3rem 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: var(--radius);
+            margin-bottom: 3rem;
+        }
+
+        .all-tools-hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .all-tools-hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
@@ -882,6 +1025,7 @@
                 </a>
                 <div class="nav-links">
                     <a href="/" data-link class="active">Home</a>
+                    <a href="/all-tools" data-link>All Tools</a>
                     <a href="/blog" data-link>Blog</a>
                     <a href="/about" data-link>About</a>
                     <a href="/contact" data-link>Contact</a>
@@ -897,6 +1041,9 @@
             <p>Convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly.</p>
             <button class="btn btn-secondary" onclick="showTool('pdf_to_word')">
                 <i class="fas fa-file-upload"></i> Get Started
+            </button>
+            <button class="btn view-all-tools-btn" onclick="showAllTools()" style="margin-left: 1rem;">
+                <i class="fas fa-th-list"></i> View All Tools
             </button>
         </div>
     </section>
@@ -939,6 +1086,13 @@
                         <h3>Unlock PDF</h3>
                         <p>Remove password protection</p>
                     </div>
+                </div>
+                
+                <!-- View All Tools Button -->
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="view-all-tools-btn" onclick="showAllTools()">
+                        <i class="fas fa-th-large"></i> View All Tools
+                    </button>
                 </div>
             </div>
 
@@ -1021,6 +1175,227 @@
             </section>
         </section>
 
+        <!-- All Tools Section -->
+        <section class="hidden-section" id="all-tools">
+            <div class="all-tools-hero">
+                <h1>All Document Tools</h1>
+                <p>Explore our complete collection of free online document tools for all your PDF, Word, Text, and Image needs.</p>
+                <a href="#" class="back-to-home" onclick="goHome(event)">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+            </div>
+
+            <!-- PDF Tools Category -->
+            <div class="tools-category">
+                <h3><i class="fas fa-file-pdf"></i> PDF Tools</h3>
+                <div class="all-tools-grid">
+                    <div class="all-tool-card" onclick="showTool('pdf_to_word')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-file-word"></i>
+                            <h3>PDF to Word</h3>
+                        </div>
+                        <p>Convert PDF files into fully editable Microsoft Word documents while preserving formatting, fonts, and layout.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('pdf_to_word'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="all-tool-card" onclick="showTool('merge_pdf')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-object-group"></i>
+                            <h3>Merge PDF</h3>
+                        </div>
+                        <p>Combine multiple PDF documents into a single, organized file with perfect page order and formatting.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('merge_pdf'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="all-tool-card" onclick="showTool('rotate_pdf')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-redo"></i>
+                            <h3>Rotate PDF</h3>
+                        </div>
+                        <p>Rotate PDF pages by 90°, 180°, or 270° to correct orientation issues from scanned documents.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('rotate_pdf'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="all-tool-card" onclick="showTool('delete_pages_pdf')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-trash-alt"></i>
+                            <h3>Delete Pages in PDF</h3>
+                        </div>
+                        <p>Remove selected pages from a PDF document. Perfect for cleaning up unwanted pages from scanned documents.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('delete_pages_pdf'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="all-tool-card" onclick="showTool('lock_pdf')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-lock"></i>
+                            <h3>Lock PDF (PIN)</h3>
+                        </div>
+                        <p>Add strong password protection to your PDF documents to control access and prevent unauthorized viewing.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('lock_pdf'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="all-tool-card" onclick="showTool('unlock_pdf')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-unlock"></i>
+                            <h3>Unlock PDF</h3>
+                        </div>
+                        <p>Remove password protection from PDF files when you have the correct password but need to edit or share.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('unlock_pdf'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Word Tools Category -->
+            <div class="tools-category">
+                <h3><i class="fas fa-file-word"></i> Word Tools</h3>
+                <div class="all-tools-grid">
+                    <div class="all-tool-card" onclick="showTool('word_to_pdf')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-file-pdf"></i>
+                            <h3>Word to PDF</h3>
+                        </div>
+                        <p>Convert Word documents to professional PDF format with perfect formatting preservation and universal compatibility.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('word_to_pdf'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="all-tool-card" onclick="showTool('merge_word')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-file-word"></i>
+                            <h3>Merge Word</h3>
+                        </div>
+                        <p>Combine multiple Word documents into a single file. Perfect for combining chapters, reports, or multiple documents.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('merge_word'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="all-tool-card" onclick="showTool('word_to_text')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-file-alt"></i>
+                            <h3>Word to Text</h3>
+                        </div>
+                        <p>Extract plain text from Word documents while removing all formatting. Perfect for copying text to other applications.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('word_to_text'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Tools Category -->
+            <div class="tools-category">
+                <h3><i class="fas fa-file-alt"></i> Text Tools</h3>
+                <div class="all-tools-grid">
+                    <div class="all-tool-card" onclick="showTool('text_to_pdf')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-file-pdf"></i>
+                            <h3>Text to PDF</h3>
+                        </div>
+                        <p>Convert plain text to professional PDF documents. Add formatting, choose fonts, and create beautiful documents.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('text_to_pdf'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="all-tool-card" onclick="showTool('text_to_word')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-file-word"></i>
+                            <h3>Text to Word</h3>
+                        </div>
+                        <p>Create Microsoft Word documents from plain text. Perfect for converting notes, articles, or any text content.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('text_to_word'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Tools Category -->
+            <div class="tools-category">
+                <h3><i class="fas fa-images"></i> Image Tools</h3>
+                <div class="all-tools-grid">
+                    <div class="all-tool-card" onclick="showTool('images_to_pdf')">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-file-pdf"></i>
+                            <h3>Images to PDF</h3>
+                        </div>
+                        <p>Convert multiple images (JPG, PNG, WEBP, BMP, TIFF) into a single PDF document. Perfect for creating photo albums or document scans.</p>
+                        <a href="#" class="tool-cta" onclick="showTool('images_to_pdf'); return false;">
+                            Use Tool <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Why Choose Section -->
+            <div class="tools-category">
+                <h3><i class="fas fa-star"></i> Why Choose iMasterPDF?</h3>
+                <div class="all-tools-grid">
+                    <div class="all-tool-card">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>100% Secure</h3>
+                        </div>
+                        <p>All files are processed securely and automatically deleted after conversion. Your privacy is our priority.</p>
+                    </div>
+                    
+                    <div class="all-tool-card">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-bolt"></i>
+                            <h3>Fast Processing</h3>
+                        </div>
+                        <p>Most conversions take less than 30 seconds thanks to our optimized cloud processing infrastructure.</p>
+                    </div>
+                    
+                    <div class="all-tool-card">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-laptop"></i>
+                            <h3>No Installation</h3>
+                        </div>
+                        <p>All tools work directly in your browser. No software downloads or installations required.</p>
+                    </div>
+                    
+                    <div class="all-tool-card">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-globe"></i>
+                            <h3>Cross Platform</h3>
+                        </div>
+                        <p>Access all tools from any device - Windows, Mac, Linux, iOS, or Android. Works perfectly on mobile too.</p>
+                    </div>
+                    
+                    <div class="all-tool-card">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-dollar-sign"></i>
+                            <h3>Completely Free</h3>
+                        </div>
+                        <p>All tools are free to use with no hidden costs, watermarks, or registration requirements.</p>
+                    </div>
+                    
+                    <div class="all-tool-card">
+                        <div class="all-tool-card-header">
+                            <i class="fas fa-infinity"></i>
+                            <h3>Unlimited Use</h3>
+                        </div>
+                        <p>No limits on how many files you can process. Convert as many documents as you need, whenever you need.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Tool Section -->
         <section id="tool" class="hidden-section">
             <div class="tool-container">
@@ -1069,6 +1444,9 @@
                     <button class="btn btn-secondary" onclick="goHome(event)">
                         <i class="fas fa-redo"></i> Start Over
                     </button>
+                    <button class="btn" onclick="showAllTools()" style="background: var(--gray-color);">
+                        <i class="fas fa-th-list"></i> All Tools
+                    </button>
                 </div>
 
                 <!-- Message Area -->
@@ -1094,6 +1472,9 @@
                     </a>
                     <button class="btn btn-secondary" onclick="goHome(event)" style="margin-top: 1rem;">
                         <i class="fas fa-redo"></i> Convert Another File
+                    </button>
+                    <button class="btn" onclick="showAllTools()" style="margin-top: 1rem; background: var(--gray-color);">
+                        <i class="fas fa-th-list"></i> View All Tools
                     </button>
                 </div>
             </div>
@@ -1309,6 +1690,7 @@
             <div>
                 <h4>Links</h4>
                 <p><a href="/" data-link>Home</a></p>
+                <p><a href="/all-tools" data-link>All Tools</a></p>
                 <p><a href="/blog" data-link>Blog</a></p>
                 <p><a href="/about" data-link>About</a></p>
                 <p><a href="/contact" data-link>Contact</a></p>
@@ -1502,6 +1884,7 @@
         // Navigation
         const routes = {
             '/': () => showSection('home'),
+            '/all-tools': () => showAllTools(),
             '/about': () => showSection('about'),
             '/privacy': () => showSection('privacy'),
             '/terms': () => showSection('terms'),
@@ -1520,13 +1903,13 @@
                     'Download your editable DOCX file'
                 ]
             },
-            merge_pdf: { 
+           merge_pdf: { 
                 title: 'Merge PDF', 
                 desc: 'Combine multiple PDFs into one.',
                 steps: [
                     'Upload 2+ PDF files (drag and drop supported)',
                     'Arrange files in your preferred order',
-                    'Click "Merge" to create single PDF'
+                    'Click  to create single PDF'
                 ]
             },
             rotate_pdf: { 
@@ -1801,7 +2184,7 @@
         // Navigation functions
         function showSection(id) {
             // Hide all sections
-            document.querySelectorAll('.hidden-section, #home, #hero').forEach(el => {
+            document.querySelectorAll('.hidden-section, #home, #hero, #all-tools').forEach(el => {
                 el.style.display = 'none';
             });
             
@@ -1809,6 +2192,8 @@
             if (id === 'home') {
                 document.getElementById('home').style.display = 'block';
                 document.getElementById('hero').style.display = 'block';
+            } else if (id === 'all-tools') {
+                document.getElementById('all-tools').style.display = 'block';
             } else {
                 document.getElementById(id).style.display = 'block';
             }
@@ -1828,6 +2213,15 @@
             if (id === 'blog') {
                 renderBlogList();
             }
+        }
+
+        function showAllTools(e) {
+            if (e) e.preventDefault();
+            showSection('all-tools');
+            window.history.pushState({}, '', '/all-tools');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function goHome(e) {
