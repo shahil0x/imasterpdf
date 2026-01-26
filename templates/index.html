@@ -123,29 +123,35 @@
         .btn-secondary {
             background: var(--secondary-color);
         }
+         /* Hero Section */
+.hero {
+    text-align: center;
+    padding: 2.5rem 0;
+    background: white;
+    margin: 1.5rem 0;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
 
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 4rem 0;
-            background: white;
-            margin: 2rem 0;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
+.hero h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.8rem;
+    color: var(--dark-color);
+}
 
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: var(--dark-color);
-        }
+.hero p {
+    font-size: 1.1rem;
+    color: var(--gray-color);
+    max-width: 700px;
+    margin: 0 auto 1.5rem;
+}
 
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--gray-color);
-            max-width: 700px;
-            margin: 0 auto 2rem;
-        }
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
 
         /* Tools Grid */
         .tools-section {
@@ -1036,17 +1042,19 @@
 
     <!-- Hero Section -->
     <section class="hero" id="hero">
-        <div class="container">
-            <h1>iMasterPDF - Free Online Document Tools</h1>
-            <p>Convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly.</p>
+    <div class="container">
+        <h1>iMasterPDF - Free Online Document Tools</h1>
+        <p>Convert, merge, rotate, lock, unlock, and more. Fast, secure, and mobile-friendly.</p>
+        <div class="hero-buttons">
             <button class="btn btn-secondary" onclick="showTool('pdf_to_word')">
                 <i class="fas fa-file-upload"></i> Get Started
             </button>
-            <button class="btn view-all-tools-btn" onclick="showAllTools()" style="margin-left: 1rem;">
+            <button class="btn" onclick="showAllTools()">
                 <i class="fas fa-th-list"></i> View All Tools
             </button>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Main Content -->
     <main class="container">
