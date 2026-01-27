@@ -1,2 +1,0 @@
-kianchau.ns.cloudflare.com
-leah.ns.cloudflare.com
