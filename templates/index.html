@@ -876,6 +876,46 @@
         .hidden-section {
             display: none;
         }
+        /* Additional Tools Grid Styles */
+        .tools-section:last-of-type {
+            padding: 40px;
+            background: #f7f9fc;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .tools-section:last-of-type h2 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: var(--dark-color);
+        }
+
+        .tools-section:last-of-type .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .tools-section:last-of-type .tools-grid a {
+            padding: 14px;
+            background: #ffffff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            color: #0066cc;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: var(--transition);
+            display: block;
+        }
+
+        .tools-section:last-of-type .tools-grid a:hover {
+            background: #0066cc;
+            color: #ffffff;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
 
         /* View All Tools Section Styles */
         .all-tools-section {
@@ -1713,6 +1753,26 @@
         </div>
         <div class="copyright">© <span id="year"></span> iMasterPDF. All rights reserved.</div>
     </footer>
+        <!-- NEW TOOLS GRID SECTION -->
+    <section class="tools-section">
+        <h2>PDF Tools</h2>
+        <div class="tools-grid">
+            <a href="/imagestopdf">Images to PDF</a>
+            <a href="/deletepdf">Delete PDF Pages</a>
+            <a href="/lockpdf">Lock PDF</a>
+            <a href="/mergepdf">Merge PDF</a>
+            <a href="/mergeword">Merge Word</a>
+            <a href="/pdftoword">PDF to Word</a>
+            <a href="/rotatepdf">Rotate PDF</a>
+            <a href="/texttopdf">Text to PDF</a>
+            <a href="/texttoword">Text to Word</a>
+            <a href="/unlockpdf">Unlock PDF</a>
+            <a href="/wordtopdf">Word to PDF</a>
+            <a href="/wordtotext">Word to Text</a>
+        </div>
+    </section>
+    <!-- END NEW SECTION -->
+
 
     <!-- Comprehensive Blog Data -->
     <script type="application/json" id="blog-data">
