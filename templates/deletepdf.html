@@ -499,9 +499,6 @@
                 </a>
                 <div class="nav-links">
                     <a href="index.html">Home</a>
-                    <a href="blog.html">Blog</a>
-                    <a href="about.html">About</a>
-                    <a href="contact.html">Contact</a>
                 </div>
             </nav>
         </div>
@@ -596,11 +593,6 @@
         <div class="container">
             <div class="footer-links">
                 <a href="index.html">Home</a>
-                <a href="blog.html">Blog</a>
-                <a href="about.html">About</a>
-                <a href="contact.html">Contact</a>
-                <a href="privacy.html">Privacy</a>
-                <a href="terms.html">Terms</a>
             </div>
             <div class="copyright">
                 © <span id="year"></span> iMasterPDF. All rights reserved.
@@ -871,56 +863,6 @@
             const files = Array.from(e.dataTransfer.files);
             addFiles(files);
         });
-    // ========== PASTE THE FIX CODE RIGHT HERE ==========
-        // Fix navigation links to work with main site
-        function fixNavLinks() {
-            const mainSiteUrl = 'https://imasterpdf.com'; // ← CHANGE THIS to your actual domain
-            
-            // Get current URL to check if we're on a tool page
-            const currentUrl = window.location.href;
-            const isToolPage = currentUrl.includes('/tools/') || currentUrl.includes('delete-pdf-pages');
-            
-            if (isToolPage) {
-                // Update header navigation links
-                const navLinks = document.querySelectorAll('.nav-links a');
-                navLinks.forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href === 'blog.html') {
-                        link.href = mainSiteUrl + '/blog';
-                    } else if (href === 'about.html') {
-                        link.href = mainSiteUrl + '/about';
-                    } else if (href === 'contact.html') {
-                        link.href = mainSiteUrl + '/contact';
-                    } else if (href === 'index.html') {
-                        link.href = mainSiteUrl + '/';
-                    }
-                });
-                
-                // Update footer links
-                const footerLinks = document.querySelectorAll('.footer-links a');
-                footerLinks.forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href === 'https://imasterpdf.com/blog') {
-                        link.href = mainSiteUrl + '/blog';
-                    } else if (href === 'https://imasterpdf.com/about') {
-                        link.href = mainSiteUrl + '/about';
-                    } else if (href === 'https://imasterpdf.com/contact') {
-                        link.href = mainSiteUrl + '/contact';
-                    } else if (href === 'privacy.html') {
-                        link.href = mainSiteUrl + '/privacy';
-                    } else if (href === 'terms.html') {
-                        link.href = mainSiteUrl + '/terms';
-                    } else if (href === 'index.html') {
-                        link.href = mainSiteUrl + '/';
-                    }
-                });
-            }
-        }
-
-        // Run when page loads
-        document.addEventListener('DOMContentLoaded', fixNavLinks);
-        // ========== END OF FIX CODE ==========
-        
     </script> <!-- This is the closing script tag -->
 </body>
 </html>
