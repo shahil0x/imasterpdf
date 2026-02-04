@@ -8,23 +8,22 @@ import time
 import hashlib
 import zipfile
 from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 import concurrent.futures
-import asyncio
+import threading
 
 from flask import Flask, render_template, send_file, request, abort, Response, jsonify, send_from_directory, after_this_request
 from werkzeug.utils import secure_filename
-from werkzeug.middleware.proxy_fix import ProxyFix  # ADDED
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from docx import Document
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
-from PIL import Image, ImageOps, ImageEnhance
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 from pdfminer.high_level import extract_text
 import numpy as np
-import cv2  # ADDED
 
 # OCR Libraries - Only import when needed
 try:
@@ -38,17 +37,17 @@ except ImportError:
 # Flask app configuration
 # -----------------------------------------------------------------------------
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)  # ADDED
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 # Performance settings
-MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # Increased to 100 MB per file
+MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
 OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_outputs")
 CLEANUP_AGE_MINUTES = 30
-MAX_WORKERS = 6  # Increased for parallel processing
-MAX_PAGES_TO_EXTRACT = 200  # Increased limit for large PDFs
+MAX_WORKERS = 6
+MAX_PAGES_TO_EXTRACT = 200
 CACHE_ENABLED = True
-OCR_ENABLED = OCR_AVAILABLE  # Enable OCR if libraries are available
+OCR_ENABLED = OCR_AVAILABLE
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -57,7 +56,6 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-i
 
 # Thread pools for parallel processing
 io_executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
-cpu_executor = ThreadPoolExecutor(max_workers=2)  # For CPU-intensive OCR
 
 # Cache for repeated conversions with TTL
 conversion_cache = {}
@@ -979,11 +977,12 @@ def api_ocr_pdf():
                 img = ImageOps.exif_transpose(img)
                 img = img.convert('L')  # Grayscale for better OCR
                 
-                # Apply image enhancement with PIL (no cv2 dependency)
+                # Apply image enhancement with PIL (no cv2)
                 enhancer = ImageEnhance.Contrast(img)
                 img = enhancer.enhance(1.5)
                 enhancer = ImageEnhance.Sharpness(img)
                 img = enhancer.enhance(1.2)
+                img = img.filter(ImageFilter.SHARPEN)
                 
                 # Perform OCR
                 text = pytesseract.image_to_string(
@@ -1629,7 +1628,6 @@ def cleanup_cache():
             pass
 
 # Start cleanup thread
-import threading
 cache_cleaner = threading.Thread(target=cleanup_cache, daemon=True)
 cache_cleaner.start()
 
