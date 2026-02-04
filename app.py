@@ -272,7 +272,6 @@ class UltraFastProcessor:
         except Exception as e:
             print(f"OCR extraction error: {e}")
             return ""
-    
     @staticmethod
     def is_image_pdf(pdf_path):
         """Detect if PDF is image-based (scanned)"""
@@ -294,27 +293,6 @@ class UltraFastProcessor:
             return False
         except:
             return True  # Assume image PDF if extraction fails
-    
-    @staticmethod
-    def optimize_image_for_pdf(image_path, max_size=(2480, 3508)):  # A4 at 300 DPI
-        """Optimize image for PDF conversion"""
-        try:
-            with Image.open(image_path) as img:
-                # Convert to RGB if needed
-                if img.mode in ('RGBA', 'LA', 'P'):
-                    img = img.convert('RGB')
-                
-                # Resize if too large
-                img.thumbnail(max_size, Image.Resampling.LANCZOS)
-                
-                # Optimize in memory
-                buffer = io.BytesIO()
-                img.save(buffer, format='JPEG', quality=85, optimize=True)
-                buffer.seek(0)
-                return Image.open(buffer)
-        except:
-            return None
-
 # -----------------------------------------------------------------------------
 # Utility helpers
 # -----------------------------------------------------------------------------
@@ -1159,12 +1137,12 @@ def api_ocr_pdf():
         return jsonify({"error": f"OCR processing failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
-# Tool APIs - PDF to Word (ULTRA-FAST with automatic OCR detection)
+# Tool APIs - PDF to Word (ULTRA-FAST with OCR option)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/pdf-to-word', methods=['POST'])
 def api_pdf_to_word():
-    """Ultra-fast PDF to Word with automatic OCR detection"""
+    """Ultra-fast PDF to Word with optional OCR"""
     start_time = time.time()
     cleanup_temp()
     
@@ -1172,8 +1150,7 @@ def api_pdf_to_word():
     if not files or len(files) != 1:
         return jsonify({"error": "Upload exactly one PDF."}), 400
     
-    # Auto-detect if OCR is needed
-    force_ocr = request.form.get('force_ocr', 'auto').lower()
+    use_ocr = request.form.get('ocr', 'false').lower() == 'true'
     
     paths = save_uploads(files)
     pdf_path = paths[0]
@@ -1183,21 +1160,19 @@ def api_pdf_to_word():
         return jsonify({"error": "Only PDF files are allowed."}), 400
 
     try:
-        # Auto-detect if OCR is needed
-        use_ocr = False
-        if force_ocr == 'true':
-            use_ocr = True
-        elif force_ocr == 'auto' and OCR_ENABLED:
-            # Check if it's an image PDF
-            use_ocr = UltraFastProcessor.is_image_pdf(pdf_path)
-        
-        # Extract text (with OCR if needed)
-        text = UltraFastProcessor.fast_extract_text(pdf_path, use_ocr=use_ocr)
-        
         # Generate output name
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "converted_to_word")
         output_name = os.path.splitext(output_name)[0] + ".docx"
+        
+        # Extract text (with OCR if requested)
+        if use_ocr and OCR_ENABLED:
+            text = UltraFastProcessor._fast_ocr_extraction(pdf_path)
+            if not text or len(text.strip()) < 50:
+                # Fallback to regular extraction
+                text = UltraFastProcessor.fast_extract_text(pdf_path, use_ocr=False)
+        else:
+            text = UltraFastProcessor.fast_extract_text(pdf_path, use_ocr=False)
         
         # Create document efficiently
         doc = Document()
@@ -1607,6 +1582,67 @@ def api_images_to_pdf():
     except Exception as e:
         safe_remove_all(paths)
         return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
+    # After the UltraFastProcessor class ends...
+
+def process_pdf_with_ocr_support(pdf_path, operation_func, *args, **kwargs):
+    """Process PDF with OCR support for image-based PDFs"""
+    try:
+        # First try normal PDF processing
+        return operation_func(pdf_path, *args, **kwargs)
+    except Exception as e:
+        # If normal processing fails, check if it's an image PDF
+        if OCR_ENABLED and UltraFastProcessor.is_image_pdf(pdf_path):
+            # Convert image PDF to text-based PDF first
+            print(f"Converting image PDF to text-based for {operation_func.__name__}")
+            
+            # Create a temporary text-based PDF using OCR
+            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+                tmp_path = tmp.name
+            
+            try:
+                # OCR the PDF and create searchable version
+                images = convert_from_path(pdf_path, dpi=200)
+                
+                # Create new PDF with OCR text
+                c = canvas.Canvas(tmp_path, pagesize=A4)
+                for img in images:
+                    # Convert image to JPEG buffer
+                    img_buffer = io.BytesIO()
+                    img.save(img_buffer, format='JPEG', quality=85)
+                    img_buffer.seek(0)
+                    
+                    # Add to PDF
+                    c.drawImage(img_buffer, 0, 0, width=A4[0], height=A4[1])
+                    
+                    # Extract and add OCR text as invisible layer
+                    text = pytesseract.image_to_string(img, lang='eng')
+                    if text.strip():
+                        c.setFont("Helvetica", 1)
+                        c.setFillColorRGB(1, 1, 1, alpha=0)
+                        c.drawString(10, 10, text[:100])  # Add some text
+                    
+                    c.showPage()
+                
+                c.save()
+                
+                # Process the converted PDF
+                result = operation_func(tmp_path, *args, **kwargs)
+                
+                # Cleanup
+                safe_remove(tmp_path)
+                return result
+                
+            except Exception as ocr_error:
+                safe_remove(tmp_path)
+                raise Exception(f"OCR processing failed: {ocr_error}")
+        else:
+            raise e
+
+# -----------------------------------------------------------------------------
+# Utility helpers
+# -----------------------------------------------------------------------------
+def ext_of(filename):
+    return os.path.splitext(filename.lower())[1]
 
 # -----------------------------------------------------------------------------
 # Health check endpoint
