@@ -3,10 +3,11 @@ FROM python:3.12-slim
 # Prevent Python from writing .pyc files & enable logs
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/5.3.0/tessdata
 
 WORKDIR /app
 
-# System dependencies required for Pillow, ReportLab, etc.
+# System dependencies for OCR, PDF, and image processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libjpeg-dev \
@@ -21,6 +22,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libx11-6 \
     tk \
     tcl \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    tesseract-ocr-spa \
+    tesseract-ocr-fra \
+    tesseract-ocr-deu \
+    tesseract-ocr-chi-sim \
+    tesseract-ocr-ara \
+    tesseract-ocr-rus \
+    tesseract-ocr-por \
+    tesseract-ocr-ita \
+    poppler-utils \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (better Docker cache)
@@ -32,8 +47,11 @@ RUN pip install --upgrade pip setuptools wheel \
 # Copy application code
 COPY . .
 
-# Expose port (optional but recommended)
+# Create necessary directories
+RUN mkdir -p /tmp/imasterpdf_uploads /tmp/imasterpdf_outputs
+
+# Expose port
 EXPOSE 10000
 
 # Start app with Gunicorn
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:10000", "--workers", "2", "--timeout", "120"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:10000", "--workers", "4", "--threads", "2", "--timeout", "300", "--worker-class", "sync"]

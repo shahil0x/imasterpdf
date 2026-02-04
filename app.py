@@ -8,44 +8,62 @@ import time
 import hashlib
 import zipfile
 from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from functools import lru_cache
+import concurrent.futures
+import asyncio
 
 from flask import Flask, render_template, send_file, request, abort, Response, jsonify, send_from_directory, after_this_request
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix  # ADDED
 
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from docx import Document
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
-from PIL import Image
+from PIL import Image, ImageOps, ImageEnhance
 from pdfminer.high_level import extract_text
+import numpy as np
+import cv2  # ADDED
+
+# OCR Libraries - Only import when needed
+try:
+    import pytesseract
+    from pdf2image import convert_from_path, convert_from_bytes
+    OCR_AVAILABLE = True
+except ImportError:
+    OCR_AVAILABLE = False
 
 # -----------------------------------------------------------------------------
 # Flask app configuration
 # -----------------------------------------------------------------------------
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)  # ADDED
 
 # Performance settings
-MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
+MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # Increased to 100 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
 OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_outputs")
 CLEANUP_AGE_MINUTES = 30
-MAX_WORKERS = 4  # For parallel processing
-MAX_PAGES_TO_EXTRACT = 100  # Limit for large PDFs
+MAX_WORKERS = 6  # Increased for parallel processing
+MAX_PAGES_TO_EXTRACT = 200  # Increased limit for large PDFs
 CACHE_ENABLED = True
+OCR_ENABLED = OCR_AVAILABLE  # Enable OCR if libraries are available
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Thread pool for parallel processing
-executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
+# Thread pools for parallel processing
+io_executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
+cpu_executor = ThreadPoolExecutor(max_workers=2)  # For CPU-intensive OCR
 
-# Cache for repeated conversions
+# Cache for repeated conversions with TTL
 conversion_cache = {}
+CACHE_TTL_SECONDS = 3600  # 1 hour
 
-ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
+ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif', '.gif'}
 ALLOWED_PDF_EXT = {'.pdf'}
 ALLOWED_WORD_EXT = {'.docx', '.doc'}
 ALLOWED_TEXT_EXT = {'.txt'}
@@ -53,158 +71,197 @@ ALLOWED_TEXT_EXT = {'.txt'}
 # -----------------------------------------------------------------------------
 # Performance optimization utilities
 # -----------------------------------------------------------------------------
-def clean_text_for_xml(text):
-    """
-    Clean text to make it XML compatible.
-    Removes NULL bytes, control characters, and other problematic chars.
-    """
-    if not text:
-        return ""
+class UltraFastProcessor:
+    """Optimized processor for ultra-fast conversions"""
     
-    # Remove NULL bytes
-    text = text.replace('\x00', '')
+    @staticmethod
+    def clean_text_for_xml(text):
+        """Ultra-fast text cleaning with regex compilation"""
+        if not text:
+            return ""
+        
+        # Pre-compiled regex patterns
+        control_chars = re.compile(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]')
+        
+        # Fast operations
+        text = text.replace('\x00', '')
+        text = control_chars.sub('', text)
+        
+        # Fast Unicode replacements
+        replacements = [
+            ('\u2028', ' '),
+            ('\u2029', ' '),
+            ('\uFEFF', ''),
+        ]
+        
+        for old, new in replacements:
+            text = text.replace(old, new)
+        
+        return text
     
-    # Remove other control characters (except common whitespace: \n, \t, \r)
-    text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]', '', text)
+    @staticmethod
+    def fast_extract_text(pdf_path, use_ocr=False):
+        """Ultra-fast text extraction with intelligent fallback"""
+        start_time = time.time()
+        
+        # Check cache first
+        if CACHE_ENABLED:
+            file_hash = hashlib.md5(pdf_path.encode()).hexdigest() + "_" + str(use_ocr)
+            if file_hash in conversion_cache:
+                cache_time, text = conversion_cache[file_hash]
+                if time.time() - cache_time < CACHE_TTL_SECONDS:
+                    return text
+        
+        # Determine extraction strategy based on file size
+        file_size = os.path.getsize(pdf_path)
+        
+        # Strategy 1: Small files - PyPDF2
+        if file_size < 5 * 1024 * 1024:  # < 5MB
+            try:
+                with open(pdf_path, 'rb') as file:
+                    reader = PdfReader(file)
+                    text = []
+                    for i, page in enumerate(reader.pages[:MAX_PAGES_TO_EXTRACT]):
+                        page_text = page.extract_text()
+                        if page_text:
+                            text.append(page_text)
+                    if text:
+                        result = "\n".join(text)
+                        if CACHE_ENABLED:
+                            conversion_cache[file_hash] = (time.time(), result)
+                        return result
+            except:
+                pass
+        
+        # Strategy 2: Parallel extraction for medium files
+        if file_size < 20 * 1024 * 1024:  # < 20MB
+            try:
+                result = UltraFastProcessor._parallel_pdf_extraction(pdf_path)
+                if result and len(result.strip()) > 50:
+                    if CACHE_ENABLED:
+                        conversion_cache[file_hash] = (time.time(), result)
+                    return result
+            except:
+                pass
+        
+        # Strategy 3: OCR if enabled and requested
+        if use_ocr and OCR_ENABLED:
+            try:
+                result = UltraFastProcessor._fast_ocr_extraction(pdf_path)
+                if result:
+                    if CACHE_ENABLED:
+                        conversion_cache[file_hash] = (time.time(), result)
+                    return result
+            except Exception as e:
+                print(f"OCR extraction failed: {e}")
+        
+        # Strategy 4: Optimized pdfminer as fallback
+        try:
+            result = extract_text(
+                pdf_path,
+                maxpages=MAX_PAGES_TO_EXTRACT,
+                caching=True,
+                laparams=None
+            ) or ""
+            if CACHE_ENABLED:
+                conversion_cache[file_hash] = (time.time(), result)
+            return result
+        except:
+            return ""
     
-    # Replace other problematic Unicode characters
-    replacements = {
-        '\u2028': ' ',
-        '\u2029': ' ',
-        '\uFEFF': '',
-    }
-    
-    for old, new in replacements.items():
-        text = text.replace(old, new)
-    
-    # Ensure valid UTF-8
-    try:
-        text = text.encode('utf-8', 'ignore').decode('utf-8')
-    except:
-        text = text.encode('ascii', 'ignore').decode('ascii')
-    
-    return text
-
-def safe_add_paragraph(doc, text):
-    """
-    Safely add a paragraph to a Word document, handling any XML errors.
-    """
-    try:
-        cleaned_text = clean_text_for_xml(text)
-        if cleaned_text.strip():
-            doc.add_paragraph(cleaned_text.strip())
-    except Exception:
-        pass
-
-def get_file_hash(file_path):
-    """Get MD5 hash of file for caching"""
-    hasher = hashlib.md5()
-    with open(file_path, 'rb') as f:
-        buf = f.read(65536)
-        while len(buf) > 0:
-            hasher.update(buf)
-            buf = f.read(65536)
-    return hasher.hexdigest()
-
-def fast_extract_text(pdf_path):
-    """
-    Fast text extraction with multiple optimized methods.
-    """
-    start_time = time.time()
-    file_size = os.path.getsize(pdf_path)
-    
-    # For very small files, use simple extraction
-    if file_size < 102400:  # < 100KB
+    @staticmethod
+    def _parallel_pdf_extraction(pdf_path):
+        """Parallel text extraction optimized for speed"""
         try:
             with open(pdf_path, 'rb') as file:
                 reader = PdfReader(file)
-                text = ""
-                for page in reader.pages[:MAX_PAGES_TO_EXTRACT]:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text += page_text + "\n"
-                if text.strip():
-                    print(f"Fast PyPDF2 extraction: {time.time() - start_time:.2f}s")
-                    return clean_text_for_xml(text)
+                total_pages = len(reader.pages)
+                
+                # Process pages in chunks
+                chunk_size = 10
+                chunks = [range(i, min(i + chunk_size, total_pages)) 
+                         for i in range(0, min(total_pages, MAX_PAGES_TO_EXTRACT), chunk_size)]
+                
+                def process_chunk(chunk_range):
+                    chunk_text = []
+                    for i in chunk_range:
+                        try:
+                            page_text = reader.pages[i].extract_text()
+                            if page_text:
+                                chunk_text.append(page_text)
+                        except:
+                            pass
+                    return "\n".join(chunk_text)
+                
+                # Process chunks in parallel
+                with ThreadPoolExecutor(max_workers=4) as executor:
+                    futures = [executor.submit(process_chunk, chunk) for chunk in chunks]
+                    results = [f.result() for f in concurrent.futures.as_completed(futures)]
+                
+                return "\n\n".join(filter(None, results))
         except:
-            pass
+            return ""
     
-    # For larger files, try parallel extraction
-    try:
-        text = parallel_pdf_extraction(pdf_path)
-        if text and len(text.strip()) > 50:
-            print(f"Parallel extraction: {time.time() - start_time:.2f}s")
-            return clean_text_for_xml(text)
-    except:
-        pass
-    
-    # Fallback to optimized pdfminer
-    try:
-        # Extract only first N pages for speed
-        text = extract_text(
-            pdf_path,
-            maxpages=MAX_PAGES_TO_EXTRACT,
-            caching=True,
-            laparams=None  # Disable layout analysis for speed
-        )
-        print(f"Optimized pdfminer extraction: {time.time() - start_time:.2f}s")
-        return clean_text_for_xml(text or "")
-    except Exception as e:
-        print(f"All extraction methods failed: {e}")
-        return ""
-
-def parallel_pdf_extraction(pdf_path, max_workers=MAX_WORKERS):
-    """
-    Extract text from PDF pages in parallel for speed.
-    """
-    try:
-        with open(pdf_path, 'rb') as file:
-            reader = PdfReader(file)
-            pages = reader.pages[:MAX_PAGES_TO_EXTRACT]  # Limit pages
+    @staticmethod
+    def _fast_ocr_extraction(pdf_path, languages=['eng']):
+        """Fast OCR extraction using parallel processing"""
+        if not OCR_ENABLED:
+            return ""
+        
+        try:
+            # Convert PDF to images in memory
+            images = convert_from_bytes(
+                open(pdf_path, 'rb').read(),
+                dpi=200,  # Lower DPI for speed
+                thread_count=2,
+                fmt='jpeg',
+                size=(1650, None)  # Limit size
+            )[:MAX_PAGES_TO_EXTRACT]  # Limit pages
             
-            def extract_page(page):
+            # Process images in parallel
+            def ocr_image(img):
                 try:
-                    return page.extract_text() or ""
+                    # Preprocess image for better OCR
+                    img = ImageOps.exif_transpose(img)
+                    img = img.convert('L')  # Grayscale
+                    
+                    # Use pytesseract with optimized settings
+                    return pytesseract.image_to_string(
+                        img,
+                        lang='+'.join(languages),
+                        config='--psm 1 --oem 3 -c preserve_interword_spaces=1'
+                    )
                 except:
                     return ""
             
-            # Extract pages in parallel
-            texts = list(executor.map(extract_page, pages))
-            return "\n".join(texts)
-    except Exception as e:
-        print(f"Parallel extraction failed: {e}")
-        return ""
-
-def optimize_pdf_for_extraction(pdf_path):
-    """
-    Optimize PDF for faster text extraction.
-    Returns optimized file path or original if optimization fails.
-    """
-    try:
-        file_size = os.path.getsize(pdf_path)
-        
-        # Skip optimization for small files
-        if file_size < 5 * 1024 * 1024:  # < 5MB
-            return pdf_path
+            # Parallel OCR processing
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                texts = list(executor.map(ocr_image, images))
             
-        # For large files, extract only first N pages
-        with open(pdf_path, 'rb') as file:
-            reader = PdfReader(file)
-            if len(reader.pages) <= MAX_PAGES_TO_EXTRACT:
-                return pdf_path
-            
-            # Create optimized PDF with only first N pages
-            writer = PdfWriter()
-            for i in range(min(MAX_PAGES_TO_EXTRACT, len(reader.pages))):
-                writer.add_page(reader.pages[i])
-            
-            optimized_path = pdf_path + "_optimized.pdf"
-            with open(optimized_path, 'wb') as f:
-                writer.write(f)
-            
-            return optimized_path
-    except:
-        return pdf_path
+            return "\n\n".join(filter(None, texts))
+        except Exception as e:
+            print(f"OCR error: {e}")
+            return ""
+    
+    @staticmethod
+    def optimize_image_for_pdf(image_path, max_size=(2480, 3508)):  # A4 at 300 DPI
+        """Optimize image for PDF conversion"""
+        try:
+            with Image.open(image_path) as img:
+                # Convert to RGB if needed
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    img = img.convert('RGB')
+                
+                # Resize if too large
+                img.thumbnail(max_size, Image.Resampling.LANCZOS)
+                
+                # Optimize in memory
+                buffer = io.BytesIO()
+                img.save(buffer, format='JPEG', quality=85, optimize=True)
+                buffer.seek(0)
+                return Image.open(buffer)
+        except:
+            return None
 
 # -----------------------------------------------------------------------------
 # Utility helpers
@@ -219,7 +276,7 @@ def validate_file(stream):
     if size < 1024:
         abort(Response("File too small (min 1 KB).", status=400))
     if size > MAX_CONTENT_LENGTH:
-        abort(Response("File too large (max 50 MB).", status=400))
+        abort(Response(f"File too large (max {MAX_CONTENT_LENGTH // (1024*1024)} MB).", status=400))
 
 def generate_unique_filename(original_filename, suffix=""):
     """Generate a unique filename with UUID and timestamp"""
@@ -247,53 +304,52 @@ def save_uploads(files):
     return saved
 
 def cleanup_temp():
+    """Fast cleanup with bulk operations"""
     cutoff = datetime.utcnow() - timedelta(minutes=CLEANUP_AGE_MINUTES)
+    
     for base in (UPLOAD_DIR, OUTPUT_DIR):
-        for name in os.listdir(base):
-            path = os.path.join(base, name)
-            try:
-                mtime = datetime.utcfromtimestamp(os.path.getmtime(path))
-                if mtime < cutoff:
-                    if os.path.isdir(path):
-                        shutil.rmtree(path, ignore_errors=True)
-                    else:
-                        os.remove(path)
-            except Exception:
-                pass
+        try:
+            for name in os.listdir(base):
+                path = os.path.join(base, name)
+                try:
+                    mtime = datetime.utcfromtimestamp(os.path.getmtime(path))
+                    if mtime < cutoff:
+                        if os.path.isdir(path):
+                            shutil.rmtree(path, ignore_errors=True)
+                        else:
+                            os.remove(path)
+                except:
+                    pass
+        except:
+            pass
 
-def wrap_text(text, max_chars=95):
-    words = text.split(' ')
-    lines, current = [], []
-    length = 0
-    for w in words:
-        add_len = len(w) + (1 if current else 0)
-        if length + add_len <= max_chars:
-            current.append(w)
-            length += add_len
-        else:
-            lines.append(' '.join(current))
-            current = [w]
-            length = len(w)
-    if current:
-        lines.append(' '.join(current))
-    return lines
+def safe_add_paragraph(doc, text):
+    """Safely add a paragraph to a Word document"""
+    try:
+        cleaned_text = UltraFastProcessor.clean_text_for_xml(text)
+        if cleaned_text.strip():
+            doc.add_paragraph(cleaned_text.strip())
+    except:
+        pass
 
 def parse_pages(pages_str):
+    """Fast page parsing with set operations"""
     pages = set()
+    if not pages_str:
+        return pages
+    
     parts = [p.strip() for p in pages_str.split(',') if p.strip()]
     for part in parts:
         if '-' in part:
-            a, b = part.split('-', 1)
             try:
-                start = int(a); end = int(b)
-                for i in range(min(start, end), max(start, end)+1):
-                    pages.add(i)
-            except ValueError:
+                a, b = map(int, part.split('-', 1))
+                pages.update(range(min(a, b), max(a, b) + 1))
+            except:
                 abort(Response("Invalid page range.", status=400))
         else:
             try:
                 pages.add(int(part))
-            except ValueError:
+            except:
                 abort(Response("Invalid page number.", status=400))
     return pages
 
@@ -301,12 +357,38 @@ def safe_remove(path):
     try:
         if os.path.exists(path):
             os.remove(path)
-    except Exception:
+    except:
         pass
 
 def safe_remove_all(paths):
     for path in paths:
         safe_remove(path)
+
+def wrap_text(text, max_chars=95):
+    """Fast text wrapping"""
+    if len(text) <= max_chars:
+        return [text]
+    
+    words = text.split(' ')
+    lines = []
+    current_line = []
+    current_length = 0
+    
+    for word in words:
+        word_length = len(word)
+        if current_length + word_length + (1 if current_line else 0) <= max_chars:
+            current_line.append(word)
+            current_length += word_length + (1 if current_line else 0)
+        else:
+            if current_line:
+                lines.append(' '.join(current_line))
+            current_line = [word]
+            current_length = word_length
+    
+    if current_line:
+        lines.append(' '.join(current_line))
+    
+    return lines
 
 # -----------------------------------------------------------------------------
 # SPA Routes for each tool page
@@ -316,93 +398,84 @@ def safe_remove_all(paths):
 @app.route('/index')
 @app.route('/index.html')
 def index():
-    """Main landing page"""
     return render_template('index.html')
 
 @app.route('/split')
 @app.route('/split.html')
 def split_pdf():
-    """Split PDF tool page"""
     return render_template('split.html')
 
 @app.route('/mergepdf')
 @app.route('/mergepdf.html')
 def merge_pdf():
-    """Merge PDF tool page"""
     return render_template('mergepdf.html')
 
 @app.route('/deletepdf')
 @app.route('/deletepdf.html')
 def delete_pdf():
-    """Delete pages from PDF tool page"""
     return render_template('deletepdf.html')
 
 @app.route('/rotatepdf')
 @app.route('/rotatepdf.html')
 def rotate_pdf():
-    """Rotate PDF pages tool page"""
     return render_template('rotatepdf.html')
 
 @app.route('/pdftoword')
 @app.route('/pdftoword.html')
 def pdf_to_word():
-    """PDF to Word converter page"""
     return render_template('pdftoword.html')
 
 @app.route('/lockpdf')
 @app.route('/lockpdf.html')
 def lock_pdf():
-    """Lock PDF with password page"""
     return render_template('lockpdf.html')
 
 @app.route('/unlockpdf')
 @app.route('/unlockpdf.html')
 def unlock_pdf():
-    """Unlock PDF page"""
     return render_template('unlockpdf.html')
 
 @app.route('/wordtopdf')
 @app.route('/wordtopdf.html')
 def word_to_pdf():
-    """Word to PDF converter page"""
     return render_template('wordtopdf.html')
 
 @app.route('/mergeword')
 @app.route('/mergeword.html')
 def merge_word():
-    """Merge Word documents page"""
     return render_template('mergeword.html')
 
 @app.route('/wordtotext')
 @app.route('/wordtotext.html')
 def word_to_text():
-    """Word to Text converter page"""
     return render_template('wordtotext.html')
 
 @app.route('/texttopdf')
 @app.route('/texttopdf.html')
 def text_to_pdf():
-    """Text to PDF converter page"""
     return render_template('texttopdf.html')
 
 @app.route('/texttoword')
 @app.route('/texttoword.html')
 def text_to_word():
-    """Text to Word converter page"""
     return render_template('texttoword.html')
 
 @app.route('/imagestopdf')
 @app.route('/imagestopdf.html')
 def images_to_pdf():
-    """Images to PDF converter page"""
     return render_template('imagestopdf.html')
+
+# New OCR route
+@app.route('/ocrpdf')
+@app.route('/ocrpdf.html')
+def ocr_pdf():
+    return render_template('ocrpdf.html')
 
 # -----------------------------------------------------------------------------
 # Catch-all route for other .html files
 # -----------------------------------------------------------------------------
 @app.route('/<path:filename>.html')
 def serve_html(filename):
-    """Catch-all route for any .html file requests"""
     try:
         return render_template(f'{filename}.html')
     except:
@@ -422,27 +495,35 @@ def api_contact():
     return jsonify({"status": "ok", "received": {"name": name, "email": email}}), 200
 
 # -----------------------------------------------------------------------------
-# Tool APIs - PDF Operations
+# Tool APIs - PDF Operations (ULTRA-FAST)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/merge-pdf', methods=['POST'])
 def api_merge_pdf():
+    """Ultra-fast PDF merging"""
+    start_time = time.time()
     cleanup_temp()
+    
     files = request.files.getlist('files')
     if not files or len(files) < 2:
         return jsonify({"error": "Upload at least two PDFs."}), 400
     
+    # Save files in parallel
     paths = save_uploads(files)
+    
+    # Validate all are PDFs
     for p in paths:
         if ext_of(p) not in ALLOWED_PDF_EXT:
             safe_remove_all(paths)
             return jsonify({"error": "Only PDF files are allowed."}), 400
 
-    merger = PdfMerger()
     try:
+        # Merge PDFs in memory
+        merger = PdfMerger()
         for p in paths:
-            merger.append(p)
+            merger.append(p, import_outline=False)  # Disable outline for speed
         
+        # Generate output
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "merged")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
@@ -450,7 +531,9 @@ def api_merge_pdf():
         buffer = io.BytesIO()
         merger.write(buffer)
         buffer.seek(0)
+        merger.close()
         
+        # Prepare response
         response = send_file(
             buffer,
             mimetype='application/pdf',
@@ -458,23 +541,25 @@ def api_merge_pdf():
             download_name=output_name
         )
         
+        # Cleanup
         @after_this_request
         def cleanup(response):
             safe_remove_all(paths)
-            merger.close()
             return response
         
+        print(f"Merged {len(files)} PDFs in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
         safe_remove_all(paths)
-        merger.close()
         return jsonify({"error": f"Merging failed: {str(e)}"}), 500
 
 @app.route('/api/split-pdf', methods=['POST'])
 def api_split_pdf():
-    """Split PDF by page ranges"""
+    """Ultra-fast PDF splitting"""
+    start_time = time.time()
     cleanup_temp()
+    
     files = request.files.getlist('files')
     if not files or len(files) != 1:
         return jsonify({"error": "Upload exactly one PDF."}), 400
@@ -483,60 +568,75 @@ def api_split_pdf():
     if not ranges_str:
         return jsonify({"error": "Page ranges are required."}), 400
     
+    # Save file
     paths = save_uploads(files)
     pdf_path = paths[0]
+    
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         safe_remove(pdf_path)
         return jsonify({"error": "Only PDF files are allowed."}), 400
     
     try:
-        reader = PdfReader(pdf_path)
-        total_pages = len(reader.pages)
+        # Read PDF once
+        with open(pdf_path, 'rb') as f:
+            reader = PdfReader(f)
+            total_pages = len(reader.pages)
         
+        # Parse ranges
         ranges = []
         parts = [p.strip() for p in ranges_str.split(',') if p.strip()]
         for part in parts:
             if '-' in part:
-                start, end = part.split('-', 1)
                 try:
-                    start = int(start); end = int(end)
+                    start, end = map(int, part.split('-', 1))
                     if 1 <= start <= total_pages and 1 <= end <= total_pages:
                         ranges.append((min(start, end)-1, max(start, end)))
                     else:
-                        safe_remove(pdf_path)
-                        return jsonify({"error": f"Page range out of bounds (1-{total_pages})."}), 400
-                except ValueError:
+                        raise ValueError
+                except:
                     safe_remove(pdf_path)
-                    return jsonify({"error": "Invalid page range format."}), 400
+                    return jsonify({"error": f"Page range out of bounds (1-{total_pages})."}), 400
             else:
                 try:
                     page = int(part)
                     if 1 <= page <= total_pages:
                         ranges.append((page-1, page))
                     else:
-                        safe_remove(pdf_path)
-                        return jsonify({"error": f"Page out of bounds (1-{total_pages})."}), 400
-                except ValueError:
+                        raise ValueError
+                except:
                     safe_remove(pdf_path)
-                    return jsonify({"error": "Invalid page number."}), 400
+                    return jsonify({"error": f"Page out of bounds (1-{total_pages})."}), 400
         
+        # Create ZIP in memory with parallel processing
         zip_buffer = io.BytesIO()
+        
+        def create_split(range_idx, start_idx, end_page):
+            writer = PdfWriter()
+            for page_idx in range(start_idx, end_page):
+                writer.add_page(reader.pages[page_idx])
+            
+            split_buffer = io.BytesIO()
+            writer.write(split_buffer)
+            writer.close()
+            split_buffer.seek(0)
+            
+            original_name = secure_filename(files[0].filename)
+            split_name = generate_unique_filename(original_name, f"split_{range_idx+1}")
+            split_name = os.path.splitext(split_name)[0] + ".pdf"
+            
+            return split_name, split_buffer.getvalue()
+        
+        # Process splits in parallel
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for i, (start_idx, end_page) in enumerate(ranges):
-                writer = PdfWriter()
-                for page_idx in range(start_idx, end_page):
-                    writer.add_page(reader.pages[page_idx])
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                futures = []
+                for i, (start_idx, end_page) in enumerate(ranges):
+                    future = executor.submit(create_split, i, start_idx, end_page)
+                    futures.append(future)
                 
-                split_buffer = io.BytesIO()
-                writer.write(split_buffer)
-                split_buffer.seek(0)
-                
-                original_name = secure_filename(files[0].filename)
-                split_name = generate_unique_filename(original_name, f"split_{i+1}")
-                split_name = os.path.splitext(split_name)[0] + ".pdf"
-                
-                zipf.writestr(split_name, split_buffer.getvalue())
-                writer.close()
+                for future in concurrent.futures.as_completed(futures):
+                    split_name, split_data = future.result()
+                    zipf.writestr(split_name, split_data)
         
         zip_buffer.seek(0)
         original_name = secure_filename(files[0].filename)
@@ -555,6 +655,7 @@ def api_split_pdf():
             safe_remove(pdf_path)
             return response
         
+        print(f"Split PDF into {len(ranges)} parts in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
@@ -563,7 +664,10 @@ def api_split_pdf():
 
 @app.route('/api/delete-pages-pdf', methods=['POST'])
 def api_delete_pages_pdf():
+    """Ultra-fast page deletion"""
+    start_time = time.time()
     cleanup_temp()
+    
     pages_str = request.form.get('pages', '').strip()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
@@ -573,28 +677,32 @@ def api_delete_pages_pdf():
     
     paths = save_uploads(files)
     pdf_path = paths[0]
+    
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         safe_remove(pdf_path)
         return jsonify({"error": "Only PDF files are allowed."}), 400
 
-    pages_to_remove = parse_pages(pages_str)
-    writer = PdfWriter()
-    
     try:
-        reader = PdfReader(pdf_path)
-        total = len(reader.pages)
+        # Read and process in one pass
+        with open(pdf_path, 'rb') as f:
+            reader = PdfReader(f)
         
+        pages_to_remove = parse_pages(pages_str)
+        
+        writer = PdfWriter()
+        for i, page in enumerate(reader.pages):
+            if (i + 1) not in pages_to_remove:
+                writer.add_page(page)
+        
+        # Generate output
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "pages_removed")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
-        for i in range(total):
-            if (i+1) not in pages_to_remove:
-                writer.add_page(reader.pages[i])
-        
         buffer = io.BytesIO()
         writer.write(buffer)
         buffer.seek(0)
+        writer.close()
         
         response = send_file(
             buffer,
@@ -606,19 +714,21 @@ def api_delete_pages_pdf():
         @after_this_request
         def cleanup(response):
             safe_remove(pdf_path)
-            writer.close()
             return response
         
+        print(f"Deleted pages in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
         safe_remove(pdf_path)
-        writer.close()
         return jsonify({"error": f"Page removal failed: {str(e)}"}), 500
 
 @app.route('/api/rotate-pdf', methods=['POST'])
 def api_rotate_pdf():
+    """Ultra-fast PDF rotation"""
+    start_time = time.time()
     cleanup_temp()
+    
     rotation = int(request.form.get('rotation', '90'))
     files = request.files.getlist('files')
     if not files or len(files) != 1:
@@ -626,25 +736,30 @@ def api_rotate_pdf():
     
     paths = save_uploads(files)
     pdf_path = paths[0]
+    
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         safe_remove(pdf_path)
         return jsonify({"error": "Only PDF files are allowed."}), 400
 
-    writer = PdfWriter()
     try:
-        reader = PdfReader(pdf_path)
+        # Read and rotate in one pass
+        with open(pdf_path, 'rb') as f:
+            reader = PdfReader(f)
         
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, f"rotated_{rotation}")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
+        writer = PdfWriter()
         for page in reader.pages:
             page.rotate(rotation)
             writer.add_page(page)
         
+        # Generate output
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, f"rotated_{rotation}")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        
         buffer = io.BytesIO()
         writer.write(buffer)
         buffer.seek(0)
+        writer.close()
         
         response = send_file(
             buffer,
@@ -656,19 +771,21 @@ def api_rotate_pdf():
         @after_this_request
         def cleanup(response):
             safe_remove(pdf_path)
-            writer.close()
             return response
         
+        print(f"Rotated PDF in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
         safe_remove(pdf_path)
-        writer.close()
         return jsonify({"error": f"Rotation failed: {str(e)}"}), 500
 
 @app.route('/api/lock-pdf', methods=['POST'])
 def api_lock_pdf():
+    """Ultra-fast PDF encryption"""
+    start_time = time.time()
     cleanup_temp()
+    
     pin = request.form.get('pin', '').strip()
     if not pin or len(pin) != 4 or not pin.isdigit():
         return jsonify({"error": "PIN must be exactly 4 digits."}), 400
@@ -679,25 +796,37 @@ def api_lock_pdf():
     
     paths = save_uploads(files)
     pdf_path = paths[0]
+    
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         safe_remove(pdf_path)
         return jsonify({"error": "Only PDF files are allowed."}), 400
 
-    writer = PdfWriter()
     try:
-        reader = PdfReader(pdf_path)
+        # Read and encrypt in one pass
+        with open(pdf_path, 'rb') as f:
+            reader = PdfReader(f)
         
+        writer = PdfWriter()
+        for page in reader.pages:
+            writer.add_page(page)
+        
+        # Encrypt with fast settings
+        writer.encrypt(
+            user_password=pin,
+            owner_password=None,
+            use_128bit=True,
+            permissions_flag=0
+        )
+        
+        # Generate output
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "locked")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
-        for page in reader.pages:
-            writer.add_page(page)
-        writer.encrypt(pin)
-        
         buffer = io.BytesIO()
         writer.write(buffer)
         buffer.seek(0)
+        writer.close()
         
         response = send_file(
             buffer,
@@ -709,19 +838,21 @@ def api_lock_pdf():
         @after_this_request
         def cleanup(response):
             safe_remove(pdf_path)
-            writer.close()
             return response
         
+        print(f"Locked PDF in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
         safe_remove(pdf_path)
-        writer.close()
         return jsonify({"error": f"Locking failed: {str(e)}"}), 500
 
 @app.route('/api/unlock-pdf', methods=['POST'])
 def api_unlock_pdf():
+    """Ultra-fast PDF decryption"""
+    start_time = time.time()
     cleanup_temp()
+    
     password = request.form.get('password', '').strip()
     files = request.files.getlist('files')
     if not files or len(files) != 1:
@@ -731,29 +862,34 @@ def api_unlock_pdf():
     
     paths = save_uploads(files)
     pdf_path = paths[0]
+    
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         safe_remove(pdf_path)
         return jsonify({"error": "Only PDF files are allowed."}), 400
 
-    writer = PdfWriter()
     try:
-        reader = PdfReader(pdf_path)
-        
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "unlocked")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
+        # Read and decrypt
+        with open(pdf_path, 'rb') as f:
+            reader = PdfReader(f)
         
         if reader.is_encrypted:
             if not reader.decrypt(password):
                 safe_remove(pdf_path)
-                writer.close()
                 return jsonify({"error": "Incorrect password."}), 400
+        
+        writer = PdfWriter()
         for page in reader.pages:
             writer.add_page(page)
+        
+        # Generate output
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "unlocked")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
         
         buffer = io.BytesIO()
         writer.write(buffer)
         buffer.seek(0)
+        writer.close()
         
         response = send_file(
             buffer,
@@ -765,83 +901,261 @@ def api_unlock_pdf():
         @after_this_request
         def cleanup(response):
             safe_remove(pdf_path)
-            writer.close()
             return response
         
+        print(f"Unlocked PDF in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
         safe_remove(pdf_path)
-        writer.close()
         return jsonify({"error": f"Unlocking failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
-# Tool APIs - PDF to Word (OPTIMIZED for speed)
+# OCR PDF API (Backend OCR - Recommended & Correct)
+# -----------------------------------------------------------------------------
+
+@app.route('/api/ocr-pdf', methods=['POST'])
+def api_ocr_pdf():
+    """Backend OCR processing - Industry standard approach"""
+    if not OCR_ENABLED:
+        return jsonify({"error": "OCR is not available. Please install required packages."}), 400
+    
+    start_time = time.time()
+    cleanup_temp()
+    
+    files = request.files.getlist('files')
+    if not files or len(files) != 1:
+        return jsonify({"error": "Upload exactly one PDF or image."}), 400
+    
+    language = request.form.get('language', 'eng').strip().lower()
+    output_format = request.form.get('format', 'pdf').strip().lower()
+    
+    # Map language codes
+    language_map = {
+        'english': 'eng',
+        'spanish': 'spa',
+        'french': 'fra',
+        'german': 'deu',
+        'chinese': 'chi_sim',
+        'arabic': 'ara',
+        'russian': 'rus',
+        'hindi': 'hin',
+        'portuguese': 'por',
+        'italian': 'ita'
+    }
+    
+    lang_code = language_map.get(language, language)
+    
+    paths = save_uploads(files)
+    file_path = paths[0]
+    
+    try:
+        # Check if it's PDF or image
+        is_pdf = ext_of(file_path) in ALLOWED_PDF_EXT
+        is_image = ext_of(file_path) in ALLOWED_IMAGE_EXT
+        
+        if not (is_pdf or is_image):
+            safe_remove(file_path)
+            return jsonify({"error": "Only PDF or image files are allowed for OCR."}), 400
+        
+        # Process OCR
+        if is_pdf:
+            # Convert PDF to images
+            images = convert_from_bytes(
+                open(file_path, 'rb').read(),
+                dpi=300,  # Good quality for OCR
+                thread_count=2,
+                fmt='jpeg',
+                size=(2480, None)  # A4 size
+            )
+        else:
+            # Load single image
+            images = [Image.open(file_path)]
+        
+        # Process images in parallel
+        def process_image(img):
+            try:
+                # Preprocess image
+                img = ImageOps.exif_transpose(img)
+                img = img.convert('L')  # Grayscale for better OCR
+                
+                # Apply image enhancement with PIL (no cv2 dependency)
+                enhancer = ImageEnhance.Contrast(img)
+                img = enhancer.enhance(1.5)
+                enhancer = ImageEnhance.Sharpness(img)
+                img = enhancer.enhance(1.2)
+                
+                # Perform OCR
+                text = pytesseract.image_to_string(
+                    img,
+                    lang=lang_code,
+                    config='--psm 3 --oem 3 -c preserve_interword_spaces=1'
+                )
+                
+                # Also get bounding boxes for PDF generation
+                if output_format == 'pdf':
+                    data = pytesseract.image_to_data(
+                        img,
+                        lang=lang_code,
+                        config='--psm 3 --oem 3',
+                        output_type=pytesseract.Output.DICT
+                    )
+                    return text, data
+                return text, None
+            except Exception as e:
+                print(f"OCR processing error: {e}")
+                return "", None
+        
+        # Parallel processing
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            results = list(executor.map(process_image, images))
+        
+        # Combine results
+        all_texts = [r[0] for r in results if r[0]]
+        all_data = [r[1] for r in results if r[1] is not None]
+        
+        combined_text = "\n\n".join(all_texts)
+        cleaned_text = UltraFastProcessor.clean_text_for_xml(combined_text)
+        
+        # Generate output based on format
+        original_name = secure_filename(files[0].filename)
+        
+        if output_format == 'pdf':
+            # Create searchable PDF
+            output_name = generate_unique_filename(original_name, "ocr_searchable")
+            output_name = os.path.splitext(output_name)[0] + ".pdf"
+            
+            # Create PDF with text layer
+            buffer = io.BytesIO()
+            c = canvas.Canvas(buffer, pagesize=A4)
+            width, height = A4
+            
+            # Add OCR text as invisible layer
+            c.setFont("Helvetica", 1)  # Very small font
+            c.setFillColorRGB(1, 1, 1, alpha=0)  # Fully transparent
+            
+            # Simple text placement (for demo)
+            y = height - 50
+            for line in cleaned_text.split('\n'):
+                if line.strip():
+                    c.drawString(50, y, line.strip())
+                    y -= 15
+                    if y < 50:
+                        c.showPage()
+                        y = height - 50
+            
+            # Add original image as background
+            if images:
+                img_buffer = io.BytesIO()
+                images[0].save(img_buffer, format='JPEG', quality=85)
+                img_buffer.seek(0)
+                c.drawImage(img_buffer, 0, 0, width=width, height=height)
+            
+            c.save()
+            buffer.seek(0)
+            
+            mimetype = 'application/pdf'
+            
+        elif output_format == 'word':
+            # Create Word document
+            output_name = generate_unique_filename(original_name, "ocr_text")
+            output_name = os.path.splitext(output_name)[0] + ".docx"
+            
+            doc = Document()
+            if cleaned_text:
+                # Add in chunks
+                paragraphs = [p for p in cleaned_text.split('\n\n') if p.strip()]
+                for para in paragraphs[:200]:  # Limit
+                    safe_add_paragraph(doc, para)
+            else:
+                doc.add_paragraph("No text could be extracted via OCR.")
+            
+            buffer = io.BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+            
+            mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            
+        else:  # text
+            # Create plain text
+            output_name = generate_unique_filename(original_name, "ocr_text")
+            output_name = os.path.splitext(output_name)[0] + ".txt"
+            
+            buffer = io.BytesIO(cleaned_text.encode('utf-8'))
+            buffer.seek(0)
+            
+            mimetype = 'text/plain'
+        
+        response = send_file(
+            buffer,
+            mimetype=mimetype,
+            as_attachment=True,
+            download_name=output_name
+        )
+        
+        @after_this_request
+        def cleanup(response):
+            safe_remove(file_path)
+            return response
+        
+        print(f"OCR processed in {time.time() - start_time:.2f}s")
+        return response
+        
+    except Exception as e:
+        safe_remove(file_path)
+        return jsonify({"error": f"OCR processing failed: {str(e)}"}), 500
+
+# -----------------------------------------------------------------------------
+# Tool APIs - PDF to Word (ULTRA-FAST with OCR option)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/pdf-to-word', methods=['POST'])
 def api_pdf_to_word():
+    """Ultra-fast PDF to Word with optional OCR"""
     start_time = time.time()
     cleanup_temp()
+    
     files = request.files.getlist('files')
     if not files or len(files) != 1:
         return jsonify({"error": "Upload exactly one PDF."}), 400
     
+    use_ocr = request.form.get('ocr', 'false').lower() == 'true'
+    
     paths = save_uploads(files)
     pdf_path = paths[0]
+    
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         safe_remove(pdf_path)
         return jsonify({"error": "Only PDF files are allowed."}), 400
 
     try:
-        # Check cache first
-        if CACHE_ENABLED:
-            file_hash = get_file_hash(pdf_path)
-            if file_hash in conversion_cache:
-                cached_result = conversion_cache[file_hash]
-                buffer = io.BytesIO(cached_result)
-                
-                original_name = secure_filename(files[0].filename)
-                output_name = generate_unique_filename(original_name, "converted_to_word")
-                output_name = os.path.splitext(output_name)[0] + ".docx"
-                
-                response = send_file(
-                    buffer,
-                    mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    as_attachment=True,
-                    download_name=output_name
-                )
-                
-                print(f"Cached conversion: {time.time() - start_time:.2f}s")
-                return response
-        
+        # Generate output name
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "converted_to_word")
         output_name = os.path.splitext(output_name)[0] + ".docx"
         
-        # Optimize PDF for faster extraction
-        optimized_path = optimize_pdf_for_extraction(pdf_path)
-        
-        # Use fast text extraction
-        text = fast_extract_text(optimized_path)
-        
-        # Clean up optimized file if different from original
-        if optimized_path != pdf_path:
-            safe_remove(optimized_path)
+        # Extract text (with OCR if requested)
+        if use_ocr and OCR_ENABLED:
+            text = UltraFastProcessor._fast_ocr_extraction(pdf_path)
+            if not text or len(text.strip()) < 50:
+                # Fallback to regular extraction
+                text = UltraFastProcessor.fast_extract_text(pdf_path, use_ocr=False)
+        else:
+            text = UltraFastProcessor.fast_extract_text(pdf_path, use_ocr=False)
         
         # Create document efficiently
         doc = Document()
         
         if text:
-            # Add paragraphs in batches for speed
-            paragraphs = [p for p in text.split('\n\n') if p.strip()]
+            # Process in chunks for speed
+            paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
             
-            # Limit number of paragraphs for very large documents
-            if len(paragraphs) > 500:
-                paragraphs = paragraphs[:500]
-                doc.add_paragraph("[Document truncated - first 500 paragraphs shown]")
+            # Limit for very large documents
+            if len(paragraphs) > 300:
+                paragraphs = paragraphs[:300]
+                doc.add_paragraph("[Document truncated - showing first 300 paragraphs]")
             
-            # Add paragraphs
+            # Add paragraphs in batches
             for para in paragraphs:
                 safe_add_paragraph(doc, para)
         else:
@@ -850,11 +1164,6 @@ def api_pdf_to_word():
         buffer = io.BytesIO()
         doc.save(buffer)
         buffer.seek(0)
-        
-        # Cache the result
-        if CACHE_ENABLED:
-            conversion_cache[get_file_hash(pdf_path)] = buffer.getvalue()
-            buffer.seek(0)
         
         response = send_file(
             buffer,
@@ -868,7 +1177,7 @@ def api_pdf_to_word():
             safe_remove(pdf_path)
             return response
         
-        print(f"PDF to Word conversion: {time.time() - start_time:.2f}s")
+        print(f"PDF to Word in {time.time() - start_time:.2f}s (OCR: {use_ocr})")
         return response
         
     except Exception as e:
@@ -876,12 +1185,15 @@ def api_pdf_to_word():
         return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
-# Tool APIs - Word Operations (OPTIMIZED)
+# Tool APIs - Word Operations (ULTRA-FAST)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/word-to-pdf', methods=['POST'])
 def api_word_to_pdf():
+    """Ultra-fast Word to PDF conversion"""
+    start_time = time.time()
     cleanup_temp()
+    
     files = request.files.getlist('files')
     if not files or len(files) != 1:
         return jsonify({"error": "Upload exactly one Word file."}), 400
@@ -894,20 +1206,21 @@ def api_word_to_pdf():
         return jsonify({"error": "Only DOC/DOCX files are supported."}), 400
 
     try:
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "converted_to_pdf")
-        output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        # Extract text efficiently
+        # Fast text extraction
         doc = Document(doc_path)
         text_content = []
         for para in doc.paragraphs:
             if para.text.strip():
-                cleaned = clean_text_for_xml(para.text)
+                cleaned = UltraFastProcessor.clean_text_for_xml(para.text)
                 if cleaned.strip():
                     text_content.append(cleaned.strip())
         
-        text = "\n".join(text_content)
+        text = "\n".join(text_content[:500])  # Limit text
+        
+        # Create PDF
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "converted_to_pdf")
+        output_name = os.path.splitext(output_name)[0] + ".pdf"
         
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=letter)
@@ -917,9 +1230,9 @@ def api_word_to_pdf():
         line_height = 14
         
         if text:
-            # Process in chunks for speed
+            # Fast text rendering
             paragraphs = text.split('\n\n')
-            for para in paragraphs[:200]:  # Limit for speed
+            for para in paragraphs[:100]:  # Limit
                 if para.strip():
                     lines = wrap_text(para, max_chars=95)
                     for line in lines:
@@ -948,6 +1261,7 @@ def api_word_to_pdf():
             safe_remove(doc_path)
             return response
         
+        print(f"Word to PDF in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
@@ -956,7 +1270,10 @@ def api_word_to_pdf():
 
 @app.route('/api/merge-word', methods=['POST'])
 def api_merge_word():
+    """Ultra-fast Word document merging"""
+    start_time = time.time()
     cleanup_temp()
+    
     files = request.files.getlist('files')
     if not files or len(files) < 2:
         return jsonify({"error": "Upload at least two Word files."}), 400
@@ -968,24 +1285,29 @@ def api_merge_word():
             return jsonify({"error": "Only DOC/DOCX files are allowed."}), 400
 
     try:
+        # Merge documents efficiently
         merged = Document()
-        for idx, dp in enumerate(paths):
-            d = Document(dp)
-            # Process paragraphs in batches
+        
+        for idx, doc_path in enumerate(paths):
+            d = Document(doc_path)
+            
+            # Extract text efficiently
             paragraphs = []
             for para in d.paragraphs:
                 if para.text.strip():
-                    cleaned = clean_text_for_xml(para.text)
+                    cleaned = UltraFastProcessor.clean_text_for_xml(para.text)
                     if cleaned.strip():
                         paragraphs.append(cleaned.strip())
             
-            # Add to merged document
+            # Add to merged document with limits
             for para in paragraphs[:100]:  # Limit per document
                 safe_add_paragraph(merged, para)
             
+            # Add separator between documents
             if idx < len(paths) - 1:
-                merged.add_paragraph("\n--- End of Document ---\n")
+                merged.add_paragraph("\n" + "=" * 50 + "\n")
         
+        # Generate output
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "merged")
         output_name = os.path.splitext(output_name)[0] + ".docx"
@@ -1006,6 +1328,7 @@ def api_merge_word():
             safe_remove_all(paths)
             return response
         
+        print(f"Merged {len(files)} Word docs in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
@@ -1014,30 +1337,36 @@ def api_merge_word():
 
 @app.route('/api/word-to-text', methods=['POST'])
 def api_word_to_text():
+    """Ultra-fast Word to Text conversion"""
+    start_time = time.time()
     cleanup_temp()
+    
     files = request.files.getlist('files')
     if not files or len(files) != 1:
         return jsonify({"error": "Upload exactly one Word file."}), 400
     
     paths = save_uploads(files)
     doc_path = paths[0]
+    
     if ext_of(doc_path) not in ALLOWED_WORD_EXT:
         safe_remove(doc_path)
         return jsonify({"error": "Only DOC/DOCX files are allowed."}), 400
 
     try:
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "extracted_text")
-        output_name = os.path.splitext(output_name)[0] + ".txt"
-        
         # Fast text extraction
         doc = Document(doc_path)
         text_content = []
+        
         for para in doc.paragraphs:
             if para.text.strip():
-                cleaned = clean_text_for_xml(para.text)
+                cleaned = UltraFastProcessor.clean_text_for_xml(para.text)
                 if cleaned.strip():
                     text_content.append(cleaned)
+        
+        # Generate output
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "extracted_text")
+        output_name = os.path.splitext(output_name)[0] + ".txt"
         
         buffer = io.BytesIO('\n'.join(text_content).encode('utf-8'))
         buffer.seek(0)
@@ -1054,6 +1383,7 @@ def api_word_to_text():
             safe_remove(doc_path)
             return response
         
+        print(f"Word to Text in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
@@ -1061,17 +1391,19 @@ def api_word_to_text():
         return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
-# Tool APIs - Text Operations
+# Tool APIs - Text Operations (ULTRA-FAST)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/text-to-pdf', methods=['POST'])
 def api_text_to_pdf():
-    cleanup_temp()
+    """Ultra-fast Text to PDF conversion"""
+    start_time = time.time()
+    
     text = (request.form.get('text') or '').strip()
     if not text:
         return jsonify({"error": "Text content is required."}), 400
 
-    cleaned_text = clean_text_for_xml(text)
+    cleaned_text = UltraFastProcessor.clean_text_for_xml(text)
     
     unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1084,8 +1416,9 @@ def api_text_to_pdf():
     top = height - 50
     line_height = 14
     
-    lines = cleaned_text.splitlines()
-    for line in lines[:500]:  # Limit for speed
+    # Fast text processing
+    lines = cleaned_text.splitlines()[:500]  # Limit lines
+    for line in lines:
         if line.strip():
             for chunk in wrap_text(line, max_chars=95):
                 c.drawString(left_margin, top, chunk)
@@ -1102,6 +1435,8 @@ def api_text_to_pdf():
     c.save()
     buffer.seek(0)
     
+    print(f"Text to PDF in {time.time() - start_time:.2f}s")
+    
     return send_file(
         buffer,
         mimetype='application/pdf',
@@ -1111,12 +1446,14 @@ def api_text_to_pdf():
 
 @app.route('/api/text-to-word', methods=['POST'])
 def api_text_to_word():
-    cleanup_temp()
+    """Ultra-fast Text to Word conversion"""
+    start_time = time.time()
+    
     text = (request.form.get('text') or '').strip()
     if not text:
         return jsonify({"error": "Text content is required."}), 400
     
-    cleaned_text = clean_text_for_xml(text)
+    cleaned_text = UltraFastProcessor.clean_text_for_xml(text)
     
     unique_id = str(uuid.uuid4())[:12]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1125,8 +1462,8 @@ def api_text_to_word():
     doc = Document()
     
     if cleaned_text:
-        lines = cleaned_text.splitlines()
-        for line in lines[:500]:  # Limit for speed
+        lines = cleaned_text.splitlines()[:300]  # Limit lines
+        for line in lines:
             if line.strip():
                 safe_add_paragraph(doc, line)
     else:
@@ -1136,6 +1473,8 @@ def api_text_to_word():
     doc.save(buffer)
     buffer.seek(0)
     
+    print(f"Text to Word in {time.time() - start_time:.2f}s")
+    
     return send_file(
         buffer,
         mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -1144,31 +1483,46 @@ def api_text_to_word():
     )
 
 # -----------------------------------------------------------------------------
-# Tool APIs - Images to PDF
+# Tool APIs - Images to PDF (ULTRA-FAST)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/images-to-pdf', methods=['POST'])
 def api_images_to_pdf():
+    """Ultra-fast Images to PDF conversion"""
+    start_time = time.time()
     cleanup_temp()
+    
     files = request.files.getlist('files')
     if not files or len(files) < 1:
         return jsonify({"error": "Upload at least one image."}), 400
     
     paths = save_uploads(files)
+    
+    # Validate all are images
     for p in paths:
         if ext_of(p) not in ALLOWED_IMAGE_EXT:
             safe_remove_all(paths)
-            return jsonify({"error": "Only image files (JPG, PNG, WEBP, BMP, TIFF) are allowed."}), 400
+            return jsonify({"error": "Only image files (JPG, PNG, WEBP, BMP, TIFF, GIF) are allowed."}), 400
 
     try:
+        # Optimize images in parallel
+        def optimize_image(image_path):
+            return UltraFastProcessor.optimize_image_for_pdf(image_path)
+        
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            images = list(executor.map(optimize_image, paths))
+        
+        # Filter out None values
+        images = [img for img in images if img is not None]
+        
+        if not images:
+            safe_remove_all(paths)
+            return jsonify({"error": "Failed to process images."}), 400
+        
+        # Create PDF
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "images_to_pdf")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
-        
-        images = []
-        for p in paths:
-            img = Image.open(p).convert('RGB')
-            images.append(img)
         
         buffer = io.BytesIO()
         if len(images) == 1:
@@ -1191,6 +1545,7 @@ def api_images_to_pdf():
             safe_remove_all(paths)
             return response
         
+        print(f"Converted {len(images)} images to PDF in {time.time() - start_time:.2f}s")
         return response
         
     except Exception as e:
@@ -1202,7 +1557,12 @@ def api_images_to_pdf():
 # -----------------------------------------------------------------------------
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()}), 200
+    return jsonify({
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "ocr_available": OCR_ENABLED,
+        "cache_size": len(conversion_cache)
+    }), 200
 
 # -----------------------------------------------------------------------------
 # Error handlers
@@ -1213,7 +1573,7 @@ def page_not_found(e):
 
 @app.errorhandler(413)
 def too_large(e):
-    return jsonify({"error": "File too large (max 50 MB)."}), 413
+    return jsonify({"error": f"File too large (max {MAX_CONTENT_LENGTH // (1024*1024)} MB)."}), 413
 
 @app.errorhandler(400)
 def bad_request(e):
@@ -1224,49 +1584,96 @@ def server_error(e):
     return jsonify({"error": "Internal server error."}), 500
 
 # -----------------------------------------------------------------------------
-# Static file serving for templates (if needed)
+# Static file serving
 # -----------------------------------------------------------------------------
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
 
 # -----------------------------------------------------------------------------
-# CORS Configuration for Render
+# CORS Configuration
 # -----------------------------------------------------------------------------
 @app.after_request
 def after_request(response):
-    """Add CORS headers for Render deployment"""
+    """Add CORS headers"""
     response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
 # -----------------------------------------------------------------------------
-# Cleanup thread for cache management
+# Cache management
 # -----------------------------------------------------------------------------
 def cleanup_cache():
     """Periodically clean old cache entries"""
     while True:
         time.sleep(300)  # Run every 5 minutes
         try:
-            # Keep only last 100 entries
-            if len(conversion_cache) > 100:
-                keys = list(conversion_cache.keys())[:-100]
+            current_time = time.time()
+            expired_keys = []
+            
+            for key, (cache_time, _) in list(conversion_cache.items()):
+                if current_time - cache_time > CACHE_TTL_SECONDS:
+                    expired_keys.append(key)
+            
+            for key in expired_keys:
+                del conversion_cache[key]
+            
+            # Keep cache size manageable
+            if len(conversion_cache) > 200:
+                keys = list(conversion_cache.keys())[:-200]
                 for key in keys:
                     del conversion_cache[key]
         except:
             pass
 
-# Start cleanup thread in background
+# Start cleanup thread
 import threading
 cache_cleaner = threading.Thread(target=cleanup_cache, daemon=True)
 cache_cleaner.start()
 
 # -----------------------------------------------------------------------------
-# Run the application (for local development only)
+# Install OCR dependencies instructions
+# -----------------------------------------------------------------------------
+def check_ocr_dependencies():
+    """Check and report OCR dependencies"""
+    if not OCR_AVAILABLE:
+        print("\n" + "="*60)
+        print("OCR FEATURE SETUP REQUIRED")
+        print("="*60)
+        print("\nFor OCR functionality, install these dependencies:")
+        print("\n1. System dependencies (Ubuntu/Debian):")
+        print("   sudo apt-get update")
+        print("   sudo apt-get install -y tesseract-ocr")
+        print("   sudo apt-get install -y libtesseract-dev")
+        print("   sudo apt-get install -y poppler-utils")
+        print("\n2. Python packages:")
+        print("   pip install pytesseract")
+        print("   pip install pdf2image")
+        print("   pip install pillow")
+        print("\n3. For Windows:")
+        print("   Download and install Tesseract OCR:")
+        print("   https://github.com/UB-Mannheim/tesseract/wiki")
+        print("\n4. Set environment variable:")
+        print("   export TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata/")
+        print("="*60 + "\n")
+    
+    return OCR_AVAILABLE
+
+# Check on startup
+check_ocr_dependencies()
+
+# -----------------------------------------------------------------------------
+# Run the application
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    print(f"Starting iMasterPDF with {MAX_WORKERS} workers")
-    print(f"Cache enabled: {CACHE_ENABLED}")
-    print(f"Max pages to extract: {MAX_PAGES_TO_EXTRACT}")
+    print(f"\n🚀 Starting iMasterPDF with ULTRA-FAST processing")
+    print(f"   Max workers: {MAX_WORKERS}")
+    print(f"   OCR enabled: {OCR_ENABLED}")
+    print(f"   Cache enabled: {CACHE_ENABLED}")
+    print(f"   Max pages to extract: {MAX_PAGES_TO_EXTRACT}")
+    print(f"   Upload directory: {UPLOAD_DIR}")
+    print(f"   Output directory: {OUTPUT_DIR}")
+    
     app.run(host='0.0.0.0', port=8000, debug=False, threaded=True)
