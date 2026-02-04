@@ -99,7 +99,7 @@ class UltraFastProcessor:
     
     @staticmethod
     def fast_extract_text(pdf_path, use_ocr=False):
-        """Ultra-fast text extraction with intelligent fallback"""
+        """Ultra-fast text extraction with intelligent fallback and OCR support"""
         start_time = time.time()
         
         # Check cache first
@@ -110,50 +110,50 @@ class UltraFastProcessor:
                 if time.time() - cache_time < CACHE_TTL_SECONDS:
                     return text
         
-        # Determine extraction strategy based on file size
+        # Determine extraction strategy
         file_size = os.path.getsize(pdf_path)
         
-        # Strategy 1: Small files - PyPDF2
-        if file_size < 5 * 1024 * 1024:  # < 5MB
+        # Strategy 1: Try regular extraction first (for text-based PDFs)
+        try:
+            with open(pdf_path, 'rb') as file:
+                reader = PdfReader(file)
+                text = []
+                for i, page in enumerate(reader.pages[:MAX_PAGES_TO_EXTRACT]):
+                    page_text = page.extract_text()
+                    if page_text and len(page_text.strip()) > 50:  # Check if meaningful text
+                        text.append(page_text)
+                
+                if text and len("".join(text).strip()) > 100:  # If enough text found
+                    result = "\n".join(text)
+                    if CACHE_ENABLED:
+                        conversion_cache[file_hash] = (time.time(), result)
+                    return result
+        except:
+            pass
+        
+        # Strategy 2: If no/insufficient text or OCR requested, use OCR
+        if OCR_ENABLED and (use_ocr or file_size < 50 * 1024 * 1024):  # OCR for < 50MB files
             try:
-                with open(pdf_path, 'rb') as file:
-                    reader = PdfReader(file)
-                    text = []
-                    for i, page in enumerate(reader.pages[:MAX_PAGES_TO_EXTRACT]):
-                        page_text = page.extract_text()
-                        if page_text:
-                            text.append(page_text)
-                    if text:
-                        result = "\n".join(text)
+                # Check if it's a scanned PDF by trying to extract text again
+                has_text = False
+                try:
+                    small_text = extract_text(pdf_path, maxpages=2, caching=True) or ""
+                    if len(small_text.strip()) > 100:
+                        has_text = True
+                except:
+                    pass
+                
+                # If little text and OCR is available/requested
+                if not has_text or use_ocr:
+                    result = UltraFastProcessor._fast_ocr_extraction(pdf_path)
+                    if result and len(result.strip()) > 50:
                         if CACHE_ENABLED:
                             conversion_cache[file_hash] = (time.time(), result)
                         return result
-            except:
-                pass
-        
-        # Strategy 2: Parallel extraction for medium files
-        if file_size < 20 * 1024 * 1024:  # < 20MB
-            try:
-                result = UltraFastProcessor._parallel_pdf_extraction(pdf_path)
-                if result and len(result.strip()) > 50:
-                    if CACHE_ENABLED:
-                        conversion_cache[file_hash] = (time.time(), result)
-                    return result
-            except:
-                pass
-        
-        # Strategy 3: OCR if enabled and requested
-        if use_ocr and OCR_ENABLED:
-            try:
-                result = UltraFastProcessor._fast_ocr_extraction(pdf_path)
-                if result:
-                    if CACHE_ENABLED:
-                        conversion_cache[file_hash] = (time.time(), result)
-                    return result
             except Exception as e:
-                print(f"OCR extraction failed: {e}")
+                print(f"OCR extraction attempt failed: {e}")
         
-        # Strategy 4: Optimized pdfminer as fallback
+        # Strategy 3: Optimized pdfminer as final fallback
         try:
             result = extract_text(
                 pdf_path,
@@ -201,20 +201,38 @@ class UltraFastProcessor:
             return ""
     
     @staticmethod
-    def _fast_ocr_extraction(pdf_path, languages=['eng']):
-        """Fast OCR extraction using parallel processing"""
+    def _fast_ocr_extraction(pdf_path, languages=['eng'], page_limit=50):
+        """Fast OCR extraction with parallel processing"""
         if not OCR_ENABLED:
             return ""
         
         try:
-            # Convert PDF to images in memory
-            images = convert_from_bytes(
-                open(pdf_path, 'rb').read(),
-                dpi=200,  # Lower DPI for speed
-                thread_count=2,
-                fmt='jpeg',
-                size=(1650, None)  # Limit size
-            )[:MAX_PAGES_TO_EXTRACT]  # Limit pages
+            # Convert PDF to images with error handling
+            try:
+                images = convert_from_bytes(
+                    open(pdf_path, 'rb').read(),
+                    dpi=200,  # Balance speed and quality
+                    thread_count=2,
+                    fmt='jpeg',
+                    size=(1650, None),
+                    first_page=1,
+                    last_page=page_limit  # Limit for performance
+                )
+            except Exception as e:
+                print(f"PDF to image conversion failed: {e}")
+                # Try alternative method
+                images = convert_from_path(
+                    pdf_path,
+                    dpi=200,
+                    thread_count=1,
+                    fmt='jpeg',
+                    size=(1650, None),
+                    first_page=1,
+                    last_page=page_limit
+                )
+            
+            if not images:
+                return ""
             
             # Process images in parallel
             def ocr_image(img):
@@ -223,23 +241,59 @@ class UltraFastProcessor:
                     img = ImageOps.exif_transpose(img)
                     img = img.convert('L')  # Grayscale
                     
+                    # Apply enhancements
+                    enhancer = ImageEnhance.Contrast(img)
+                    img = enhancer.enhance(1.3)
+                    img = img.filter(ImageFilter.SHARPEN)
+                    
                     # Use pytesseract with optimized settings
                     return pytesseract.image_to_string(
                         img,
                         lang='+'.join(languages),
                         config='--psm 1 --oem 3 -c preserve_interword_spaces=1'
                     )
-                except:
+                except Exception as e:
+                    print(f"OCR on single image failed: {e}")
                     return ""
             
-            # Parallel OCR processing
-            with ThreadPoolExecutor(max_workers=2) as executor:
-                texts = list(executor.map(ocr_image, images))
+            # Parallel OCR processing with error handling
+            with ThreadPoolExecutor(max_workers=min(4, len(images))) as executor:
+                futures = [executor.submit(ocr_image, img) for img in images]
+                texts = []
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        text = future.result(timeout=30)
+                        if text and text.strip():
+                            texts.append(text.strip())
+                    except:
+                        pass
             
-            return "\n\n".join(filter(None, texts))
+            return "\n\n".join(texts) if texts else ""
         except Exception as e:
-            print(f"OCR error: {e}")
+            print(f"OCR extraction error: {e}")
             return ""
+    
+    @staticmethod
+    def is_image_pdf(pdf_path):
+        """Detect if PDF is image-based (scanned)"""
+        try:
+            # Try to extract text from first few pages
+            text = extract_text(pdf_path, maxpages=3, caching=True) or ""
+            
+            # Check if we got meaningful text
+            if len(text.strip()) < 100:
+                return True
+            
+            # Count alphabetic characters vs total characters
+            alpha_chars = sum(1 for c in text if c.isalpha())
+            total_chars = len(text)
+            
+            if total_chars > 0 and alpha_chars / total_chars < 0.3:  # Less than 30% alphabetic
+                return True
+            
+            return False
+        except:
+            return True  # Assume image PDF if extraction fails
     
     @staticmethod
     def optimize_image_for_pdf(image_path, max_size=(2480, 3508)):  # A4 at 300 DPI
@@ -1105,12 +1159,12 @@ def api_ocr_pdf():
         return jsonify({"error": f"OCR processing failed: {str(e)}"}), 500
 
 # -----------------------------------------------------------------------------
-# Tool APIs - PDF to Word (ULTRA-FAST with OCR option)
+# Tool APIs - PDF to Word (ULTRA-FAST with automatic OCR detection)
 # -----------------------------------------------------------------------------
 
 @app.route('/api/pdf-to-word', methods=['POST'])
 def api_pdf_to_word():
-    """Ultra-fast PDF to Word with optional OCR"""
+    """Ultra-fast PDF to Word with automatic OCR detection"""
     start_time = time.time()
     cleanup_temp()
     
@@ -1118,7 +1172,8 @@ def api_pdf_to_word():
     if not files or len(files) != 1:
         return jsonify({"error": "Upload exactly one PDF."}), 400
     
-    use_ocr = request.form.get('ocr', 'false').lower() == 'true'
+    # Auto-detect if OCR is needed
+    force_ocr = request.form.get('force_ocr', 'auto').lower()
     
     paths = save_uploads(files)
     pdf_path = paths[0]
@@ -1128,19 +1183,21 @@ def api_pdf_to_word():
         return jsonify({"error": "Only PDF files are allowed."}), 400
 
     try:
+        # Auto-detect if OCR is needed
+        use_ocr = False
+        if force_ocr == 'true':
+            use_ocr = True
+        elif force_ocr == 'auto' and OCR_ENABLED:
+            # Check if it's an image PDF
+            use_ocr = UltraFastProcessor.is_image_pdf(pdf_path)
+        
+        # Extract text (with OCR if needed)
+        text = UltraFastProcessor.fast_extract_text(pdf_path, use_ocr=use_ocr)
+        
         # Generate output name
         original_name = secure_filename(files[0].filename)
         output_name = generate_unique_filename(original_name, "converted_to_word")
         output_name = os.path.splitext(output_name)[0] + ".docx"
-        
-        # Extract text (with OCR if requested)
-        if use_ocr and OCR_ENABLED:
-            text = UltraFastProcessor._fast_ocr_extraction(pdf_path)
-            if not text or len(text.strip()) < 50:
-                # Fallback to regular extraction
-                text = UltraFastProcessor.fast_extract_text(pdf_path, use_ocr=False)
-        else:
-            text = UltraFastProcessor.fast_extract_text(pdf_path, use_ocr=False)
         
         # Create document efficiently
         doc = Document()
