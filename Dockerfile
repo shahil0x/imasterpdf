@@ -3,11 +3,12 @@ FROM python:3.12-slim
 # Prevent Python from writing .pyc files & enable logs
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/5.3.0/tessdata
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
 
 WORKDIR /app
 
 # System dependencies for OCR, PDF, and image processing
+# Updated with compatible package names
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libjpeg-dev \
@@ -15,7 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfreetype6-dev \
     liblcms2-dev \
     libopenjp2-7-dev \
-    libtiff6 \
+    libtiff-dev \
     libharfbuzz-dev \
     libfribidi-dev \
     libxcb1 \
@@ -33,7 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr-por \
     tesseract-ocr-ita \
     poppler-utils \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
