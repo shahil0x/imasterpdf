@@ -33,13 +33,25 @@ from app.ocr import (
     is_image_based_document
 )
 
+# -----------------------------------------------------------------------------
+# Flask app configuration with correct template paths
+# ----------------------------------------------------------------------------
+# Get the base directory (where Dockerfile is)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Create Flask app with correct template and static paths
+app = Flask(__name__, 
+           template_folder=os.path.join(BASE_DIR, 'templates'),
+           static_folder=os.path.join(BASE_DIR, 'static'))
+
+print(f"✅ App initialized with:")
+print(f"   Base directory: {BASE_DIR}")
+print(f"   Templates: {os.path.join(BASE_DIR, 'templates')}")
+print(f"   Static files: {os.path.join(BASE_DIR, 'static')}")
 
 # -----------------------------------------------------------------------------
-# Flask app configuration
-# -----------------------------------------------------------------------------
-app = Flask(__name__)
-
 # Performance settings
+# -----------------------------------------------------------------------------
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB per file
 UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_uploads")
 OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "imasterpdf_outputs")
@@ -832,6 +844,35 @@ def api_pdf_to_word():
         output_name = generate_unique_filename(original_name, "converted_to_word")
         output_name = os.path.splitext(output_name)[0] + ".docx"
         
+        # ✅✅✅ ✅✅✅ ✅✅✅ ADD THIS OCR CHECK HERE ✅✅✅ ✅✅✅ ✅✅✅
+        # Check if PDF is scanned (needs OCR)
+        if is_scanned_pdf(pdf_path):
+            print("🔍 Scanned PDF detected. Using OCR...")
+            # Use OCR conversion instead of normal extraction
+            buffer = pdf_to_word_with_ocr(pdf_path)
+            
+            # Cache the result
+            if CACHE_ENABLED:
+                conversion_cache[get_file_hash(pdf_path)] = buffer.getvalue()
+                buffer.seek(0)
+            
+            response = send_file(
+                buffer,
+                mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                as_attachment=True,
+                download_name=output_name
+            )
+            
+            @after_this_request
+            def cleanup(response):
+                safe_remove(pdf_path)
+                return response
+            
+            print(f"PDF to Word (OCR): {time.time() - start_time:.2f}s")
+            return response
+        # ✅✅✅ ✅✅✅ ✅✅✅ END OF OCR CHECK ✅✅✅ ✅✅✅ ✅✅✅
+        
+        # If not scanned, continue with normal extraction...
         # Optimize PDF for faster extraction
         optimized_path = optimize_pdf_for_extraction(pdf_path)
         
@@ -858,7 +899,24 @@ def api_pdf_to_word():
             for para in paragraphs:
                 safe_add_paragraph(doc, para)
         else:
-            doc.add_paragraph("No text could be extracted from this PDF.")
+            # If no text found with normal extraction, try OCR as fallback
+            print("⚠️ No text extracted normally, trying OCR fallback...")
+            buffer = pdf_to_word_with_ocr(pdf_path)
+            
+            response = send_file(
+                buffer,
+                mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                as_attachment=True,
+                download_name=output_name
+            )
+            
+            @after_this_request
+            def cleanup(response):
+                safe_remove(pdf_path)
+                return response
+            
+            print(f"PDF to Word (OCR fallback): {time.time() - start_time:.2f}s")
+            return response
         
         buffer = io.BytesIO()
         doc.save(buffer)
@@ -887,7 +945,6 @@ def api_pdf_to_word():
     except Exception as e:
         safe_remove(pdf_path)
         return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
-
 # -----------------------------------------------------------------------------
 # Tool APIs - Word Operations (OPTIMIZED)
 # -----------------------------------------------------------------------------
@@ -911,16 +968,8 @@ def api_word_to_pdf():
         output_name = generate_unique_filename(original_name, "converted_to_pdf")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
-        # Extract text efficiently
-        doc = Document(doc_path)
-        text_content = []
-        for para in doc.paragraphs:
-            if para.text.strip():
-                cleaned = clean_text_for_xml(para.text)
-                if cleaned.strip():
-                    text_content.append(cleaned.strip())
-        
-        text = "\n".join(text_content)
+        # Extract text (with OCR if needed)
+        text = extract_text_from_file(doc_path)
         
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=letter)
@@ -930,9 +979,8 @@ def api_word_to_pdf():
         line_height = 14
         
         if text:
-            # Process in chunks for speed
             paragraphs = text.split('\n\n')
-            for para in paragraphs[:200]:  # Limit for speed
+            for para in paragraphs[:200]:
                 if para.strip():
                     lines = wrap_text(para, max_chars=95)
                     for line in lines:
@@ -967,64 +1015,6 @@ def api_word_to_pdf():
         safe_remove(doc_path)
         return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
 
-@app.route('/api/merge-word', methods=['POST'])
-def api_merge_word():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) < 2:
-        return jsonify({"error": "Upload at least two Word files."}), 400
-    
-    paths = save_uploads(files)
-    for p in paths:
-        if ext_of(p) not in ALLOWED_WORD_EXT:
-            safe_remove_all(paths)
-            return jsonify({"error": "Only DOC/DOCX files are allowed."}), 400
-
-    try:
-        merged = Document()
-        for idx, dp in enumerate(paths):
-            d = Document(dp)
-            # Process paragraphs in batches
-            paragraphs = []
-            for para in d.paragraphs:
-                if para.text.strip():
-                    cleaned = clean_text_for_xml(para.text)
-                    if cleaned.strip():
-                        paragraphs.append(cleaned.strip())
-            
-            # Add to merged document
-            for para in paragraphs[:100]:  # Limit per document
-                safe_add_paragraph(merged, para)
-            
-            if idx < len(paths) - 1:
-                merged.add_paragraph("\n--- End of Document ---\n")
-        
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "merged")
-        output_name = os.path.splitext(output_name)[0] + ".docx"
-        
-        buffer = io.BytesIO()
-        merged.save(buffer)
-        buffer.seek(0)
-        
-        response = send_file(
-            buffer,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            as_attachment=True,
-            download_name=output_name
-        )
-        
-        @after_this_request
-        def cleanup(response):
-            safe_remove_all(paths)
-            return response
-        
-        return response
-        
-    except Exception as e:
-        safe_remove_all(paths)
-        return jsonify({"error": f"Merging failed: {str(e)}"}), 500
-
 @app.route('/api/word-to-text', methods=['POST'])
 def api_word_to_text():
     cleanup_temp()
@@ -1043,16 +1033,22 @@ def api_word_to_text():
         output_name = generate_unique_filename(original_name, "extracted_text")
         output_name = os.path.splitext(output_name)[0] + ".txt"
         
-        # Fast text extraction
-        doc = Document(doc_path)
-        text_content = []
-        for para in doc.paragraphs:
-            if para.text.strip():
-                cleaned = clean_text_for_xml(para.text)
-                if cleaned.strip():
-                    text_content.append(cleaned)
+        # OCR CHECK for image-based Word documents
+        if is_image_based_document(doc_path):
+            print("🖼️ Image-based Word detected, extracting text with OCR...")
+            text = extract_text_from_file(doc_path)
+        else:
+            # Normal text extraction
+            doc = Document(doc_path)
+            text_content = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    cleaned = clean_text_for_xml(para.text)
+                    if cleaned.strip():
+                        text_content.append(cleaned)
+            text = '\n'.join(text_content)
         
-        buffer = io.BytesIO('\n'.join(text_content).encode('utf-8'))
+        buffer = io.BytesIO(text.encode('utf-8'))
         buffer.seek(0)
         
         response = send_file(
@@ -1072,7 +1068,6 @@ def api_word_to_text():
     except Exception as e:
         safe_remove(doc_path)
         return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
-
 # -----------------------------------------------------------------------------
 # Tool APIs - Text Operations
 # -----------------------------------------------------------------------------
