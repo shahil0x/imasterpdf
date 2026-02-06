@@ -20,6 +20,19 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
 from PIL import Image
 from pdfminer.high_level import extract_text
+# -----------------------------------------------------------------------------
+# OCR IMPORTS - ADD THESE HERE
+# -----------------------------------------------------------------------------
+from app.ocr import (
+    pdf_to_word_with_ocr,
+    pdf_to_text_with_ocr,
+    image_to_text,
+    image_to_word,
+    extract_text_from_file,
+    is_scanned_pdf,
+    is_image_based_document
+)
+
 
 # -----------------------------------------------------------------------------
 # Flask app configuration
