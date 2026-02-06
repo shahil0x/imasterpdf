@@ -2,44 +2,32 @@ FROM python:3.9-slim
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Update and install only essential, available packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     tesseract-ocr \
     poppler-utils \
-    libjpeg-dev \
-    libpng-dev \
-    libtiff-dev \
-    libgl1-mesa-glx \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install additional Tesseract languages from apt (only those that exist)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    tesseract-ocr-spa \
-    tesseract-ocr-fra \
-    tesseract-ocr-deu \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy requirements
+# Copy requirements first
 COPY requirements.txt .
 
 # Install Python packages
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application
+# Copy application code
 COPY . .
 
 # Create necessary directories
 RUN mkdir -p /tmp/imasterpdf_uploads /tmp/imasterpdf_outputs
 
-# Expose port
 EXPOSE 8000
 
-# Run application
 CMD ["python", "app.py"]
