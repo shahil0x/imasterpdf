@@ -1,21 +1,8 @@
-# Core Framework
-Flask==2.3.3
-Werkzeug==2.3.7
-
-# PDF Processing
+Flask==3.0.0
+Werkzeug==3.0.1
 PyPDF2==3.0.1
-reportlab==4.0.4
-
-# Document Processing
 python-docx==1.1.0
-
-# Image Processing
-Pillow==10.1.0
-
-# OCR Processing
-pytesseract==0.3.10
-pdf2image==1.16.3
-
-# Utilities
-Jinja2==3.1.3
-click==8.1.7
+reportlab==4.0.9
+Pillow==10.2.0
+pdfminer.six==20231228
+gunicorn==21.2.0
