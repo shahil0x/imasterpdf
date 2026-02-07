@@ -49,9 +49,13 @@ def is_scanned_pdf(pdf_path, text_threshold=30):
 # =============================================================================
 
 def pdf_to_text_with_ocr(pdf_path, max_pages=50):
-    images = convert_from_path(pdf_path, dpi=300)
-    images = images[:max_pages]
+    images = convert_from_path(
+        pdf_path,
+        dpi=300,
+        poppler_path="/usr/bin"
+    )
 
+    images = images[:max_pages]
     full_text = ""
 
     for i, img in enumerate(images):
