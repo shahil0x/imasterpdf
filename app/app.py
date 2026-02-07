@@ -804,77 +804,182 @@ def api_unlock_pdf():
 # -----------------------------------------------------------------------------
 # Tool APIs - PDF to Word (OPTIMIZED for speed)
 # -----------------------------------------------------------------------------
-
-
 @app.route('/api/pdf-to-word', methods=['POST'])
 def api_pdf_to_word():
     start_time = time.time()
+    cleanup_temp()
     files = request.files.getlist('files')
-
     if not files or len(files) != 1:
         return jsonify({"error": "Upload exactly one PDF."}), 400
-
-    pdf_file = files[0]
-    pdf_path = os.path.join("uploads", pdf_file.filename)
-    pdf_file.save(pdf_path)
-
-    output_name = os.path.splitext(pdf_file.filename)[0] + ".docx"
+    
+    paths = save_uploads(files)
+    pdf_path = paths[0]
+    if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
+        safe_remove(pdf_path)
+        return jsonify({"error": "Only PDF files are allowed."}), 400
 
     try:
-        # =========================
-        # CASE 1: SCANNED PDF → OCR
-        # =========================
+        # Check cache first
+        if CACHE_ENABLED:
+            file_hash = get_file_hash(pdf_path)
+            if file_hash in conversion_cache:
+                cached_result = conversion_cache[file_hash]
+                buffer = io.BytesIO(cached_result)
+                
+                original_name = secure_filename(files[0].filename)
+                output_name = generate_unique_filename(original_name, "converted_to_word")
+                output_name = os.path.splitext(output_name)[0] + ".docx"
+                
+                response = send_file(
+                    buffer,
+                    mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    as_attachment=True,
+                    download_name=output_name
+                )
+                
+                print(f"Cached conversion: {time.time() - start_time:.2f}s")
+                return response
+        
+        original_name = secure_filename(files[0].filename)
+        output_name = generate_unique_filename(original_name, "converted_to_word")
+        output_name = os.path.splitext(output_name)[0] + ".docx"
+        
+        # ✅✅✅ OCR CHECK FOR SCANNED PDFS ✅✅✅
         if is_scanned_pdf(pdf_path):
-            print("🔍 Scanned PDF detected → OCR")
-
-            temp_docx = os.path.join(
-                tempfile.gettempdir(),
-                f"ocr_{uuid.uuid4().hex}.docx"
-            )
-
-            pdf_to_word_with_ocr(pdf_path, temp_docx)
-
-            with open(temp_docx, "rb") as f:
-                buffer = io.BytesIO(f.read())
-                buffer.seek(0)
-
-            os.remove(temp_docx)
-            os.remove(pdf_path)
-
-            return send_file(
-                buffer,
-                as_attachment=True,
-                download_name=output_name,
-                mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
-
-        # =========================
-        # CASE 2: NORMAL TEXT PDF
-        # =========================
-        text = extract_text(pdf_path)
-
+            print("🔍 Scanned PDF detected. Using OCR...")
+            
+            # Create temporary output file path for OCR
+            temp_output = os.path.join(tempfile.gettempdir(), f"ocr_output_{uuid.uuid4().hex}.docx")
+            
+            try:
+                # Call OCR function with BOTH parameters
+                pdf_to_word_with_ocr(pdf_path, temp_output)
+                
+                # Read the created DOCX file
+                with open(temp_output, 'rb') as f:
+                    buffer = io.BytesIO(f.read())
+                    buffer.seek(0)
+                
+                # Cache the result
+                if CACHE_ENABLED:
+                    conversion_cache[get_file_hash(pdf_path)] = buffer.getvalue()
+                    buffer.seek(0)
+                
+                # Clean up temp file
+                safe_remove(temp_output)
+                
+                response = send_file(
+                    buffer,
+                    mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    as_attachment=True,
+                    download_name=output_name
+                )
+                
+                @after_this_request
+                def cleanup(response):
+                    safe_remove(pdf_path)
+                    return response
+                
+                print(f"PDF to Word (OCR): {time.time() - start_time:.2f}s")
+                return response
+                
+            except Exception as e:
+                print(f"⚠️ OCR conversion failed: {str(e)}")
+                print("⚠️ Falling back to normal text extraction...")
+                # Continue with normal extraction as fallback
+        # ✅✅✅ END OCR CHECK ✅✅✅
+        
+        # If not scanned or OCR failed, continue with normal extraction...
+        # Optimize PDF for faster extraction
+        optimized_path = optimize_pdf_for_extraction(pdf_path)
+        
+        # Use fast text extraction
+        text = fast_extract_text(optimized_path)
+        
+        # Clean up optimized file if different from original
+        if optimized_path != pdf_path:
+            safe_remove(optimized_path)
+        
+        # Create document
         doc = Document()
-        doc.add_paragraph(text)   # IMPORTANT: add full text directly
-
+        
+        if text and text.strip():
+            # Add paragraphs in batches for speed
+            paragraphs = [p for p in text.split('\n\n') if p.strip()]
+            
+            # Limit number of paragraphs for very large documents
+            if len(paragraphs) > 500:
+                paragraphs = paragraphs[:500]
+                doc.add_paragraph("[Document truncated - first 500 paragraphs shown]")
+            
+            # Add paragraphs
+            for para in paragraphs:
+                safe_add_paragraph(doc, para)
+        else:
+            # If no text found with normal extraction, try OCR as fallback...
+            print("⚠️ No text extracted normally, trying OCR fallback...")
+            
+            # Create temporary output file path for OCR fallback
+            temp_output = os.path.join(tempfile.gettempdir(), f"ocr_fallback_{uuid.uuid4().hex}.docx")
+            
+            try:
+                pdf_to_word_with_ocr(pdf_path, temp_output)
+                
+                with open(temp_output, 'rb') as f:
+                    buffer = io.BytesIO(f.read())
+                    buffer.seek(0)
+                
+                safe_remove(temp_output)
+                
+                response = send_file(
+                    buffer,
+                    mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    as_attachment=True,
+                    download_name=output_name
+                )
+                
+                @after_this_request
+                def cleanup(response):
+                    safe_remove(pdf_path)
+                    return response
+                
+                print(f"PDF to Word (OCR fallback): {time.time() - start_time:.2f}s")
+                return response
+                
+            except Exception as ocr_error:
+                print(f"❌ OCR fallback also failed: {str(ocr_error)}")
+                # Add empty document as last resort
+                doc.add_paragraph("No text could be extracted from this PDF. It may be a scanned document.")
+        
         buffer = io.BytesIO()
         doc.save(buffer)
         buffer.seek(0)
-
-        os.remove(pdf_path)
-
-        print(f"PDF → Word done in {time.time() - start_time:.2f}s")
-
-        return send_file(
+        
+        # Cache the result
+        if CACHE_ENABLED:
+            conversion_cache[get_file_hash(pdf_path)] = buffer.getvalue()
+            buffer.seek(0)
+        
+        response = send_file(
             buffer,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             as_attachment=True,
-            download_name=output_name,
-            mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            download_name=output_name
         )
-
+        
+        @after_this_request
+        def cleanup(response):
+            safe_remove(pdf_path)
+            return response
+        
+        print(f"PDF to Word conversion: {time.time() - start_time:.2f}s")
+        return response
+        
     except Exception as e:
-        if os.path.exists(pdf_path):
-            os.remove(pdf_path)
-        return jsonify({"error": str(e)}), 500
+        safe_remove(pdf_path)
+        return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
+
+
 # -----------------------------------------------------------------------------
 # Tool APIs - Word Operations (OPTIMIZED)
 # -----------------------------------------------------------------------------
