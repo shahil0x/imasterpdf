@@ -977,9 +977,30 @@ def api_word_to_pdf():
         output_name = generate_unique_filename(original_name, "converted_to_pdf")
         output_name = os.path.splitext(output_name)[0] + ".pdf"
         
-        # Extract text (with OCR if needed)
-        text = extract_text_from_file(doc_path)
+        # ✅ CORRECT: Extract text from Word document properly
+        text = ""
         
+        # Check if it's image-based document (scanned/photo)
+        if is_image_based_document(doc_path):
+            print("🖼️ Image-based Word detected, extracting text with OCR...")
+            text = extract_text_from_file(doc_path)  # This will use OCR
+        else:
+            # Normal Word document - extract text using python-docx
+            doc = Document(doc_path)
+            paragraphs = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    cleaned = clean_text_for_xml(para.text)
+                    if cleaned.strip():
+                        paragraphs.append(cleaned)
+            text = '\n\n'.join(paragraphs)
+        
+        # If still no text, use OCR as fallback
+        if not text or len(text.strip()) < 10:
+            print("⚠️ Little text found, trying OCR fallback...")
+            text = extract_text_from_file(doc_path) or "No text content"
+        
+        # Create PDF from extracted text
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=letter)
         width, height = letter
@@ -989,7 +1010,7 @@ def api_word_to_pdf():
         
         if text:
             paragraphs = text.split('\n\n')
-            for para in paragraphs[:200]:
+            for para in paragraphs[:200]:  # Limit to avoid huge PDFs
                 if para.strip():
                     lines = wrap_text(para, max_chars=95)
                     for line in lines:
@@ -998,7 +1019,7 @@ def api_word_to_pdf():
                         if top < 50:
                             c.showPage()
                             top = height - 50
-                    top -= line_height / 2
+                    top -= line_height / 2  # Space between paragraphs
                     if top < 50:
                         c.showPage()
                         top = height - 50
@@ -1009,60 +1030,6 @@ def api_word_to_pdf():
         response = send_file(
             buffer,
             mimetype='application/pdf',
-            as_attachment=True,
-            download_name=output_name
-        )
-        
-        @after_this_request
-        def cleanup(response):
-            safe_remove(doc_path)
-            return response
-        
-        return response
-        
-    except Exception as e:
-        safe_remove(doc_path)
-        return jsonify({"error": f"Conversion failed: {str(e)}"}), 500
-
-@app.route('/api/word-to-text', methods=['POST'])
-def api_word_to_text():
-    cleanup_temp()
-    files = request.files.getlist('files')
-    if not files or len(files) != 1:
-        return jsonify({"error": "Upload exactly one Word file."}), 400
-    
-    paths = save_uploads(files)
-    doc_path = paths[0]
-    if ext_of(doc_path) not in ALLOWED_WORD_EXT:
-        safe_remove(doc_path)
-        return jsonify({"error": "Only DOC/DOCX files are allowed."}), 400
-
-    try:
-        original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "extracted_text")
-        output_name = os.path.splitext(output_name)[0] + ".txt"
-        
-        # OCR CHECK for image-based Word documents
-        if is_image_based_document(doc_path):
-            print("🖼️ Image-based Word detected, extracting text with OCR...")
-            text = extract_text_from_file(doc_path)
-        else:
-            # Normal text extraction
-            doc = Document(doc_path)
-            text_content = []
-            for para in doc.paragraphs:
-                if para.text.strip():
-                    cleaned = clean_text_for_xml(para.text)
-                    if cleaned.strip():
-                        text_content.append(cleaned)
-            text = '\n'.join(text_content)
-        
-        buffer = io.BytesIO(text.encode('utf-8'))
-        buffer.seek(0)
-        
-        response = send_file(
-            buffer,
-            mimetype='text/plain',
             as_attachment=True,
             download_name=output_name
         )

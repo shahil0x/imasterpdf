@@ -60,13 +60,13 @@ def is_image_based_document(file_path):
     if file_ext in {'.docx', '.doc'}:
         try:
             doc = Document(file_path)
-            text_paragraphs = sum(1 for para in doc.paragraphs if para.text.strip())
-            return text_paragraphs < 3  # Few text paragraphs = image-based
+            # Count actual text characters
+            total_chars = sum(len(para.text) for para in doc.paragraphs)
+            return total_chars < 100  # Less than 100 chars = likely image-based
         except:
-            return False
+            return False  # If we can't read it, assume it's text-based
     
     return False
-
 # =============================================================================
 # OCR TO SEARCHABLE PDF (NEW FUNCTION)
 # =============================================================================
