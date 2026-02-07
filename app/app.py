@@ -844,40 +844,21 @@ def api_pdf_to_word():
         output_name = generate_unique_filename(original_name, "converted_to_word")
         output_name = os.path.splitext(output_name)[0] + ".docx"
         
-        # ✅✅✅ NEW LOGIC: CHECK IF SCANNED & CREATE SEARCHABLE PDF ✅✅✅
-        working_pdf_path = pdf_path  # Start with original
-        
-        if is_scanned_pdf(pdf_path):
-            print("🔍 Scanned PDF detected. Creating searchable PDF first...")
-            
-            try:
-                # Create searchable PDF
-                searchable_pdf = os.path.join(tempfile.gettempdir(), f"searchable_{uuid.uuid4().hex}.pdf")
-                ocr_pdf_to_searchable_pdf(pdf_path, searchable_pdf)
-                
-                # Use the searchable PDF for text extraction
-                working_pdf_path = searchable_pdf
-                print("✅ Now using searchable PDF for text extraction")
-                
-            except Exception as e:
-                print(f"⚠️ Searchable PDF creation failed: {str(e)}")
-                print("⚠️ Falling back to direct OCR...")
-                # Continue with original PDF
-        
-        # ✅ Now extract text from the PDF (scanned or searchable)
+        # ✅ Now extract text from the PDF
         # Optimize PDF for faster extraction
-        optimized_path = optimize_pdf_for_extraction(working_pdf_path)
+        optimized_path = optimize_pdf_for_extraction(pdf_path)
         
         # Use fast text extraction
         text = fast_extract_text(optimized_path)
         
-        # Clean up optimized file if different
-        if optimized_path != working_pdf_path:
-            safe_remove(optimized_path)
+        # ✅✅✅ SIMPLE FIX: Check if text extraction failed
+        if not text or len(text.strip()) < 20:
+            print("No text found. Running OCR...")
+            text = extract_text_with_ocr(optimized_path)
         
-        # Clean up searchable PDF if we created one
-        if working_pdf_path != pdf_path:
-            safe_remove(working_pdf_path)
+        # Clean up optimized file if different
+        if optimized_path != pdf_path:
+            safe_remove(optimized_path)
         
         # Create Word document
         doc = Document()

@@ -67,6 +67,7 @@ def is_image_based_document(file_path):
             return False  # If we can't read it, assume it's text-based
     
     return False
+
 # =============================================================================
 # OCR TO SEARCHABLE PDF (NEW FUNCTION)
 # =============================================================================
@@ -282,4 +283,21 @@ def extract_text_from_file(file_path):
             
     except Exception as e:
         print(f"❌ Text extraction error: {e}")
+        return ""
+
+# =============================================================================
+# NEW FUNCTIONS FOR SIMPLE OCR FALLBACK
+# =============================================================================
+
+def extract_text_with_ocr(pdf_path):
+    """
+    Simple OCR text extraction (new function for simple fallback)
+    Returns extracted text from PDF using OCR
+    """
+    try:
+        print(f"Running OCR on: {os.path.basename(pdf_path)}")
+        text = pdf_to_text_with_ocr(pdf_path, max_pages=50)
+        return text
+    except Exception as e:
+        print(f"❌ OCR extraction failed: {e}")
         return ""
