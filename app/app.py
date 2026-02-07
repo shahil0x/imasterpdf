@@ -20,20 +20,18 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
 from PIL import Image
 from pdfminer.high_level import extract_text
-from app.ocr import pdf_to_word_with_ocr
-# is_scanned_pdf must exist
-
 # -----------------------------------------------------------------------------
 # OCR IMPORTS - ADD THESE HERE
 # -----------------------------------------------------------------------------
+# CORRECTED IMPORT (remove the problematic function)
 from app.ocr import (
     pdf_to_word_with_ocr,
     pdf_to_text_with_ocr,
     image_to_text,
     image_to_word,
     extract_text_from_file,
-    is_scanned_pdf,
-    is_image_based_document
+    is_scanned_pdf
+    # is_image_based_document  # Commented out for now
 )
 
 # -----------------------------------------------------------------------------
@@ -74,7 +72,7 @@ executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
 conversion_cache = {}
 
 ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
-ALLOWED_PDF_EXT = {'.pdf'}
+ALLOWED_PDF_EXT = {'.pdf'} 
 ALLOWED_WORD_EXT = {'.docx', '.doc'}
 ALLOWED_TEXT_EXT = {'.txt'}
 
