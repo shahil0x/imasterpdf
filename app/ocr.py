@@ -1,88 +1,54 @@
 import os
 import io
+import tempfile
 import pytesseract
 from pdf2image import convert_from_path
 from docx import Document
 from PIL import Image
 from pdfminer.high_level import extract_text
-from PyPDF2 import PdfReader  # Added for better PDF scanning detection
+from PyPDF2 import PdfReader
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4, letter
 
 # =============================================================================
-# TESSERACT AUTO CONFIG
+# TESSERACT CONFIG (SIMPLIFIED)
 # =============================================================================
-
-def setup_tesseract():
-    print("🔍 Setting up Tesseract...")
-    
-    paths = [
-        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
-        "/usr/bin/tesseract",
-        "/usr/local/bin/tesseract",
-        "/opt/homebrew/bin/tesseract",
-        os.environ.get("TESSERACT_CMD", "")
-    ]
-
-    for path in paths:
-        if path and os.path.exists(path):
-            pytesseract.pytesseract.tesseract_cmd = path
-            print(f"✅ Tesseract found: {path}")
-            return
-
-    print("⚠️ Tesseract not found in PATH")
-    
-    # DEBUG: Try to find tesseract in PATH
-    import subprocess
-    try:
-        result = subprocess.run(['where', 'tesseract'], 
-                              capture_output=True, text=True)
-        if result.returncode == 0:
-            print(f"🔍 Found via 'where tesseract': {result.stdout}")
-            pytesseract.pytesseract.tesseract_cmd = 'tesseract'
-    except:
-        pass
-
-setup_tesseract()
+# Direct path setting - works on Windows
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+print("✅ Tesseract configured")
 
 # =============================================================================
-# DOCUMENT TYPE DETECTION
+# SCANNED PDF DETECTION (IMPROVED)
 # =============================================================================
 
-def is_scanned_pdf(pdf_path, text_threshold=100):
+def is_scanned_pdf(pdf_path, text_threshold=50):
     """
-    Check if PDF contains extractable text.
-    Returns True if it's a scanned PDF (needs OCR).
+    Check if PDF is scanned/image-based (returns True if needs OCR)
+    Uses both PyPDF2 and pdfminer for better detection
     """
     try:
+        # Method 1: Try PyPDF2 first
         with open(pdf_path, 'rb') as file:
             reader = PdfReader(file)
-            
-            # Check first few pages for text
             text = ""
-            for i, page in enumerate(reader.pages[:3]):
+            for i, page in enumerate(reader.pages[:2]):  # Check first 2 pages
                 page_text = page.extract_text() or ""
                 text += page_text
-                
-                # If we find enough text, it's not a scanned PDF
                 if len(text.strip()) > text_threshold:
-                    return False
-            
-            # If very little or no text found, likely scanned
-            return len(text.strip()) < text_threshold
+                    return False  # Has enough text, not scanned
+        
+        # Method 2: Fallback to pdfminer
+        if len(text.strip()) < text_threshold:
+            pdfminer_text = extract_text(pdf_path, maxpages=1)
+            return not pdfminer_text or len(pdfminer_text.strip()) < text_threshold
+        
+        return len(text.strip()) < text_threshold
     except Exception as e:
         print(f"PDF scan check error: {e}")
-        # Fall back to pdfminer method
-        try:
-            text = extract_text(pdf_path)
-            return len(text.strip()) < text_threshold
-        except:
-            return True
+        return True  # If extraction fails, assume scanned
 
 def is_image_based_document(file_path):
-    """
-    Check if file is an image that needs OCR
-    This function was missing from your old OCR file
-    """
+    """Check if file is an image that needs OCR"""
     image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
     file_ext = os.path.splitext(file_path.lower())[1]
     
@@ -94,21 +60,71 @@ def is_image_based_document(file_path):
     if file_ext in {'.docx', '.doc'}:
         try:
             doc = Document(file_path)
-            
-            # Count paragraphs with text
-            text_paragraphs = 0
-            for para in doc.paragraphs:
-                if para.text.strip():
-                    text_paragraphs += 1
-            
-            # If document has few text paragraphs, it might be image-based
-            if text_paragraphs < 3:
-                return True
-            return False
+            text_paragraphs = sum(1 for para in doc.paragraphs if para.text.strip())
+            return text_paragraphs < 3  # Few text paragraphs = image-based
         except:
             return False
     
     return False
+
+# =============================================================================
+# OCR TO SEARCHABLE PDF (NEW FUNCTION)
+# =============================================================================
+
+def ocr_pdf_to_searchable_pdf(input_pdf_path, output_pdf_path=None):
+    """
+    Convert scanned PDF to searchable PDF (text hidden behind images)
+    Returns: output file path
+    """
+    try:
+        print(f"🔄 Creating searchable PDF from: {os.path.basename(input_pdf_path)}")
+        
+        # Create temp output if not provided
+        if not output_pdf_path:
+            output_pdf_path = tempfile.mktemp(suffix="_searchable.pdf")
+        
+        # Convert PDF to images
+        images = convert_from_path(input_pdf_path, dpi=300)
+        
+        # Create new PDF with OCR text
+        c = canvas.Canvas(output_pdf_path, pagesize=letter)
+        width, height = letter
+        
+        for i, img in enumerate(images):
+            print(f"Processing page {i+1}/{len(images)}...")
+            
+            # Save image to temp file
+            temp_img = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+            img.save(temp_img.name, "JPEG", quality=85)
+            
+            # Perform OCR on the image
+            text = pytesseract.image_to_string(img, config="--oem 3 --psm 6")
+            
+            # Draw image as background
+            c.drawImage(temp_img.name, 0, 0, width=width, height=height)
+            
+            # Add invisible text layer (searchable but not visible)
+            c.setFont("Helvetica", 1)
+            c.setFillColorRGB(1, 1, 1, alpha=0.01)
+            
+            # Add OCR text
+            if text.strip():
+                text_obj = c.beginText(10, -1000)  # Position off-page
+                text_obj.textLines(text.split('\n'))
+                c.drawText(text_obj)
+            
+            c.showPage()
+            
+            # Clean up temp image
+            os.remove(temp_img.name)
+        
+        c.save()
+        print(f"✅ Searchable PDF created: {output_pdf_path}")
+        return output_pdf_path
+        
+    except Exception as e:
+        print(f"❌ Error creating searchable PDF: {e}")
+        raise
 
 # =============================================================================
 # OCR CORE FUNCTIONS
@@ -119,12 +135,7 @@ def pdf_to_text_with_ocr(pdf_path, max_pages=50):
     try:
         print(f"Starting OCR for PDF: {os.path.basename(pdf_path)}")
         
-        images = convert_from_path(
-            pdf_path,
-            dpi=300,
-            poppler_path="/usr/bin"
-        )
-        
+        images = convert_from_path(pdf_path, dpi=300)
         images = images[:max_pages]
         full_text = ""
         total_pages = len(images)
@@ -135,10 +146,7 @@ def pdf_to_text_with_ocr(pdf_path, max_pages=50):
             if img.mode != "RGB":
                 img = img.convert("RGB")
             
-            text = pytesseract.image_to_string(
-                img,
-                config="--oem 3 --psm 6"
-            )
+            text = pytesseract.image_to_string(img, config="--oem 3 --psm 6")
             
             if text.strip():
                 full_text += f"--- Page {i+1} ---\n{text}\n\n"
@@ -155,27 +163,21 @@ def pdf_to_text_with_ocr(pdf_path, max_pages=50):
 def pdf_to_word_with_ocr(pdf_path, output_docx=None):
     """Convert scanned PDF to Word document using OCR"""
     try:
-        # Extract text using OCR
         text = pdf_to_text_with_ocr(pdf_path)
         
-        # Create Word document
         doc = Document()
-        
         if text.strip():
-            # Add OCR result to document
             for line in text.split('\n'):
                 if line.strip():
                     doc.add_paragraph(line.strip())
         else:
             doc.add_paragraph("❌ No text could be extracted via OCR.")
         
-        # Save or return
         if output_docx:
             doc.save(output_docx)
             print(f"✅ Word document saved: {output_docx}")
             return output_docx
         
-        # Return as bytes if no output path given
         buffer = io.BytesIO()
         doc.save(buffer)
         buffer.seek(0)
@@ -193,10 +195,7 @@ def image_to_text(image_path):
         if img.mode != "RGB":
             img = img.convert("RGB")
         
-        text = pytesseract.image_to_string(
-            img,
-            config="--oem 3 --psm 6"
-        )
+        text = pytesseract.image_to_string(img, config="--oem 3 --psm 6")
         
         print(f"✅ Image OCR completed: {len(text)} characters extracted")
         return text
@@ -278,7 +277,7 @@ def extract_text_from_file(file_path):
                 return ""
         
         else:
-            print(f"⚠️  Unsupported file type: {ext}")
+            print(f"⚠️ Unsupported file type: {ext}")
             return ""
             
     except Exception as e:

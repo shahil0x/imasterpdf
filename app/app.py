@@ -844,83 +844,58 @@ def api_pdf_to_word():
         output_name = generate_unique_filename(original_name, "converted_to_word")
         output_name = os.path.splitext(output_name)[0] + ".docx"
         
-        # ✅✅✅ OCR CHECK FOR SCANNED PDFS ✅✅✅
+        # ✅✅✅ NEW LOGIC: CHECK IF SCANNED & CREATE SEARCHABLE PDF ✅✅✅
+        working_pdf_path = pdf_path  # Start with original
+        
         if is_scanned_pdf(pdf_path):
-            print("🔍 Scanned PDF detected. Using OCR...")
-            
-            # Create temporary output file path for OCR
-            temp_output = os.path.join(tempfile.gettempdir(), f"ocr_output_{uuid.uuid4().hex}.docx")
+            print("🔍 Scanned PDF detected. Creating searchable PDF first...")
             
             try:
-                # Call OCR function with BOTH parameters
-                pdf_to_word_with_ocr(pdf_path, temp_output)
+                # Create searchable PDF
+                searchable_pdf = os.path.join(tempfile.gettempdir(), f"searchable_{uuid.uuid4().hex}.pdf")
+                ocr_pdf_to_searchable_pdf(pdf_path, searchable_pdf)
                 
-                # Read the created DOCX file
-                with open(temp_output, 'rb') as f:
-                    buffer = io.BytesIO(f.read())
-                    buffer.seek(0)
-                
-                # Cache the result
-                if CACHE_ENABLED:
-                    conversion_cache[get_file_hash(pdf_path)] = buffer.getvalue()
-                    buffer.seek(0)
-                
-                # Clean up temp file
-                safe_remove(temp_output)
-                
-                response = send_file(
-                    buffer,
-                    mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    as_attachment=True,
-                    download_name=output_name
-                )
-                
-                @after_this_request
-                def cleanup(response):
-                    safe_remove(pdf_path)
-                    return response
-                
-                print(f"PDF to Word (OCR): {time.time() - start_time:.2f}s")
-                return response
+                # Use the searchable PDF for text extraction
+                working_pdf_path = searchable_pdf
+                print("✅ Now using searchable PDF for text extraction")
                 
             except Exception as e:
-                print(f"⚠️ OCR conversion failed: {str(e)}")
-                print("⚠️ Falling back to normal text extraction...")
-                # Continue with normal extraction as fallback
-        # ✅✅✅ END OCR CHECK ✅✅✅
+                print(f"⚠️ Searchable PDF creation failed: {str(e)}")
+                print("⚠️ Falling back to direct OCR...")
+                # Continue with original PDF
         
-        # If not scanned or OCR failed, continue with normal extraction...
+        # ✅ Now extract text from the PDF (scanned or searchable)
         # Optimize PDF for faster extraction
-        optimized_path = optimize_pdf_for_extraction(pdf_path)
+        optimized_path = optimize_pdf_for_extraction(working_pdf_path)
         
         # Use fast text extraction
         text = fast_extract_text(optimized_path)
         
-        # Clean up optimized file if different from original
-        if optimized_path != pdf_path:
+        # Clean up optimized file if different
+        if optimized_path != working_pdf_path:
             safe_remove(optimized_path)
         
-        # Create document
+        # Clean up searchable PDF if we created one
+        if working_pdf_path != pdf_path:
+            safe_remove(working_pdf_path)
+        
+        # Create Word document
         doc = Document()
         
         if text and text.strip():
-            # Add paragraphs in batches for speed
             paragraphs = [p for p in text.split('\n\n') if p.strip()]
             
-            # Limit number of paragraphs for very large documents
             if len(paragraphs) > 500:
                 paragraphs = paragraphs[:500]
                 doc.add_paragraph("[Document truncated - first 500 paragraphs shown]")
             
-            # Add paragraphs
             for para in paragraphs:
                 safe_add_paragraph(doc, para)
         else:
-            # If no text found with normal extraction, try OCR as fallback...
-            print("⚠️ No text extracted normally, trying OCR fallback...")
+            # If still no text, try direct OCR as last resort
+            print("⚠️ Still no text found, trying direct OCR fallback...")
             
-            # Create temporary output file path for OCR fallback
-            temp_output = os.path.join(tempfile.gettempdir(), f"ocr_fallback_{uuid.uuid4().hex}.docx")
+            temp_output = os.path.join(tempfile.gettempdir(), f"direct_ocr_{uuid.uuid4().hex}.docx")
             
             try:
                 pdf_to_word_with_ocr(pdf_path, temp_output)
@@ -943,13 +918,12 @@ def api_pdf_to_word():
                     safe_remove(pdf_path)
                     return response
                 
-                print(f"PDF to Word (OCR fallback): {time.time() - start_time:.2f}s")
+                print(f"PDF to Word (Direct OCR): {time.time() - start_time:.2f}s")
                 return response
                 
             except Exception as ocr_error:
-                print(f"❌ OCR fallback also failed: {str(ocr_error)}")
-                # Add empty document as last resort
-                doc.add_paragraph("No text could be extracted from this PDF. It may be a scanned document.")
+                print(f"❌ All methods failed: {str(ocr_error)}")
+                doc.add_paragraph("No text could be extracted from this PDF.")
         
         buffer = io.BytesIO()
         doc.save(buffer)
