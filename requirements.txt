@@ -8,3 +8,5 @@ pdfminer.six==20231228
 gunicorn==21.2.0
 pytesseract==0.3.10
 pdf2image==1.17.0
+opencv-python-headless==4.8.1.78  # For better image processing
+numpy==1.24.3  # Required by opencv
