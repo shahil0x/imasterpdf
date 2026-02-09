@@ -7,7 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE $PORT
+EXPOSE 10000
 
-# Run Python directly (no Gunicorn)
-CMD ["python", "app.py"]
+CMD ["gunicorn", "wsgi:app", "--bind", "0.0.0.0:10000", "--workers", "2", "--timeout", "120"]
