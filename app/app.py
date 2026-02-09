@@ -38,6 +38,10 @@ from app.ocr import (
 # Flask app configuration with correct template paths
 # ----------------------------------------------------------------------------
 # Get the base directory (where Dockerfile is)
+# -----------------------------------------------------------------------------
+# Flask app configuration with correct template paths
+# -----------------------------------------------------------------------------
+# Get the base directory (where Dockerfile is)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Create Flask app with correct template and static paths
