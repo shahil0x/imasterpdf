@@ -79,7 +79,93 @@ ALLOWED_IMAGE_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.tif'}
 ALLOWED_PDF_EXT = {'.pdf'} 
 ALLOWED_WORD_EXT = {'.docx', '.doc'}
 ALLOWED_TEXT_EXT = {'.txt'}
+# -----------------------------------------------------------------------------
+# Enhanced PDF text detection functions
+# -----------------------------------------------------------------------------
+def check_pdf_has_text(pdf_path, min_text_length=50):
+    """
+    Check if a PDF contains selectable text.
+    Returns True if text is found, False if it's likely a scanned/image PDF.
+    """
+    try:
+        with open(pdf_path, 'rb') as file:
+            reader = PdfReader(file)
+            
+            # Check first few pages for text
+            pages_to_check = min(3, len(reader.pages))
+            total_text = ""
+            
+            for i in range(pages_to_check):
+                page = reader.pages[i]
+                try:
+                    page_text = page.extract_text() or ""
+                    total_text += page_text
+                except:
+                    continue
+            
+            # Clean and check text quality
+            cleaned = clean_text_for_xml(total_text)
+            
+            # If we found substantial text, it's not a scanned PDF
+            if len(cleaned.strip()) >= min_text_length:
+                print(f"✅ Found {len(cleaned)} characters of text in first {pages_to_check} pages")
+                return True
+            
+            # Also check text density - scanned PDFs often have very little text
+            text_density = len(cleaned) / max(1, pages_to_check)
+            if text_density < 10:  # Less than 10 chars per page average
+                print(f"⚠️ Low text density ({text_density:.1f} chars/page) - likely scanned PDF")
+                return False
+            
+            return len(cleaned.strip()) > 0
+            
+    except Exception as e:
+        print(f"⚠️ Error checking PDF text: {e}")
+        # If we can't check, assume it might need OCR
+        return False
 
+def clean_extracted_text(text):
+    """
+    Clean extracted text by removing broken characters and extra spaces.
+    """
+    if not text:
+        return ""
+    
+    # Remove excessive whitespace
+    text = re.sub(r'\s+', ' ', text)
+    
+    # Fix common OCR artifacts
+    replacements = {
+        '|': 'I',
+        '0': 'O',
+        '1': 'l',
+        '@': 'a',
+        '#': ' ',
+        '$': 'S',
+        '%': ' ',
+        '^': ' ',
+        '&': 'and',
+        '*': '•',
+        '_': ' ',
+        '=': ' ',
+        '+': ' ',
+        '[': '(',
+        ']': ')',
+        '{': '(',
+        '}': ')',
+        '\\': ' ',
+        '`': "'",
+        '~': ' ',
+    }
+    
+    # Apply replacements (be careful with this - don't overdo it)
+    # Only replace if the character appears frequently (common OCR errors)
+    # For now, just do basic cleaning
+    text = re.sub(r'[^\x20-\x7E\n\r\t]', ' ', text)  # Remove non-printable chars
+    text = re.sub(r' +', ' ', text)  # Collapse multiple spaces
+    text = re.sub(r'\n\s*\n', '\n\n', text)  # Normalize paragraph breaks
+    
+    return text.strip()
 # -----------------------------------------------------------------------------
 # Performance optimization utilities
 # -----------------------------------------------------------------------------
@@ -808,68 +894,95 @@ def api_unlock_pdf():
 # -----------------------------------------------------------------------------
 # Tool APIs - PDF to Word (OPTIMIZED for speed)
 # -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# Enhanced PDF to Word with proper text detection and OCR fallback
+# -----------------------------------------------------------------------------
 @app.route('/api/pdf-to-word', methods=['POST'])
 def api_pdf_to_word():
     start_time = time.time()
     cleanup_temp()
+    
     files = request.files.getlist('files')
     if not files or len(files) != 1:
         return jsonify({"error": "Upload exactly one PDF."}), 400
     
     paths = save_uploads(files)
     pdf_path = paths[0]
+    
     if ext_of(pdf_path) not in ALLOWED_PDF_EXT:
         safe_remove(pdf_path)
         return jsonify({"error": "Only PDF files are allowed."}), 400
 
     try:
-        # Check cache first
-        if CACHE_ENABLED:
-            file_hash = get_file_hash(pdf_path)
-            if file_hash in conversion_cache:
-                cached_result = conversion_cache[file_hash]
-                buffer = io.BytesIO(cached_result)
-                
-                original_name = secure_filename(files[0].filename)
-                output_name = generate_unique_filename(original_name, "converted_to_word")
-                output_name = os.path.splitext(output_name)[0] + ".docx"
-                
-                response = send_file(
-                    buffer,
-                    mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    as_attachment=True,
-                    download_name=output_name
-                )
-                
-                print(f"Cached conversion: {time.time() - start_time:.2f}s")
-                return response
+        # Step 1: Check if PDF contains selectable text
+        print(f"📄 Processing PDF: {os.path.basename(pdf_path)}")
+        has_selectable_text = check_pdf_has_text(pdf_path)
         
+        # Step 2 & 3: Extract text based on detection
+        text = ""
+        extraction_method = ""
+        
+        if has_selectable_text:
+            # Step 2: Extract text directly from PDF
+            print("✅ Selectable text detected - extracting directly")
+            extraction_method = "direct extraction"
+            
+            # Optimize PDF for faster extraction
+            optimized_path = optimize_pdf_for_extraction(pdf_path)
+            
+            # Extract text using fast method
+            text = fast_extract_text(optimized_path)
+            
+            if optimized_path != pdf_path:
+                safe_remove(optimized_path)
+        else:
+            # Step 3: No selectable text - treat as scanned/image-based PDF
+            print("🖼️ No selectable text detected - treating as scanned PDF")
+            extraction_method = "OCR (image-based)"
+            
+            # Check if OCR is available
+            if not OCR_AVAILABLE:
+                print("⚠️ OCR not available for scanned PDF")
+                text = "This appears to be a scanned PDF, but OCR is not available. No text could be extracted."
+            else:
+                # Convert PDF pages to images and run OCR
+                print("🔄 Converting PDF pages to images for OCR...")
+                try:
+                    # Method 1: Use OCR function
+                    text = pdf_to_text_with_ocr(pdf_path, max_pages=50)
+                    
+                    if text and len(text.strip()) > 20:
+                        print(f"✅ OCR successful: extracted {len(text)} characters")
+                    else:
+                        # Method 2: Alternative OCR approach
+                        print("⚠️ First OCR attempt returned little text, trying alternative method...")
+                        text = extract_text_from_file(pdf_path)
+                        
+                except Exception as ocr_error:
+                    print(f"⚠️ OCR extraction failed: {ocr_error}")
+                    text = "OCR processing failed. The PDF appears to be scanned but text could not be extracted."
+        
+        # Step 4: Clean the extracted text
+        print(f"🧹 Cleaning extracted text (method: {extraction_method})")
+        cleaned_text = clean_extracted_text(text)
+        
+        # Generate output name
         original_name = secure_filename(files[0].filename)
-        output_name = generate_unique_filename(original_name, "converted_to_word")
+        output_name = generate_unique_filename(original_name, "converted")
         output_name = os.path.splitext(output_name)[0] + ".docx"
         
-        # ✅ Now extract text from the PDF
-        # Optimize PDF for faster extraction
-        optimized_path = optimize_pdf_for_extraction(pdf_path)
-        
-        # Use fast text extraction
-        text = fast_extract_text(optimized_path)
-        
-        # ✅✅✅ SIMPLE FIX: Check if text extraction failed
-        if not text or len(text.strip()) < 20:
-            print("No text found. Running OCR...")
-            text = extract_text_with_ocr(optimized_path)
-        
-        # Clean up optimized file if different
-        if optimized_path != pdf_path:
-            safe_remove(optimized_path)
-        
-        # Create Word document
+        # Step 5: Create Word document with the cleaned text
         doc = Document()
         
-        if text and text.strip():
-            paragraphs = [p for p in text.split('\n\n') if p.strip()]
+        if cleaned_text and cleaned_text.strip():
+            # Add a note about extraction method
+            doc.add_paragraph(f"[Text extracted via: {extraction_method}]")
+            doc.add_paragraph("")
             
+            # Split into paragraphs and add to document
+            paragraphs = [p for p in cleaned_text.split('\n\n') if p.strip()]
+            
+            # Limit paragraphs for very large documents
             if len(paragraphs) > 500:
                 paragraphs = paragraphs[:500]
                 doc.add_paragraph("[Document truncated - first 500 paragraphs shown]")
@@ -877,44 +990,18 @@ def api_pdf_to_word():
             for para in paragraphs:
                 safe_add_paragraph(doc, para)
         else:
-            # If still no text, try direct OCR as last resort
-            print("⚠️ Still no text found, trying direct OCR fallback...")
-            
-            temp_output = os.path.join(tempfile.gettempdir(), f"direct_ocr_{uuid.uuid4().hex}.docx")
-            
-            try:
-                pdf_to_word_with_ocr(pdf_path, temp_output)
-                
-                with open(temp_output, 'rb') as f:
-                    buffer = io.BytesIO(f.read())
-                    buffer.seek(0)
-                
-                safe_remove(temp_output)
-                
-                response = send_file(
-                    buffer,
-                    mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    as_attachment=True,
-                    download_name=output_name
-                )
-                
-                @after_this_request
-                def cleanup(response):
-                    safe_remove(pdf_path)
-                    return response
-                
-                print(f"PDF to Word (Direct OCR): {time.time() - start_time:.2f}s")
-                return response
-                
-            except Exception as ocr_error:
-                print(f"❌ All methods failed: {str(ocr_error)}")
-                doc.add_paragraph("No text could be extracted from this PDF.")
+            # No text found
+            doc.add_paragraph(f"No text could be extracted from this PDF.")
+            doc.add_paragraph(f"Extraction method attempted: {extraction_method}")
+            if extraction_method == "direct extraction" and not has_selectable_text:
+                doc.add_paragraph("This appears to be a scanned/image-based PDF. Try using a PDF with selectable text or ensure OCR is enabled.")
         
+        # Save to buffer
         buffer = io.BytesIO()
         doc.save(buffer)
         buffer.seek(0)
         
-        # Cache the result
+        # Cache if enabled
         if CACHE_ENABLED:
             conversion_cache[get_file_hash(pdf_path)] = buffer.getvalue()
             buffer.seek(0)
@@ -931,7 +1018,7 @@ def api_pdf_to_word():
             safe_remove(pdf_path)
             return response
         
-        print(f"PDF to Word conversion: {time.time() - start_time:.2f}s")
+        print(f"✅ PDF to Word completed: {time.time() - start_time:.2f}s (method: {extraction_method})")
         return response
         
     except Exception as e:

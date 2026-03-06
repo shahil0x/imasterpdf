@@ -28,7 +28,7 @@ from PIL import Image
 from pdfminer.high_level import extract_text
 
 # -----------------------------------------------------------------------------
-# OCR IMPORTS - COMPLETE SET
+# OCR IMPORTS - TRY TO IMPORT ACTUAL OCR FUNCTIONS
 # -----------------------------------------------------------------------------
 try:
     from ocr import (
@@ -46,21 +46,69 @@ try:
 except ImportError as e:
     print(f"⚠️ OCR module not available: {e}")
     OCR_AVAILABLE = False
-    # Define dummy functions
+    
+    # Define dummy functions with enhanced is_scanned_pdf
     def pdf_to_word_with_ocr(*args, **kwargs):
         raise ImportError("OCR not available")
+    
     def pdf_to_text_with_ocr(*args, **kwargs):
         raise ImportError("OCR not available")
+    
     def image_to_text(*args, **kwargs):
         raise ImportError("OCR not available")
+    
     def image_to_word(*args, **kwargs):
         raise ImportError("OCR not available")
+    
     def extract_text_from_file(*args, **kwargs):
         raise ImportError("OCR not available")
-    def is_scanned_pdf(*args, **kwargs):
-        return False
+    
+    # Enhanced version only used when OCR module is not available
+    def is_scanned_pdf(pdf_path):
+        """
+        Enhanced check if a PDF is scanned (image-based) by looking for selectable text.
+        """
+        try:
+            from PyPDF2 import PdfReader
+            import re
+            
+            with open(pdf_path, 'rb') as file:
+                reader = PdfReader(file)
+                
+                # Check first 3 pages for text
+                pages_to_check = min(3, len(reader.pages))
+                total_text = ""
+                
+                for i in range(pages_to_check):
+                    page = reader.pages[i]
+                    try:
+                        page_text = page.extract_text() or ""
+                        total_text += page_text
+                    except:
+                        continue
+                
+                # Clean the text
+                total_text = re.sub(r'\s+', ' ', total_text).strip()
+                
+                # If we find substantial text (more than 50 chars), it's not scanned
+                if len(total_text) > 50:
+                    return False
+                
+                # Check text density - scanned PDFs have very little text
+                text_density = len(total_text) / pages_to_check if pages_to_check > 0 else 0
+                if text_density < 10:  # Less than 10 chars per page average
+                    return True
+                
+                return len(total_text) < 20
+                
+        except Exception as e:
+            print(f"Error checking if PDF is scanned: {e}")
+            # If we can't check, assume it might be scanned
+            return True
+    
     def is_image_based_document(*args, **kwargs):
         return False
+    
     def ocr_pdf_to_searchable_pdf(*args, **kwargs):
         raise ImportError("OCR not available")
 
