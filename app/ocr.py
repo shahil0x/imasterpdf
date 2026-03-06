@@ -1,31 +1,125 @@
-import io
 import os
-import sys
-# Add the current directory to Python path to ensure imports work
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
-
-import shutil
-import tempfile
-import uuid
 import re
-import time
-import hashlib
-import zipfile
-from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor
-from functools import lru_cache
+from PyPDF2 import PdfReader
 
-from flask import Flask, render_template, send_file, request, abort, Response, jsonify, send_from_directory, after_this_request
-from werkzeug.utils import secure_filename
+# OCR Functions Module - No Flask app here!
+try:
+    from ocr import (
+        pdf_to_word_with_ocr,
+        pdf_to_text_with_ocr,
+        image_to_text,
+        image_to_word,
+        extract_text_from_file,
+        is_scanned_pdf,
+        is_image_based_document,
+        ocr_pdf_to_searchable_pdf,
+        OCR_AVAILABLE  # Add this line
+    )
+    print("✅ OCR module loaded successfully")
+except ImportError as e:
+    print(f"⚠️ OCR module not available: {e}")
+    OCR_AVAILABLE = False
+    # Define dummy functions with enhanced is_scanned_pdf
+    def pdf_to_word_with_ocr(*args, **kwargs):
+        """
+        Convert PDF to Word using OCR (dummy function)
+        """
+        raise ImportError("OCR not available")
+    
+    def pdf_to_text_with_ocr(*args, **kwargs):
+        """
+        Extract text from PDF using OCR (dummy function)
+        """
+        raise ImportError("OCR not available")
+    
+    def image_to_text(*args, **kwargs):
+        """
+        Extract text from image using OCR (dummy function)
+        """
+        raise ImportError("OCR not available")
+    
+    def image_to_word(*args, **kwargs):
+        """
+        Convert image to Word using OCR (dummy function)
+        """
+        raise ImportError("OCR not available")
+    
+    def extract_text_from_file(*args, **kwargs):
+        """
+        Extract text from any file using OCR (dummy function)
+        """
+        raise ImportError("OCR not available")
+    
+    # Enhanced version only used when OCR module is not available
+    def is_scanned_pdf(pdf_path):
+        """
+        Enhanced check if a PDF is scanned (image-based) by looking for selectable text.
+        
+        Args:
+            pdf_path (str): Path to the PDF file
+            
+        Returns:
+            bool: True if PDF appears to be scanned (no selectable text), False otherwise
+        """
+        try:
+            with open(pdf_path, 'rb') as file:
+                reader = PdfReader(file)
+                
+                # Check first 3 pages for text
+                pages_to_check = min(3, len(reader.pages))
+                total_text = ""
+                
+                for i in range(pages_to_check):
+                    page = reader.pages[i]
+                    try:
+                        page_text = page.extract_text() or ""
+                        total_text += page_text
+                    except:
+                        continue
+                
+                # Clean the text
+                total_text = re.sub(r'\s+', ' ', total_text).strip()
+                
+                # If we find substantial text (more than 50 chars), it's not scanned
+                if len(total_text) > 50:
+                    return False
+                
+                # Check text density - scanned PDFs have very little text
+                text_density = len(total_text) / pages_to_check if pages_to_check > 0 else 0
+                if text_density < 10:  # Less than 10 chars per page average
+                    return True
+                
+                return len(total_text) < 20
+                
+        except Exception as e:
+            print(f"Error checking if PDF is scanned: {e}")
+            # If we can't check, assume it might be scanned
+            return True
+    
+    def is_image_based_document(*args, **kwargs):
+        """
+        Check if a document is image-based (dummy function)
+        """
+        return False
+    
+    def ocr_pdf_to_searchable_pdf(*args, **kwargs):
+        """
+        Convert scanned PDF to searchable PDF (dummy function)
+        """
+        raise ImportError("OCR not available")
 
-from PyPDF2 import PdfReader, PdfWriter, PdfMerger
-from docx import Document
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4, letter
-from PIL import Image
-from pdfminer.high_level import extract_text
+# Export the functions and variables
+__all__ = [
+    'pdf_to_word_with_ocr',
+    'pdf_to_text_with_ocr',
+    'image_to_text',
+    'image_to_word',
+    'extract_text_from_file',
+    'is_scanned_pdf',
+    'is_image_based_document',
+    'ocr_pdf_to_searchable_pdf',
+    'OCR_AVAILABLE'
+]
 
 # -----------------------------------------------------------------------------
 # OCR IMPORTS - TRY TO IMPORT ACTUAL OCR FUNCTIONS
